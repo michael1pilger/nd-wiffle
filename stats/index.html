@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/">Home</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a><a class="" href="/players/">Players</a><a class="" href="/teams/">Teams</a><a class="" href="/records/">Records</a><a class="" href="/awards/">Awards</a></div></div></div>
+<main><div class="container pagehead"><div class="eyebrow">League Database</div><h1>Career Stats</h1><p class="muted">Search and sort the complete career batting and pitching tables.</p></div>
+<div class="container"><input id="q" class="search" placeholder="Search player..."><div class="btns"><button class="btn gold" onclick="show('bat')">Batting</button><button class="btn" onclick="show('pit')">Pitching</button></div><div id="table"></div></div></main>
+<script src="/assets/data.js"></script><script>
+let mode='bat'; const q=document.getElementById('q');q.oninput=render;
+function show(x){mode=x;render()}
+function render(){let rows=(mode==='bat'?ND_DATA.batting:ND_DATA.pitching).filter(r=>r.Name.toLowerCase().includes(q.value.toLowerCase()));
+let cols=mode==='bat'?['Name','PAs','Hits','HRs','BA','RBI','OBP','SLG','OPS','Ks']:['Name','Apps','W','L','IP','Ks','ERA','WHIP'];
+rows.sort((a,b)=> mode==='bat' ? (+b.Hits)-(+a.Hits) : (+b.Ks)-(+a.Ks));
+table.innerHTML='<div class="tablewrap"><table><thead><tr>'+cols.map(c=>'<th>'+c.replace('Ks',mode==='bat'?'Batting K':'Pitching K')+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+r[c]+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'}
+render();</script><footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer></body></html>
