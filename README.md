@@ -1,17 +1,5 @@
-# ND Wiffle League Website v1
+# ND Wiffle League Website v2
 
-Static Cloudflare Pages site for ndwiffle.com.
+Updated homepage and navigation.
 
-Pages:
-- /
-- /grid/
-- /stats/
-- /players/
-- /teams/
-- /records/
-- /awards/
-
-Cloudflare Pages settings:
-- Framework preset: None
-- Build command: leave blank
-- Build output directory: /
+Navigation: '26 Schedule, '26 Standings, Teams, Players, Awards, Grid, Stats.
