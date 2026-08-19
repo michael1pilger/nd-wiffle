@@ -100,7 +100,7 @@ button{font:inherit}
     <div class="stat"><div class="k">Grid</div><div class="v" id="gridStat">#1</div></div>
   </div>
 
-  <div class="gridWrap"><div class="grid" id="grid"></div></div>
+  <div class="gridWrap"><div class="grid" id="grid"></div></div><div id="twinNote" style="display:none">* Twin Titans includes Saudi Arabian Yard Goats and Drunken Sluggers franchise history.</div>
   <div class="note">A player must satisfy both conditions. Each valid answer has an intrinsic rarity value, and every grid is normalized so the best possible nine-answer combination equals 1000 points. Correct answers are also ranked within their cell by rarity. Incorrect answers contribute 0. Each cell can be attempted once.</div>
 
   <div class="endPanel" id="endPanel">
@@ -237,12 +237,12 @@ function render(){
   const corner=document.createElement("div");corner.className="corner";corner.innerHTML="ROW × COLUMN";el.appendChild(corner);
   for(const c of state.cols){
     const d=document.createElement("div");d.className="head";
-    d.innerHTML=`<div>${condById[c].label}<small>${condById[c].description}</small></div>`;
+    d.innerHTML=`<div>${condById[c].label}${c==="team_twin_titans"?"*":""}<small>${condById[c].description}</small></div>`;
     el.appendChild(d);
   }
   for(const r of state.rows){
     const rh=document.createElement("div");rh.className="rowhead";
-    rh.innerHTML=`<div>${condById[r].label}<small>${condById[r].description}</small></div>`;
+    rh.innerHTML=`<div>${condById[r].label}${r==="team_twin_titans"?"*":""}<small>${condById[r].description}</small></div>`;
     el.appendChild(rh);
     for(const c of state.cols){
       const k=key(r,c), result=state.cells[k];
