@@ -16,3 +16,31 @@ footer{margin-top:60px;border-top:1px solid var(--border);padding:30px 0;color:v
 @media(max-width:800px){.links{gap:10px;font-size:13px}.gridcards{grid-template-columns:1fr 1fr}.featuregrid,.teamgrid,.playergrid{grid-template-columns:1fr}.hero{padding-top:50px}}
 
 .league-main{padding:64px 0 24px}.league-main h1{font-size:clamp(44px,7vw,72px);line-height:1;margin:10px 0 24px}.league-main p,.content-section p{font-size:17px;line-height:1.75;color:#c3ccda;max-width:950px}.content-section{padding:34px 0;border-top:1px solid var(--border)}.content-section h2{font-size:31px;margin:0 0 16px}.commissioner-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:18px}.commissioner-card h3{margin:0 0 8px;font-size:19px}.commissioner-card p{font-size:15px;line-height:1.65;margin:0}.season-banner{display:flex;justify-content:space-between;gap:24px;align-items:center;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:18px}.season-banner .season-number{font-size:38px;font-weight:900;color:var(--gold)}.placeholder{padding:70px 0;text-align:center}.placeholder h1{font-size:48px;margin-bottom:12px}@media(max-width:800px){.commissioner-grid{grid-template-columns:1fr}.season-banner{align-items:flex-start;flex-direction:column}}
+
+/* v3 schedule, standings, team history */
+.team-logo{width:42px;height:42px;object-fit:contain;border-radius:9px;flex:0 0 auto}
+.team-logo.sm{width:30px;height:30px;border-radius:7px}
+.series-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.series-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+.series-matchup{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);align-items:center;gap:8px}
+.series-team{display:flex;align-items:center;gap:9px;font-weight:850}
+.series-team.home{justify-content:flex-end;text-align:right}
+.series-at{text-align:center;color:var(--muted);font-weight:900}
+.series-meta{display:flex;gap:18px;margin-top:13px;padding-top:11px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+.series-meta b{color:white}
+.results-empty{padding:28px;text-align:center;border:1px dashed var(--border);border-radius:14px;color:var(--muted)}
+.standings-logo-name{display:flex;align-items:center;gap:9px;font-weight:800}
+.standings-table td.blank{color:#56657b}
+.wave-title{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:900;margin:42px 0 12px}
+.history-team{display:grid;grid-template-columns:110px 1fr;gap:22px;align-items:start;padding:22px 0;border-top:1px solid var(--border)}
+.history-team:first-of-type{border-top:0}
+.history-logo{width:105px;height:105px;object-fit:contain;border-radius:14px}
+.history-team h2{margin:0 0 9px;font-size:25px}
+.history-team p{color:#c3ccda;line-height:1.7;margin:0 0 11px}
+.finish-line{font-weight:850;color:var(--gold)}
+.lineage{font-size:13px;color:var(--muted);margin-top:6px}
+@media(max-width:760px){
+ .series-list{grid-template-columns:1fr}
+ .history-team{grid-template-columns:72px 1fr;gap:14px}
+ .history-logo{width:70px;height:70px}
+}
