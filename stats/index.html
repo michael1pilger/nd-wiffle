@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=12"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=14"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
 
@@ -21,6 +21,10 @@
    <option value="2021">2021</option>
   </select>
   <label class="qualifier-control">
+    <input type="checkbox" id="showRetired" checked onchange="render()">
+    <span>Show retired</span>
+  </label>
+  <label class="qualifier-control">
     <input type="checkbox" id="qualOnly" onchange="render()">
     <span id="qualLabel">Qualified only (50+ PA)</span>
   </label>
@@ -32,7 +36,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=12"></script>
+<script src="/assets/data.js?v=14"></script>
 <script>
 let mode="bat",sortKey=null,sortDir=-1;
 
@@ -52,6 +56,16 @@ function mergeCanonical(base,fallback){
 }
 const careerBat=mergeCanonical(ND_DATA.batting||[],canonicalBattingFallback);
 const careerPit=mergeCanonical(ND_DATA.pitching||[],canonicalPitchingFallback);
+
+const playerMetaById=Object.fromEntries((ND_DATA.players||[]).map(p=>[p.Player_ID,p]));
+function isRetiredRow(r){
+  const p=playerMetaById[r.Player_ID]||{};
+  return String(r.Retired??p.Retired??"0")==="1";
+}
+function nameDisplay(r){
+  const retired=isRetiredRow(r);
+  return `${r.Name||""}${retired?'<span class="stats-retired-icon" title="Retired">R</span>':""}`;
+}
 
 function setMode(x){
  mode=x;sortKey=null;sortDir=-1;
@@ -103,6 +117,7 @@ function sortBy(k){
 function render(){
  const qv=(q.value||"").toLowerCase();
  let rows=sourceRows().filter(r=>(r.Name||"").toLowerCase().includes(qv));
+ if(!showRetired.checked)rows=rows.filter(r=>!isRetiredRow(r));
  const before=rows.length;
  if(qualOnly.checked)rows=rows.filter(qualifies);
  rows=sortRows(rows);
@@ -111,7 +126,7 @@ function render(){
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>${
   cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")
  }</tr></thead><tbody>${
-  rows.map(r=>`<tr>${cols.map(c=>`<td>${displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
+  rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
  }</tbody></table></div>`;
 }
 render();

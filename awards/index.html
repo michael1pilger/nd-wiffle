@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Awards | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=12"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Awards | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=14"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 
@@ -8,7 +8,7 @@
 <p class="muted">Award history from 2021–2025. Repeat winners are marked cumulatively in the season when each additional win occurred.</p></div>
 <div class="container"><div id="awardYears" class="awards-compact"></div></div>
 </main>
-<script src="/assets/data.js?v=12"></script>
+<script src="/assets/data.js?v=14"></script>
 <script>
 const awards=[...(ND_DATA.awards||[])];
 const awardOrder=["All-Star","Gold Glove","Fourth Man","HRD Winner","Silver Slugger","Cy Young","ROTY","MVP","WS Champion","WS MVP"];
@@ -23,8 +23,62 @@ const byYear={};for(const a of awards){(byYear[a.Season]??=[]).push(a)}
 awardYears.innerHTML=Object.keys(byYear).sort((a,b)=>b-a).map(y=>{
  const yr=[...byYear[y]].sort((a,b)=>idx(a.Award)-idx(b.Award)||(a.Player_Name||"").localeCompare(b.Player_Name||""));
  const rows=yr.map(a=>{const c=canon(a.Award),n=at.get(`${a.Season}|${a.Player_ID}|${c}`)||1,rep=n>=2,cls=rep?`award-repeat-row repeat-row-${Math.min(n,6)}`:"",badge=rep?`<span class="repeat-badge ${badgeClass(n)}">${n}×</span>`:"";
- return `<tr class="${cls}"><td>${c}${badge}</td><td>${a.Player_Name}</td><td>${a.Detail||""}</td></tr>`}).join("");
- return `<div class="award-year">${y}</div><div class="tablewrap"><table><thead><tr><th>Award</th><th>Player</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table></div>`
+ const detail=(a.Detail||"").trim(); const awardLabel=detail?`${c} - ${detail}`:c; return `<tr class="${cls}"><td>${awardLabel}${badge}</td><td>${a.Player_Name}</td></tr>`}).join("");
+ return `<div class="award-year">${y}</div><div class="tablewrap"><table><thead><tr><th>Award</th><th>Player</th></tr></thead><tbody>${rows}</tbody></table></div>`
 }).join("");
 </script>
-<footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer></body></html>
+
+<section class="historical-standings-section">
+  <div class="container">
+    <div class="history-section-head">
+      <div>
+        <div class="eyebrow">League History</div>
+        <h2>Historical Standings</h2>
+        <p class="muted">Regular-season standings and postseason finish by season.</p>
+      </div>
+      <select id="historySeason" class="history-season-select" onchange="renderHistoricalStandings()">
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+      </select>
+    </div>
+    <div id="historicalStandings"></div>
+  </div>
+</section>
+<footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer>
+<script>
+const HISTORICAL_STANDINGS={"2025":[{"season":2025,"rank":1,"team":"Twin Titans","w":19,"l":5,"pct":"79.17%","diff":81,"postseason":"Semifinals","finalRank":3},{"season":2025,"rank":2,"team":"Ball Busters","w":18,"l":6,"pct":"75.00%","diff":37,"postseason":"Semifinals","finalRank":4},{"season":2025,"rank":3,"team":"Silverbacks","w":14,"l":10,"pct":"58.33%","diff":22,"postseason":"Runner-up","finalRank":2},{"season":2025,"rank":4,"team":"Dirty Dawgs","w":13,"l":11,"pct":"54.17%","diff":6,"postseason":"Quarterfinals","finalRank":5},{"season":2025,"rank":5,"team":"Underdawgs","w":12,"l":12,"pct":"50.00%","diff":11,"postseason":"Champions","finalRank":1},{"season":2025,"rank":6,"team":"Zyns","w":11,"l":13,"pct":"45.83%","diff":1,"postseason":"Quarterfinals","finalRank":7},{"season":2025,"rank":7,"team":"Goobers","w":11,"l":13,"pct":"45.83%","diff":-9,"postseason":"Quarterfinals","finalRank":6},{"season":2025,"rank":8,"team":"Stiff Wifflers","w":10,"l":14,"pct":"41.67%","diff":-13,"postseason":"No","finalRank":8},{"season":2025,"rank":9,"team":"Midnight","w":6,"l":18,"pct":"25.00%","diff":-66,"postseason":"No","finalRank":9},{"season":2025,"rank":10,"team":"Storm","w":6,"l":18,"pct":"25.00%","diff":-67,"postseason":"No","finalRank":10}],"2024":[{"season":2024,"rank":1,"team":"Silverbacks","w":20,"l":4,"pct":"83.33%","diff":56,"postseason":"Runner-up","finalRank":2},{"season":2024,"rank":2,"team":"Storm","w":18,"l":6,"pct":"75.00%","diff":51,"postseason":"Champions","finalRank":1},{"season":2024,"rank":3,"team":"Ball Busters","w":15,"l":9,"pct":"62.50%","diff":24,"postseason":"Semifinals","finalRank":4},{"season":2024,"rank":4,"team":"Goobers","w":13,"l":11,"pct":"54.17%","diff":8,"postseason":"Quarterfinals","finalRank":6},{"season":2024,"rank":5,"team":"Zyns","w":11,"l":13,"pct":"45.83%","diff":2,"postseason":"Quarterfinals","finalRank":7},{"season":2024,"rank":6,"team":"Stiff Wifflers","w":11,"l":13,"pct":"45.83%","diff":-22,"postseason":"Quarterfinals","finalRank":5},{"season":2024,"rank":7,"team":"Dirty Dawgs","w":10,"l":14,"pct":"41.67%","diff":20,"postseason":"Semifinals","finalRank":3},{"season":2024,"rank":8,"team":"Underdawgs","w":10,"l":14,"pct":"41.67%","diff":-37,"postseason":"No","finalRank":8},{"season":2024,"rank":9,"team":"Midnight","w":9,"l":15,"pct":"37.50%","diff":-31,"postseason":"No","finalRank":9},{"season":2024,"rank":10,"team":"Drunken Sluggers","w":3,"l":21,"pct":"12.50%","diff":-71,"postseason":"No","finalRank":10}],"2023":[{"season":2023,"rank":1,"team":"Zyns","w":20,"l":4,"pct":"83.33%","diff":45,"postseason":"Champions","finalRank":1},{"season":2023,"rank":2,"team":"Silverbacks","w":18,"l":6,"pct":"75.00%","diff":44,"postseason":"Runner-up","finalRank":2},{"season":2023,"rank":3,"team":"Storm","w":15,"l":9,"pct":"62.50%","diff":20,"postseason":"Semifinals","finalRank":4},{"season":2023,"rank":4,"team":"Underdawgs","w":14,"l":10,"pct":"58.33%","diff":8,"postseason":"Semifinals","finalRank":3},{"season":2023,"rank":5,"team":"Stiff Wifflers","w":13,"l":11,"pct":"54.17%","diff":2,"postseason":"Quarterfinals","finalRank":7},{"season":2023,"rank":6,"team":"Goobers","w":10,"l":14,"pct":"41.67%","diff":-16,"postseason":"Quarterfinals","finalRank":5},{"season":2023,"rank":7,"team":"Midnight","w":9,"l":15,"pct":"37.50%","diff":-10,"postseason":"Quarterfinals","finalRank":6},{"season":2023,"rank":8,"team":"Ball Busters","w":9,"l":15,"pct":"37.50%","diff":-20,"postseason":"No","finalRank":8},{"season":2023,"rank":9,"team":"Yard Goats","w":1,"l":23,"pct":"4.17%","diff":-81,"postseason":"No","finalRank":9}],"2022":[{"season":2022,"rank":1,"team":"Silverbacks","w":18,"l":6,"pct":"75.00%","diff":78,"postseason":"Runner-up","finalRank":2},{"season":2022,"rank":2,"team":"Storm","w":16,"l":8,"pct":"66.67%","diff":33,"postseason":"Semifinals","finalRank":3},{"season":2022,"rank":3,"team":"Zyns","w":16,"l":8,"pct":"66.67%","diff":15,"postseason":"Champions","finalRank":1},{"season":2022,"rank":4,"team":"Underdawgs","w":14,"l":10,"pct":"58.33%","diff":2,"postseason":"Semifinals","finalRank":4},{"season":2022,"rank":5,"team":"Midnight","w":10,"l":14,"pct":"41.67%","diff":-9,"postseason":"Quarterfinals","finalRank":6},{"season":2022,"rank":6,"team":"Stiff Wifflers","w":7,"l":17,"pct":"29.17%","diff":-68,"postseason":"Quarterfinals","finalRank":5},{"season":2022,"rank":7,"team":"Yard Goats","w":3,"l":21,"pct":"12.50%","diff":-60,"postseason":"No","finalRank":7}],"2021":[{"season":2021,"rank":1,"team":"Zyns","w":20,"l":7,"pct":"74.07%","diff":35,"postseason":"Semifinals","finalRank":4},{"season":2021,"rank":2,"team":"Silverbacks","w":16,"l":11,"pct":"59.26%","diff":-11,"postseason":"Champions","finalRank":1},{"season":2021,"rank":3,"team":"Storm","w":14,"l":13,"pct":"51.85%","diff":6,"postseason":"Semifinals","finalRank":3},{"season":2021,"rank":4,"team":"Midnight","w":4,"l":23,"pct":"14.81%","diff":-30,"postseason":"Runner-up","finalRank":2}]};
+
+function postseasonClass(v){
+  if(v==="Champions")return "history-champion";
+  if(v==="Runner-up")return "history-runnerup";
+  return "";
+}
+function renderHistoricalStandings(){
+  const season=document.getElementById("historySeason").value;
+  const rows=HISTORICAL_STANDINGS[season]||[];
+  const table=document.getElementById("historicalStandings");
+  table.innerHTML=`<div class="tablewrap historical-table-wrap">
+    <table class="historical-table">
+      <thead><tr>
+        <th>RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>DIFF</th><th>Postseason</th><th>Final</th>
+      </tr></thead>
+      <tbody>${rows.map(r=>`
+        <tr class="${postseasonClass(r.postseason)}">
+          <td>${r.rank}</td>
+          <td>${r.team}</td>
+          <td>${r.w}</td>
+          <td>${r.l}</td>
+          <td>${r.pct}</td>
+          <td>${r.diff>0?"+":""}${r.diff}</td>
+          <td>${r.postseason==="No"?"—":r.postseason}</td>
+          <td>${r.finalRank}</td>
+        </tr>`).join("")}</tbody>
+    </table>
+  </div>`;
+}
+renderHistoricalStandings();
+</script>
+</body></html>

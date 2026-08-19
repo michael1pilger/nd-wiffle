@@ -1,10 +1,8 @@
-# ND Wiffle League Website v12
+# ND Wiffle League Website v14
 
-Website:
-- Removed the old Stiff Wifflers/Midnight Aug. 20 demo event from the homepage.
-- Reverted the Stiff Wifflers/Midnight schedule series to Date TBD / Time TBD.
-- Awards page uses larger row text, reduced vertical whitespace, and a narrower gap between Award and Player columns.
-- Player accolades and the current 2026 Draft ticker are preserved.
-
-Stats workflow:
-- Added SERIES_UPLOAD_FORMAT.md for iScore's three-games-in-one-file workflow.
+Added Historical Standings to Awards & Champions:
+- Season selector for 2021–2025.
+- Columns: regular-season rank, team, W, L, PCT, DIFF, postseason result, final rank.
+- Champions are highlighted in gold.
+- Runner-up rows receive a subtler highlight.
+- Historical team names are preserved exactly as supplied in the standings dataset.

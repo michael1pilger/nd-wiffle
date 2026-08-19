@@ -417,3 +417,69 @@ img.team-logo.sm{
   font-size:10px!important;
   padding:3px 6px!important;
 }
+
+/* v13 stats retired indicator */
+.stats-retired-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;margin-left:7px;border-radius:50%;
+  border:1px solid #68758a;background:#1a2433;color:#cbd4df;
+  font-size:9px;font-weight:950;vertical-align:middle
+}
+
+/* v13 awards two-column layout */
+.awards-compact th:nth-child(1),.awards-compact td:nth-child(1){
+  width:58%!important;text-align:left!important
+}
+.awards-compact th:nth-child(2),.awards-compact td:nth-child(2){
+  width:42%!important;text-align:left!important
+}
+
+/* v14 historical standings */
+.historical-standings-section{
+  padding:34px 0 52px;
+}
+.history-section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:18px;
+  margin-bottom:14px;
+}
+.history-section-head h2{
+  margin:3px 0 4px;
+  font-size:30px;
+}
+.history-season-select{
+  min-width:110px;
+  background:var(--panel);
+  color:white;
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:10px 12px;
+  font-weight:800;
+}
+.historical-table{
+  min-width:820px;
+}
+.historical-table th,
+.historical-table td{
+  padding:10px 12px!important;
+  font-size:13px!important;
+}
+.historical-table th:nth-child(1),
+.historical-table td:nth-child(1){width:54px;text-align:center!important}
+.historical-table th:nth-child(2),
+.historical-table td:nth-child(2){text-align:left!important}
+.historical-table th:nth-child(n+3),
+.historical-table td:nth-child(n+3){text-align:center!important}
+.historical-table .history-champion td{
+  background:rgba(214,165,38,.10);
+  border-top:1px solid rgba(214,165,38,.45)!important;
+  border-bottom:1px solid rgba(214,165,38,.45)!important;
+}
+.historical-table .history-runnerup td{
+  background:rgba(173,183,199,.055);
+}
+@media(max-width:700px){
+  .history-section-head{align-items:flex-start;flex-direction:column}
+}
