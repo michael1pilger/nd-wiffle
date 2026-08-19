@@ -19,7 +19,7 @@
 </div><div class="player-data-note">Player cards use the cumulative stat database for class and career totals, roster history for team logos, and season files for best-season summaries.</div><div class="playergrid" id="pg"></div></div></main><footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer>
 
 
-<script src="/assets/data.js?v=8"></script>
+<script src="/assets/data.js?v=9"></script>
 <script>
 const pg=document.getElementById("pg"),pq=document.getElementById("pq");
 const teamSel=document.getElementById("playerTeam"),classSel=document.getElementById("playerClass"),statusSel=document.getElementById("playerStatus"),sortSel=document.getElementById("playerSort"),playerCount=document.getElementById("playerCount");
@@ -29,10 +29,10 @@ const rostersById={}; for(const r of (ND_DATA.rosters||[])){(rostersById[r.Playe
 const batSeasonsById={}; for(const r of (ND_DATA.battingSeasons||[])){(batSeasonsById[r.Player_ID]??=[]).push(r);}
 const pitSeasonsById={}; for(const r of (ND_DATA.pitchingSeasons||[])){(pitSeasonsById[r.Player_ID]??=[]).push(r);}
 const logoMap={
-"Silverbacks":"/assets/logos/silverbacks.png?v=8","Storm":"/assets/logos/storm.png?v=8","Zyns":"/assets/logos/zyns.png?v=8",
-"Dirty Dawgs":"/assets/logos/dirty-dawgs.png?v=8","Goofy Goobers":"/assets/logos/goofy-goobers.png?v=8","Goobers":"/assets/logos/goofy-goobers.png?v=8",
-"Midnight":"/assets/logos/midnight.png?v=8","Ball Busters":"/assets/logos/ball-busters.png?v=8","Stiff Wifflers":"/assets/logos/stiff-wifflers.png?v=8","Stiffies":"/assets/logos/stiff-wifflers.png?v=8",
-"Twin Titans":"/assets/logos/twin-titans.png?v=8","Underdawgs":"/assets/logos/underdawgs.png?v=8"};
+"Silverbacks":"/assets/logos/silverbacks.png?v=9","Storm":"/assets/logos/storm.png?v=9","Zyns":"/assets/logos/zyns.png?v=9",
+"Dirty Dawgs":"/assets/logos/dirty-dawgs.png?v=9","Goofy Goobers":"/assets/logos/goofy-goobers.png?v=9","Goobers":"/assets/logos/goofy-goobers.png?v=9",
+"Midnight":"/assets/logos/midnight.png?v=9","Ball Busters":"/assets/logos/ball-busters.png?v=9","Stiff Wifflers":"/assets/logos/stiff-wifflers.png?v=9","Stiffies":"/assets/logos/stiff-wifflers.png?v=9",
+"Twin Titans":"/assets/logos/twin-titans.png?v=9","Underdawgs":"/assets/logos/underdawgs.png?v=9"};
 const canonicalTeam=t=>({"Seven Deadly Zyns":"Zyns","South Bend Wifflers":"Zyns","Stiffies":"Stiff Wifflers","Goobers":"Goofy Goobers","Drunken Sluggers":"Twin Titans","Saudi Arabian Yard Goats":"Twin Titans","Yard Goats":"Twin Titans"}[t]||t);
 function num(x){const n=parseFloat(x);return Number.isFinite(n)?n:0}
 function fmt2(x){const n=parseFloat(x);return Number.isFinite(n)?n.toFixed(2):"—"}
