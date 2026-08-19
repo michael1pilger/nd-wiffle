@@ -483,3 +483,54 @@ img.team-logo.sm{
 @media(max-width:700px){
   .history-section-head{align-items:flex-start;flex-direction:column}
 }
+
+/* v15 clickable team cards */
+.team-link-card{
+  color:inherit;
+  text-decoration:none;
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.team-link-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(214,165,38,.48)!important;
+  background:rgba(214,165,38,.035);
+}
+.team-link-card h2{color:white}
+
+/* v15 team detail pages */
+.team-detail-head{padding:36px 0 18px}
+.back-link{display:inline-block;margin-bottom:22px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:800}
+.back-link:hover{color:var(--gold)}
+.team-detail-identity{display:flex;gap:20px;align-items:center}
+.team-detail-logo{width:112px;height:112px;border:1px solid var(--border);border-radius:18px;background:var(--panel);display:flex;align-items:center;justify-content:center;flex:0 0 112px}
+.team-detail-logo img{width:92px;height:92px;object-fit:contain}
+.team-detail-identity h1{font-size:40px;margin:4px 0 0}
+.team-lineage-note{margin:7px 0 0;color:var(--gold);font-size:12px;font-weight:800}
+.team-detail-history{max-width:980px;color:#c8d1df;line-height:1.7;margin:22px 0 0}
+.team-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px}
+.team-summary-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+.team-summary-card span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:850}
+.team-summary-card strong{display:block;font-size:28px;margin-top:7px}
+.team-summary-card small{display:block;color:var(--muted);margin-top:3px}
+.team-detail-section{padding:22px 0}
+.team-history-table th,.team-history-table td{padding:10px 12px!important}
+.team-history-table th:first-child,.team-history-table td:first-child{text-align:left!important}
+.team-history-table th:nth-child(n+2),.team-history-table td:nth-child(n+2){text-align:center!important}
+.team-title-row td{background:rgba(214,165,38,.10);border-top:1px solid rgba(214,165,38,.40)!important;border-bottom:1px solid rgba(214,165,38,.40)!important}
+
+/* v15 awards ordering */
+.awards-history-top{padding-top:8px!important}
+.awards-by-year-section{padding:22px 0 52px}
+.awards-by-year-section .award-year{margin-top:0!important}
+
+@media(max-width:900px){
+  .team-summary-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+  .team-detail-identity{align-items:flex-start}
+  .team-detail-logo{width:84px;height:84px;flex-basis:84px}
+  .team-detail-logo img{width:68px;height:68px}
+  .team-detail-identity h1{font-size:28px}
+  .team-summary-grid{grid-template-columns:1fr 1fr}
+}
