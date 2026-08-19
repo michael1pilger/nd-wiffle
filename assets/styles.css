@@ -555,3 +555,97 @@ img.team-logo.sm{
   .awards-title-row{align-items:flex-start;flex-direction:column}
   .bracket-grid,.bracket-3,.bracket-2{grid-template-columns:1fr;overflow:visible}
 }
+
+/* v17 team-color flair */
+.standings-table tbody tr[style*="--team"]{
+  background:
+    linear-gradient(90deg, rgba(var(--team),.11), rgba(var(--team),.025) 34%, transparent 70%);
+  box-shadow: inset 3px 0 0 rgba(var(--team),.72);
+}
+.standings-table tbody tr[style*="--team"]:hover{
+  background:
+    linear-gradient(90deg, rgba(var(--team),.17), rgba(var(--team),.04) 38%, transparent 74%);
+}
+.team-color-series{
+  background:
+    linear-gradient(100deg,
+      rgba(var(--away),.10) 0%,
+      rgba(var(--away),.025) 28%,
+      var(--panel) 46%,
+      var(--panel) 54%,
+      rgba(var(--home),.025) 72%,
+      rgba(var(--home),.10) 100%);
+  box-shadow:
+    inset 3px 0 0 rgba(var(--away),.72),
+    inset -3px 0 0 rgba(var(--home),.72),
+    0 9px 26px rgba(var(--home),.045);
+}
+.history-team-row[style*="--team"] td{
+  background:linear-gradient(90deg,rgba(var(--team),.085),rgba(var(--team),.018) 55%,transparent);
+}
+.bracket-team[style*="--team"]{
+  background:linear-gradient(90deg,rgba(var(--team),.13),rgba(var(--team),.025) 72%);
+  box-shadow:inset 3px 0 0 rgba(var(--team),.58);
+}
+.bracket-team.bracket-winner{
+  background:linear-gradient(90deg,rgba(var(--team),.22),rgba(var(--team),.06) 78%);
+}
+.team-detail-head[style*="--team"]{
+  position:relative;
+  border-bottom:1px solid rgba(var(--team),.28);
+}
+.team-detail-head[style*="--team"]::after{
+  content:"";
+  position:absolute;
+  inset:auto 0 0 0;
+  height:120px;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse at 16% 100%,rgba(var(--team),.15),transparent 62%);
+}
+
+/* v17 Instagram homepage card */
+.instagram-callout{
+  width:max-content;
+  max-width:100%;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:18px 0 4px;
+  padding:10px 13px;
+  border:1px solid rgba(215,173,72,.30);
+  border-radius:12px;
+  background:linear-gradient(110deg,rgba(215,173,72,.08),rgba(96,0,160,.05));
+  transition:transform .16s ease,border-color .16s ease,background .16s ease;
+}
+.instagram-callout:hover{
+  transform:translateY(-1px);
+  border-color:rgba(215,173,72,.62);
+  background:linear-gradient(110deg,rgba(215,173,72,.12),rgba(96,0,160,.08));
+}
+.instagram-callout small{
+  display:block;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.10em;
+}
+.instagram-callout strong{
+  display:block;
+  color:white;
+  margin-top:2px;
+  font-size:14px;
+}
+.instagram-mark{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:31px;
+  height:31px;
+  border-radius:9px;
+  background:rgba(215,173,72,.12);
+  color:var(--gold);
+  font-size:22px;
+  font-weight:900;
+}
+.instagram-arrow{color:var(--gold);font-size:16px;margin-left:2px}
