@@ -1,13 +1,11 @@
-# ND Wiffle League Website v3
+# ND Wiffle League Website v4
 
-Adds:
-- Full 2026 9-team schedule framework with 36 home/away three-game series.
-- Blank 2026 standings table.
-- All 10 team logos retained; Zyns historical only, not in 2026.
-- Full Teams history copy organized by expansion wave.
-- Yard Goats -> Drunken Sluggers -> Twin Titans franchise lineage.
-- Grid Twin Titans asterisk appears only when Twin Titans is a grid clue.
-- Patrick Thompson and Patrick Fitzgerald career-stat alias normalization fixed in the grid and site stats.
+Fixes:
+- Standardized every team logo to a 256x256 PNG asset.
+- Added hard CSS and inline image dimensions so logos cannot render full-width.
+- Rebuilt Patrick Thompson and Patrick Fitzgerald directly from the original cumulative CSV source aliases (`rPat Thompson`, `rPat Fitz`).
+- Recomputed every career-stat grid condition from the corrected career tables.
+- Regenerated the 300-board grid pool after the data correction.
+- Added canonical career CSV copies under /assets for easier auditing.
 
-Deploy:
-Copy/replace these files in the local GitHub repo, commit, and Push Origin. Cloudflare Pages will redeploy automatically.
+Deploy by replacing the existing repo files, committing, and pushing to main.

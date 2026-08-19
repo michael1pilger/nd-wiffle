@@ -44,3 +44,27 @@ footer{margin-top:60px;border-top:1px solid var(--border);padding:30px 0;color:v
  .history-team{grid-template-columns:72px 1fr;gap:14px}
  .history-logo{width:70px;height:70px}
 }
+
+/* v4 logo sizing hard reset */
+img.team-logo{
+  width:42px !important;height:42px !important;max-width:42px !important;max-height:42px !important;
+  object-fit:contain !important;display:block !important;flex:0 0 42px !important;
+}
+img.team-logo.sm{
+  width:30px !important;height:30px !important;max-width:30px !important;max-height:30px !important;
+  flex-basis:30px !important;
+}
+.logo-frame{
+  width:96px;height:96px;min-width:96px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;border-radius:14px;background:#101d31;border:1px solid #263b59;padding:7px;
+}
+.logo-frame img.history-logo{
+  width:82px !important;height:82px !important;max-width:82px !important;max-height:82px !important;
+  object-fit:contain !important;display:block !important;
+}
+.history-team{grid-template-columns:96px minmax(0,1fr) !important}
+@media(max-width:760px){
+  .history-team{grid-template-columns:64px minmax(0,1fr) !important}
+  .logo-frame{width:60px;height:60px;min-width:60px;padding:4px}
+  .logo-frame img.history-logo{width:52px !important;height:52px !important;max-width:52px !important;max-height:52px !important}
+}
