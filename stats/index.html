@@ -32,7 +32,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=7"></script>
+<script src="/assets/data.js?v=8"></script>
 <script>
 let mode="bat",sortKey=null,sortDir=-1;
 
@@ -72,6 +72,7 @@ function columns(){
   ?["Name","PAs","Hits","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
   :["Name","Apps","W","L","IP","Ks","ERA","WHIP"];
 }
+function displayVal(c,v){if(c==="ERA"){const n=parseFloat(v);return Number.isFinite(n)?n.toFixed(2):(v??"")}return v??""}
 function label(c){
  if(c==="Ks")return mode==="bat"?"Batting K":"Pitching K";
  if(c==="PAs")return "PA";
@@ -110,7 +111,7 @@ function render(){
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>${
   cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")
  }</tr></thead><tbody>${
-  rows.map(r=>`<tr>${cols.map(c=>`<td>${r[c]??""}</td>`).join("")}</tr>`).join("")
+  rows.map(r=>`<tr>${cols.map(c=>`<td>${displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
  }</tbody></table></div>`;
 }
 render();

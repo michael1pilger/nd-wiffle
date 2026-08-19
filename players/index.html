@@ -1,78 +1,68 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Players | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="active" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
-<main><div class="container pagehead"><div class="eyebrow">League Directory</div><h1>Players</h1></div><div class="container"><input class="search" id="pq" placeholder="Search players..." oninput="filterPlayers()"><div class="player-data-note">Player cards use the cumulative stat database for class and career totals, roster history for team logos, and season files for best-season summaries.</div><div class="playergrid" id="pg"></div></div></main><footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer>
+<main><div class="container pagehead"><div class="eyebrow">League Directory</div><h1>Players</h1></div><div class="container"><div class="player-controls">
+<input class="search" id="pq" placeholder="Search players...">
+<select id="playerTeam"><option value="">All teams</option></select>
+<select id="playerClass"><option value="">All classes</option></select>
+<select id="playerStatus"><option value="">Active + retired</option><option value="active">Active only</option><option value="retired">Retired only</option></select>
+<select id="playerSort">
+<option value="name">Sort: Name</option>
+<option value="hits">Sort: Career Hits</option>
+<option value="hrs">Sort: Career HR</option>
+<option value="batK">Sort: Batting K</option>
+<option value="pitK">Sort: Pitching K</option>
+<option value="era">Sort: Career ERA</option>
+<option value="pa">Sort: Career PA</option>
+<option value="ip">Sort: Career IP</option>
+</select>
+<div id="playerCount" class="player-count"></div>
+</div><div class="player-data-note">Player cards use the cumulative stat database for class and career totals, roster history for team logos, and season files for best-season summaries.</div><div class="playergrid" id="pg"></div></div></main><footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer>
 
-<script src="/assets/data.js?v=7"></script>
+
+<script src="/assets/data.js?v=8"></script>
 <script>
-const pg=document.getElementById("pg");
-const pq=document.getElementById("pq");
+const pg=document.getElementById("pg"),pq=document.getElementById("pq");
+const teamSel=document.getElementById("playerTeam"),classSel=document.getElementById("playerClass"),statusSel=document.getElementById("playerStatus"),sortSel=document.getElementById("playerSort"),playerCount=document.getElementById("playerCount");
 const batById=Object.fromEntries((ND_DATA.batting||[]).map(r=>[r.Player_ID,r]));
 const pitById=Object.fromEntries((ND_DATA.pitching||[]).map(r=>[r.Player_ID,r]));
-const rostersById={};
-for(const r of (ND_DATA.rosters||[])){(rostersById[r.Player_ID]??=[]).push(r);}
-const batSeasonsById={};
-for(const r of (ND_DATA.battingSeasons||[])){(batSeasonsById[r.Player_ID]??=[]).push(r);}
-const pitSeasonsById={};
-for(const r of (ND_DATA.pitchingSeasons||[])){(pitSeasonsById[r.Player_ID]??=[]).push(r);}
-
+const rostersById={}; for(const r of (ND_DATA.rosters||[])){(rostersById[r.Player_ID]??=[]).push(r);}
+const batSeasonsById={}; for(const r of (ND_DATA.battingSeasons||[])){(batSeasonsById[r.Player_ID]??=[]).push(r);}
+const pitSeasonsById={}; for(const r of (ND_DATA.pitchingSeasons||[])){(pitSeasonsById[r.Player_ID]??=[]).push(r);}
 const logoMap={
-"Silverbacks":"/assets/logos/silverbacks.png?v=7",
-"Storm":"/assets/logos/storm.png?v=7",
-"Zyns":"/assets/logos/zyns.png?v=7",
-"Seven Deadly Zyns":"/assets/logos/zyns.png?v=7",
-"South Bend Wifflers":"/assets/logos/zyns.png?v=7",
-"Dirty Dawgs":"/assets/logos/dirty-dawgs.png?v=7",
-"Goofy Goobers":"/assets/logos/goofy-goobers.png?v=7","Goobers":"/assets/logos/goofy-goobers.png?v=7",
-"Midnight":"/assets/logos/midnight.png?v=7",
-"Ball Busters":"/assets/logos/ball-busters.png?v=7",
-"Stiff Wifflers":"/assets/logos/stiff-wifflers.png?v=7","Stiffies":"/assets/logos/stiff-wifflers.png?v=7",
-"Twin Titans":"/assets/logos/twin-titans.png?v=7",
-"Drunken Sluggers":"/assets/logos/twin-titans.png?v=7",
-"Saudi Arabian Yard Goats":"/assets/logos/twin-titans.png?v=7",
-"Yard Goats":"/assets/logos/twin-titans.png?v=7",
-"Underdawgs":"/assets/logos/underdawgs.png?v=7"
-};
-
-function num(x){const n=parseFloat(x);return Number.isFinite(n)?n:0;}
-function bestBat(pid){
- const rows=(batSeasonsById[pid]||[]).filter(r=>num(r.PAs)>=20);
- if(!rows.length)return null;
- return [...rows].sort((a,b)=>num(b.OPS)-num(a.OPS))[0];
+"Silverbacks":"/assets/logos/silverbacks.png?v=8","Storm":"/assets/logos/storm.png?v=8","Zyns":"/assets/logos/zyns.png?v=8",
+"Dirty Dawgs":"/assets/logos/dirty-dawgs.png?v=8","Goofy Goobers":"/assets/logos/goofy-goobers.png?v=8","Goobers":"/assets/logos/goofy-goobers.png?v=8",
+"Midnight":"/assets/logos/midnight.png?v=8","Ball Busters":"/assets/logos/ball-busters.png?v=8","Stiff Wifflers":"/assets/logos/stiff-wifflers.png?v=8","Stiffies":"/assets/logos/stiff-wifflers.png?v=8",
+"Twin Titans":"/assets/logos/twin-titans.png?v=8","Underdawgs":"/assets/logos/underdawgs.png?v=8"};
+const canonicalTeam=t=>({"Seven Deadly Zyns":"Zyns","South Bend Wifflers":"Zyns","Stiffies":"Stiff Wifflers","Goobers":"Goofy Goobers","Drunken Sluggers":"Twin Titans","Saudi Arabian Yard Goats":"Twin Titans","Yard Goats":"Twin Titans"}[t]||t);
+function num(x){const n=parseFloat(x);return Number.isFinite(n)?n:0}
+function fmt2(x){const n=parseFloat(x);return Number.isFinite(n)?n.toFixed(2):"—"}
+function playerTeams(p){const r=(rostersById[p.Player_ID]||[]).map(x=>x.Team),f=(p.Teams_Played||"").split(";").map(x=>x.trim()).filter(Boolean);return [...new Set([...r,...f].map(canonicalTeam))]}
+function isRetired(p,b,pit){return String(p.Retired??b.Retired??pit.Retired??"0")==="1"}
+function playerClass(p,b,pit){const x=(b.Class_Year&&b.Class_Year!=="0")?b.Class_Year:((pit.Class_Year&&pit.Class_Year!=="0")?pit.Class_Year:p.Class_Year);return x&&x!=="0"?String(x):""}
+function bestBat(pid){const rows=(batSeasonsById[pid]||[]).filter(r=>num(r.PAs)>=20);return rows.length?[...rows].sort((a,b)=>num(b.OPS)-num(a.OPS))[0]:null}
+function bestPit(pid){const rows=(pitSeasonsById[pid]||[]).filter(r=>num(r.IP)>=5);return rows.length?[...rows].sort((a,b)=>num(a.ERA)-num(b.ERA))[0]:null}
+function populateFilters(){
+ const teams=new Set(),classes=new Set();
+ for(const p of (ND_DATA.players||[])){const b=batById[p.Player_ID]||{},pit=pitById[p.Player_ID]||{};playerTeams(p).forEach(t=>teams.add(t));const c=playerClass(p,b,pit);if(c)classes.add(c)}
+ teamSel.innerHTML='<option value="">All teams</option>'+[...teams].sort().map(t=>`<option>${t}</option>`).join("");
+ classSel.innerHTML='<option value="">All classes</option>'+[...classes].sort().map(c=>`<option value="${c}">Class of '${c.slice(-2)}</option>`).join("");
 }
-function bestPit(pid){
- const rows=(pitSeasonsById[pid]||[]).filter(r=>num(r.IP)>=5);
- if(!rows.length)return null;
- return [...rows].sort((a,b)=>num(a.ERA)-num(b.ERA))[0];
+function sortRows(rows){
+ const k=sortSel.value;
+ return [...rows].sort((A,B)=>{const[a,ab,ap]=A,[b,bb,bp]=B;if(k==="name")return a.Name.localeCompare(b.Name);
+ const v={hits:[num(ab.Hits),num(bb.Hits)],hrs:[num(ab.HRs),num(bb.HRs)],batK:[num(ab.Ks),num(bb.Ks)],pitK:[num(ap.Ks),num(bp.Ks)],pa:[num(ab.PAs),num(bb.PAs)],ip:[num(ap.IP),num(bp.IP)]};
+ if(k==="era"){const ae=num(ap.ERA)||9999,be=num(bp.ERA)||9999;return ae-be} const x=v[k]||[0,0];return x[1]-x[0]})
 }
 function renderPlayers(){
  const q=(pq.value||"").trim().toLowerCase();
- const rows=[...(ND_DATA.players||[])]
-  .filter(p=>!q||(p.Name||"").toLowerCase().includes(q))
-  .sort((a,b)=>a.Name.localeCompare(b.Name));
- pg.innerHTML=rows.map(p=>{
-  const b=batById[p.Player_ID]||{},pit=pitById[p.Player_ID]||{};
-  const classSource=(b.Class_Year&&b.Class_Year!=="0")?b.Class_Year:((pit.Class_Year&&pit.Class_Year!=="0")?pit.Class_Year:p.Class_Year); const cls=(classSource&&classSource!=="0")?classSource:"—";
-  const rosterTeams=(rostersById[p.Player_ID]||[]).map(r=>r.Team); const fallbackTeams=(p.Teams_Played||"").split(";").map(x=>x.trim()).filter(Boolean); const teams=[...new Set([...rosterTeams,...fallbackTeams])];
-  const logos=teams.filter(t=>logoMap[t]).map(t=>`<img src="${logoMap[t]}" title="${t}" alt="${t}">`).join("");
-  const bb=bestBat(p.Player_ID),bp=bestPit(p.Player_ID);
-  const best=[];
-  if(bb)best.push(`<b>Best batting:</b> ${bb.Season} · ${bb.Hits??0} H · ${bb.HRs??0} HR · ${bb.BA??"—"} AVG`);
-  if(bp)best.push(`<b>Best pitching:</b> ${bp.Season} · ${bp.Ks??0} K · ${bp.ERA??"—"} ERA`);
-  return `<div class="card playercard">
-    <div class="player-card-top">
-      <div><div class="player-name">${p.Name}</div><div class="player-meta">Class ${cls}</div></div>
-      <div class="player-team-logos">${logos}</div>
-    </div>
-    <div class="player-statline">
-      <span class="tag">${b.Hits??0} H</span>
-      <span class="tag">${b.HRs??0} HR</span>
-      <span class="tag">${pit.Ks??0} Pitching K</span>
-    </div>
-    ${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}
-  </div>`;
- }).join("");
+ let rows=(ND_DATA.players||[]).map(p=>[p,batById[p.Player_ID]||{},pitById[p.Player_ID]||{}]).filter(([p,b,pit])=>{
+  if(q&&!(p.Name||"").toLowerCase().includes(q))return false;const teams=playerTeams(p);if(teamSel.value&&!teams.includes(teamSel.value))return false;
+  const c=playerClass(p,b,pit);if(classSel.value&&c!==classSel.value)return false;const r=isRetired(p,b,pit);if(statusSel.value==="active"&&r)return false;if(statusSel.value==="retired"&&!r)return false;return true});
+ rows=sortRows(rows);playerCount.textContent=`${rows.length} players`;
+ pg.innerHTML=rows.map(([p,b,pit])=>{const c=playerClass(p,b,pit),ret=isRetired(p,b,pit),teams=playerTeams(p),logos=teams.filter(t=>logoMap[t]).map(t=>`<img src="${logoMap[t]}" title="${t}" alt="${t}">`).join(""),bb=bestBat(p.Player_ID),bp=bestPit(p.Player_ID),best=[];
+ if(bb)best.push(`<b>Best batting:</b> ${bb.Season} · ${bb.Hits??0} H · ${bb.HRs??0} HR · ${bb.BA??"—"} AVG`);if(bp)best.push(`<b>Best pitching:</b> ${bp.Season} · ${bp.Ks??0} K · ${fmt2(bp.ERA)} ERA`);
+ return `<div class="card playercard"><div class="player-card-top"><div><div class="player-name">${p.Name}${ret?'<span class="retired-badge">Retired</span>':""}</div><div class="player-meta">${c?`Class '${c.slice(-2)}`:"Class —"}</div></div><div class="player-team-logos">${logos}</div></div>
+ <div class="player-statline"><span class="tag">${b.Hits??0} H</span><span class="tag">${b.HRs??0} HR</span><span class="tag">${pit.Ks??0} Pitching K</span>${num(pit.IP)>0?`<span class="tag">${fmt2(pit.ERA)} ERA</span>`:""}</div>${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}</div>`}).join("")
 }
-pq.addEventListener("input",renderPlayers);
-renderPlayers();
-</script>
-</body></html>
+[pq,teamSel,classSel,statusSel,sortSel].forEach(el=>el.addEventListener(el===pq?"input":"change",renderPlayers));populateFilters();renderPlayers();
+</script></body></html>

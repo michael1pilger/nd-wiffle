@@ -2,57 +2,29 @@
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 
+
 <main>
-<div class="container pagehead">
-  <div class="eyebrow">League History</div>
-  <h1>Awards & Champions</h1>
-  <p class="muted">Award history from 2021–2025. Repeat individual award wins are highlighted in the season when the repeat occurred.</p>
-</div>
-<div class="container">
-  <div id="awardYears" class="awards-compact"></div>
-</div>
+<div class="container pagehead"><div class="eyebrow">League History</div><h1>Awards & Champions</h1>
+<p class="muted">Award history from 2021–2025. Repeat winners are marked cumulatively in the season when each additional win occurred.</p></div>
+<div class="container"><div id="awardYears" class="awards-compact"></div></div>
 </main>
-<script src="/assets/data.js?v=7"></script>
+<script src="/assets/data.js?v=8"></script>
 <script>
 const awards=[...(ND_DATA.awards||[])];
-const repeatEligible=a=>!["All-Star","WS Champion","World Series Champion"].includes(a);
-
-const ordered=[...awards].sort((a,b)=>{
- const sy=Number(a.Season)-Number(b.Season);
- if(sy!==0)return sy;
- return (a.Award||"").localeCompare(b.Award||"");
-});
-
-const priorCount={};
-const repeatMeta=new Map();
-for(const a of ordered){
- const key=`${a.Player_ID}|${a.Award}`;
- const previous=priorCount[key]||0;
- const current=previous+1;
- if(repeatEligible(a.Award) && current>=2){
-   repeatMeta.set(`${a.Season}|${a.Player_ID}|${a.Award}`,current);
- }
- priorCount[key]=current;
-}
-
-const byYear={};
-for(const a of awards){(byYear[a.Season]??=[]).push(a);}
-
+const awardOrder=["All-Star","Gold Glove","Fourth Man","HRD Winner","Silver Slugger","Cy Young","ROTY","MVP","WS Champion","WS MVP"];
+const aliases={"All Star":"All-Star","Gold Gloves":"Gold Glove","4th Man":"Fourth Man","HRD winner":"HRD Winner","Silver Sluggers":"Silver Slugger","Cy Youngs":"Cy Young","Rookie of the Year":"ROTY","World Series Champion":"WS Champion","World Series Winner":"WS Champion","WSMVP":"WS MVP","World Series MVP":"WS MVP"};
+const canon=a=>aliases[a]||a;
+const idx=a=>{const i=awardOrder.indexOf(canon(a));return i<0?999:i};
+const badgeClass=n=>n>=6?"repeat-6":`repeat-${n}`;
+const chron=[...awards].sort((a,b)=>Number(a.Season)-Number(b.Season)||idx(a.Award)-idx(b.Award));
+const running={},at=new Map();
+for(const a of chron){const c=canon(a.Award),k=`${a.Player_ID}|${c}`;running[k]=(running[k]||0)+1;at.set(`${a.Season}|${a.Player_ID}|${c}`,running[k])}
+const byYear={};for(const a of awards){(byYear[a.Season]??=[]).push(a)}
 awardYears.innerHTML=Object.keys(byYear).sort((a,b)=>b-a).map(y=>{
- const rows=byYear[y].map(a=>{
-   const repeatN=repeatMeta.get(`${a.Season}|${a.Player_ID}|${a.Award}`);
-   const rowClass=repeatN?"award-repeat-row":"";
-   const badge=repeatN?`<span class="repeat-badge">${repeatN}× ${a.Award}</span>`:"";
-   return `<tr class="${rowClass}">
-      <td>${a.Award}${badge}</td>
-      <td>${a.Player_Name}</td>
-      <td>${a.Detail||""}</td>
-   </tr>`;
- }).join("");
- return `<div class="award-year">${y}</div>
- <div class="tablewrap"><table>
- <thead><tr><th>Award</th><th>Player</th><th>Detail</th></tr></thead>
- <tbody>${rows}</tbody></table></div>`;
+ const yr=[...byYear[y]].sort((a,b)=>idx(a.Award)-idx(b.Award)||(a.Player_Name||"").localeCompare(b.Player_Name||""));
+ const rows=yr.map(a=>{const c=canon(a.Award),n=at.get(`${a.Season}|${a.Player_ID}|${c}`)||1,rep=n>=2,cls=rep?`award-repeat-row repeat-row-${Math.min(n,6)}`:"",badge=rep?`<span class="repeat-badge ${badgeClass(n)}">${n}×</span>`:"";
+ return `<tr class="${cls}"><td>${c}${badge}</td><td>${a.Player_Name}</td><td>${a.Detail||""}</td></tr>`}).join("");
+ return `<div class="award-year">${y}</div><div class="tablewrap"><table><thead><tr><th>Award</th><th>Player</th><th>Detail</th></tr></thead><tbody>${rows}</tbody></table></div>`
 }).join("");
 </script>
 <footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer></body></html>
