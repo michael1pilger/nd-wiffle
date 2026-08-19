@@ -380,3 +380,40 @@ img.team-logo.sm{
 .awards-pagehead p{margin-bottom:0}
 .awards-pagehead + .container .award-year:first-child{margin-top:8px!important}
 .awards-compact .award-year{margin-top:14px}
+
+/* v12 awards density / readability */
+.awards-pagehead{padding-bottom:0!important}
+.awards-pagehead + .container{margin-top:0!important}
+.awards-compact .award-year:first-child{margin-top:4px!important}
+.awards-compact .award-year{margin:12px 0 6px!important;font-size:26px!important}
+.awards-compact table{
+  min-width:0!important;
+  table-layout:fixed;
+}
+.awards-compact th,
+.awards-compact td{
+  padding:9px 12px!important;
+  font-size:14px!important;
+}
+.awards-compact th{
+  font-size:12px!important;
+}
+.awards-compact th:nth-child(1),
+.awards-compact td:nth-child(1){
+  width:42%!important;
+  text-align:left!important;
+}
+.awards-compact th:nth-child(2),
+.awards-compact td:nth-child(2){
+  width:38%!important;
+  text-align:left!important;
+}
+.awards-compact th:nth-child(3),
+.awards-compact td:nth-child(3){
+  width:20%!important;
+  text-align:right!important;
+}
+.awards-compact .repeat-badge{
+  font-size:10px!important;
+  padding:3px 6px!important;
+}
