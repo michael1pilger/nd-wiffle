@@ -337,3 +337,46 @@ img.team-logo.sm{
   .game-ticker-inner{width:min(100% - 24px,var(--site-max));gap:10px}
   .ticker-track{font-size:12px;animation-duration:16s}
 }
+
+/* v11 player accolades */
+.player-accolades{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:11px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+}
+.accolade-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:27px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#0d192a;
+  border:1px solid #2b3b54;
+  color:#dce6f4;
+  font-size:10px;
+  line-height:1;
+  font-weight:800;
+  white-space:nowrap;
+}
+.accolade-icon{font-size:14px;line-height:1}
+.accolade-mult{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:2px 5px;
+  border-radius:999px;
+  background:var(--gold);
+  color:#07111f;
+  font-size:9px;
+  font-weight:950;
+}
+
+/* v11 tighter awards layout */
+.awards-pagehead{padding-bottom:4px!important}
+.awards-pagehead p{margin-bottom:0}
+.awards-pagehead + .container .award-year:first-child{margin-top:8px!important}
+.awards-compact .award-year{margin-top:14px}

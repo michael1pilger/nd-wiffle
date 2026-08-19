@@ -1,12 +1,10 @@
-# ND Wiffle League Website v10 - Initial Rollout
+# ND Wiffle League Website v11
 
-Homepage ticker restored.
+Website updates:
+- Player cards now display career accolades.
+- Accolade icons: All-Star star, Gold Glove glove, Fourth Man 4, HRD burst, Silver Slugger bat, Cy Young baseball, ROTY star, MVP trophy, WS Champion ring, WS MVP diamond.
+- Multiple wins display x2, x3, etc.
+- Awards page header spacing tightened substantially.
+- v10 homepage ticker and all other v10 functionality preserved.
 
-Ticker:
-UPCOMING EVENTS
-2026 DRAFT
-MON, AUG 24
-8:00 PM
-THE DAWG PARK
-
-All other v9 website behavior is preserved.
+Also included GAME_UPLOAD_FORMAT.md describing the AI-free iScore game naming convention for the upcoming automated stats pipeline.
