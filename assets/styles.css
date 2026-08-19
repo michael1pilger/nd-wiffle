@@ -103,3 +103,34 @@ img.team-logo.sm{
 
 @media(max-width:1100px){.series-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}.playergrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.container{width:min(100% - 24px,var(--site-max))}.series-list{grid-template-columns:1fr!important}.playergrid{grid-template-columns:1fr}.standings-table th,.standings-table td{padding:12px 10px;font-size:13px}.standings-logo-name{font-size:15px}}
+
+/* v6 */
+.playoff-line td{border-top:3px solid var(--gold)!important}
+.playoff-note{font-size:12px;color:var(--gold);font-weight:800;margin-top:10px}
+
+.player-card-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.player-team-logos{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.player-team-logos img{width:30px;height:30px;object-fit:contain;border-radius:6px;background:#0b1525;border:1px solid var(--border);padding:2px}
+.best-season{margin-top:12px;padding-top:11px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5}
+.best-season b{color:white}
+
+.award-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:26px}
+.award-summary-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px}
+.award-summary-card .count{font-size:28px;font-weight:900;color:var(--gold)}
+.award-summary-card .who{font-weight:850;margin-top:4px}
+.award-summary-card .detail{font-size:12px;color:var(--muted);margin-top:3px}
+.award-year{margin:18px 0 8px;font-size:24px}
+.awards-compact table{min-width:680px}
+.awards-compact th,.awards-compact td{padding:8px 11px}
+
+.stats-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+.stats-controls select,.stats-controls input{
+  background:var(--panel);color:white;border:1px solid var(--border);border-radius:9px;padding:10px 12px
+}
+.sortable th{cursor:pointer;user-select:none;white-space:nowrap}
+.sortable th:hover{color:white}
+.sortable th .sortmark{font-size:10px;color:var(--gold);margin-left:4px}
+.stats-footnote{font-size:12px;color:var(--muted);margin-top:10px}
+
+@media(max-width:1000px){.award-summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.award-summary-grid{grid-template-columns:1fr}}
