@@ -134,3 +134,116 @@ img.team-logo.sm{
 
 @media(max-width:1000px){.award-summary-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:650px){.award-summary-grid{grid-template-columns:1fr}}
+
+/* v7 */
+
+/* Homepage upcoming-series ticker */
+.game-ticker{
+  width:100%;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:#091321;
+  overflow:hidden;
+}
+.game-ticker-inner{
+  width:min(var(--site-max),calc(100% - 48px));
+  margin:0 auto;
+  min-height:54px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.ticker-label{
+  flex:0 0 auto;
+  color:#07111f;
+  background:var(--gold);
+  font-size:10px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  border-radius:999px;
+  padding:8px 10px;
+}
+.ticker-window{
+  flex:1;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.ticker-track{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  min-width:max-content;
+  animation:ndTicker 22s linear infinite;
+  font-size:14px;
+  font-weight:800;
+}
+.ticker-track img{width:28px;height:28px;object-fit:contain}
+.ticker-sep{color:var(--gold)}
+.ticker-muted{color:var(--muted);font-weight:650}
+@keyframes ndTicker{
+  0%{transform:translateX(100%)}
+  100%{transform:translateX(-100%)}
+}
+@media(prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+@media(max-width:760px){
+  .game-ticker-inner{width:min(100% - 24px,var(--site-max));gap:10px}
+  .ticker-track{font-size:12px;animation-duration:17s}
+}
+
+/* Player data/status */
+.player-data-note{
+  margin:4px 0 18px;
+  font-size:12px;
+  color:var(--muted);
+}
+.player-team-logos img{width:32px!important;height:32px!important}
+.playercard .best-season{min-height:39px}
+
+/* Awards */
+.award-repeat-row td{
+  background:rgba(215,174,68,.075);
+  border-top:1px solid rgba(215,174,68,.35)!important;
+  border-bottom:1px solid rgba(215,174,68,.35)!important;
+}
+.repeat-badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:var(--gold);
+  color:#07111f;
+  font-size:10px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.04em;
+  vertical-align:middle;
+}
+
+/* Stats qualification controls */
+.qualifier-control{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+  padding:0 11px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  background:var(--panel);
+  color:white;
+  font-size:13px;
+  font-weight:750;
+}
+.qualifier-control input{accent-color:var(--gold)}
+.qualifier-hint{
+  color:var(--muted);
+  font-size:12px;
+  margin:-6px 0 14px;
+}
+.stats-count{
+  margin-left:auto;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}

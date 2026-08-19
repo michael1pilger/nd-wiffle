@@ -1,37 +1,69 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
+
 <main>
-<div class="container pagehead"><div class="eyebrow">League Database</div><h1>Stats</h1>
-<p class="muted">Explore career or single-season batting and pitching statistics. Click any column header to sort.</p></div>
+<div class="container pagehead">
+ <div class="eyebrow">League Database</div>
+ <h1>Stats</h1>
+ <p class="muted">Explore career or single-season batting and pitching statistics. Click any column header to sort.</p>
+</div>
 <div class="container">
  <div class="stats-controls">
   <button class="btn gold" id="batBtn" onclick="setMode('bat')">Batting</button>
   <button class="btn" id="pitBtn" onclick="setMode('pit')">Pitching</button>
   <select id="scopeSel" onchange="render()">
    <option value="career">Career</option>
-   <option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option>
-   <option value="2022">2022</option><option value="2021">2021</option>
+   <option value="2025">2025</option>
+   <option value="2024">2024</option>
+   <option value="2023">2023</option>
+   <option value="2022">2022</option>
+   <option value="2021">2021</option>
   </select>
+  <label class="qualifier-control">
+    <input type="checkbox" id="qualOnly" onchange="render()">
+    <span id="qualLabel">Qualified only (50+ PA)</span>
+  </label>
   <input id="q" placeholder="Search player..." oninput="render()">
+  <div id="statsCount" class="stats-count"></div>
  </div>
+ <div class="qualifier-hint">Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.</div>
  <div id="table"></div>
- <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle sort direction.</div>
+ <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js"></script>
+<script src="/assets/data.js?v=7"></script>
 <script>
 let mode="bat",sortKey=null,sortDir=-1;
+
+const canonicalBattingFallback=[
+ {"Player_ID":"patrick_thompson","Name":"Patrick Thompson","PAs":"493","ABs":"384","Hits":"147","Singles":"80","Doubles":"19","Triples":"6","HRs":"43","BA":"0.383","BB":"107","RBI":"39","OBP":"0.515","SLG":"0.802","Ks":"98","GP":"106","OPS":"1.317","wOBA":"0.546","Retired":"1","Class_Year":"2025"},
+ {"Player_ID":"patrick_fitzgerald","Name":"Patrick Fitzgerald","PAs":"309","ABs":"265","Hits":"73","Singles":"45","Doubles":"10","Triples":"3","HRs":"16","BA":"0.275","BB":"43","RBI":"4","OBP":"0.375","SLG":"0.521","Ks":"79","GP":"78","OPS":"0.896","wOBA":"0.391","Retired":"1","Class_Year":"2025"}
+];
+const canonicalPitchingFallback=[
+ {"Player_ID":"patrick_thompson","Name":"Patrick Thompson","Apps":"67","Starts":"23","W":"13","L":"13","S":"8","IP":"107.33","BF":"558","Walks":"118","Hits":"131","Ks":"116","WHIP":"2.32","ER":"107","ERA":"2.99","OOBP":"0.446","BAA":"0.2348","Retired":"1","Class_Year":"2025"},
+ {"Player_ID":"patrick_fitzgerald","Name":"Patrick Fitzgerald","Apps":"54","Starts":"39","W":"17","L":"22","S":"4","IP":"112","BF":"596","Walks":"133","Hits":"149","Ks":"98","WHIP":"2.52","ER":"127","ERA":"3.40","OOBP":"0.473","BAA":"0.25","Retired":"1","Class_Year":"2025"}
+];
+
+function mergeCanonical(base,fallback){
+ const map=new Map((base||[]).map(r=>[r.Player_ID,r]));
+ for(const r of fallback){map.set(r.Player_ID,{...(map.get(r.Player_ID)||{}),...r});}
+ return [...map.values()];
+}
+const careerBat=mergeCanonical(ND_DATA.batting||[],canonicalBattingFallback);
+const careerPit=mergeCanonical(ND_DATA.pitching||[],canonicalPitchingFallback);
+
 function setMode(x){
  mode=x;sortKey=null;sortDir=-1;
  batBtn.className=x==="bat"?"btn gold":"btn";
  pitBtn.className=x==="pit"?"btn gold":"btn";
+ qualLabel.textContent=x==="bat"?"Qualified only (50+ PA)":"Qualified only (18+ IP)";
  render();
 }
 function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:null;}
 function sourceRows(){
  const scope=scopeSel.value;
- if(scope==="career")return mode==="bat"?(ND_DATA.batting||[]):(ND_DATA.pitching||[]);
+ if(scope==="career")return mode==="bat"?careerBat:careerPit;
  const src=mode==="bat"?(ND_DATA.battingSeasons||[]):(ND_DATA.pitchingSeasons||[]);
  return src.filter(r=>String(r.Season)===scope);
 }
@@ -42,7 +74,11 @@ function columns(){
 }
 function label(c){
  if(c==="Ks")return mode==="bat"?"Batting K":"Pitching K";
+ if(c==="PAs")return "PA";
  return c;
+}
+function qualifies(r){
+ return mode==="bat"?(num(r.PAs)||0)>=50:(num(r.IP)||0)>=18;
 }
 function sortRows(rows){
  if(!sortKey){
@@ -52,7 +88,9 @@ function sortRows(rows){
  return [...rows].sort((a,b)=>{
   if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
   const av=num(a[sortKey]),bv=num(b[sortKey]);
-  if(av===null&&bv===null)return 0;if(av===null)return 1;if(bv===null)return -1;
+  if(av===null&&bv===null)return 0;
+  if(av===null)return 1;
+  if(bv===null)return -1;
   return sortDir*(av-bv);
  });
 }
@@ -64,7 +102,10 @@ function sortBy(k){
 function render(){
  const qv=(q.value||"").toLowerCase();
  let rows=sourceRows().filter(r=>(r.Name||"").toLowerCase().includes(qv));
+ const before=rows.length;
+ if(qualOnly.checked)rows=rows.filter(qualifies);
  rows=sortRows(rows);
+ statsCount.textContent=`${rows.length}${qualOnly.checked?` qualified of ${before}`:" players"}`;
  const cols=columns();
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>${
   cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")
