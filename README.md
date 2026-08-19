@@ -1,8 +1,16 @@
-# ND Wiffle League Website v15
+# ND Wiffle League Website v16
 
-- Added 10 franchise detail pages reachable by clicking team cards.
-- Team pages include all recorded players, all-time regular-season W-L record, playoff appearances/titles, and season-by-season playoff history.
-- Twin Titans page combines Yard Goats / Drunken Sluggers / Twin Titans franchise history.
-- Awards page now shows Historical Standings first.
-- Awards & Champions are selected by year using a dropdown instead of stacking every year.
-- Removed all remaining Stiff Wifflers/Midnight Aug. 20 demo scheduling text from homepage and schedule.
+Major changes:
+- Homepage repaired by removing the stale Stiff Wifflers/Midnight demo fragment and its orphan closing tags.
+- Stiff Wifflers/Midnight Aug. 20 / 5 PM demo scheduling removed from Schedule.
+- Added clickable franchise pages for all 10 historical franchises.
+- Franchise pages now show all-time record including regular season + playoff game results.
+- Separate regular-season and playoff records are shown.
+- Added playoff series history to every franchise page.
+- Added captain history; captain names are displayed in gold.
+- Added 2026 pre-draft captain/franchise-tag/draft-asset information.
+- Stiff Wifflers compensatory pick #1 is correctly shown as traded to Storm.
+- Silverbacks compensatory pick #4 is correctly shown as traded to Ball Busters.
+- Awards page uses one season dropdown for historical standings, playoff bracket, and awards.
+- Added responsive HTML playoff brackets for 2021-2025.
+- Corrected 2023 play-ins: Ball Busters defeated Goobers 3-1; Midnight defeated Stiff Wifflers 3-1.
