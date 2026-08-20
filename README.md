@@ -26,3 +26,5 @@ v25 introduces the first production database backend.
 - publish result displays commissioner email and series ID
 
 See `D1_SETUP.md` for exact Cloudflare setup steps.
+
+<</3>>
