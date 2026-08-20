@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Series Admin | ND Wiffle</title>
+<link rel="stylesheet" href="/assets/styles.css?v=21">
+<style>
+.admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:850px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.upload-slot.full{grid-column:1/-1}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.series-title{font-size:24px;font-weight:900}.series-sub{color:var(--muted);margin-top:4px}.score-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.score-card{border:1px solid var(--border);border-radius:11px;padding:11px;background:#0c1728;text-align:center}.score-card b{display:block;margin-bottom:5px}.preview-table{width:100%;min-width:0}.preview-table th,.preview-table td{text-align:left}.preview-table th:nth-child(n+2),.preview-table td:nth-child(n+2){text-align:right}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(180px,1fr) 120px 42px;gap:8px}.gp-row select,.gp-row input{background:#0b1525;color:white;border:1px solid var(--border);border-radius:8px;padding:9px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.payload{width:100%;min-height:220px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}@media(max-width:760px){.upload-grid,.status-summary,.score-grid{grid-template-columns:1fr}.upload-slot.full{grid-column:auto}.gp-row{grid-template-columns:1fr 90px 42px}.admin-shell h1{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
+<main class="admin-shell"><div class="container">
+  <div class="admin-kicker">Commissioner Tools · Prototype</div>
+  <h1>Series Upload & Review</h1>
+  <p class="admin-intro">Upload the four iScore series exports plus the manual Series Results CSV. Nothing on this page publishes to the live database yet. It validates the files, applies GP rules, and creates the normalized payload we will eventually send to Cloudflare D1.</p>
+
+  <section class="admin-panel">
+    <h2>1. Upload Files</h2>
+    <div class="upload-grid">
+      <div class="upload-slot"><label>Home Batting</label><input id="homeBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homeBat">Waiting for file</div></div>
+      <div class="upload-slot"><label>Home Pitching</label><input id="homePit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homePit">Waiting for file</div></div>
+      <div class="upload-slot"><label>Visitor Batting</label><input id="awayBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayBat">Waiting for file</div></div>
+      <div class="upload-slot"><label>Visitor Pitching</label><input id="awayPit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayPit">Waiting for file</div></div>
+      <div class="upload-slot full"><label>Series Results</label><input id="seriesFile" type="file" accept=".csv,text/csv"><div class="file-state" id="state-seriesFile">Waiting for file</div></div>
+    </div>
+    <div class="admin-actions"><button class="admin-btn primary" id="validateBtn">Validate Series</button><button class="admin-btn" id="loadSampleBtn">Load Included Sample</button></div>
+  </section>
+
+  <section class="admin-panel hidden" id="gpPanel">
+    <h2>2. Games Played Overrides</h2>
+    <p class="muted">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to <b>3 GP</b>. Add only players who appeared in 1 or 2 games. Players with zero PA, zero IP, and zero BF are ignored completely.</p>
+    <div class="gp-controls" id="gpControls"></div>
+    <div class="admin-actions"><button class="admin-btn" id="addGpBtn">+ Add GP Override</button><button class="admin-btn primary" id="revalidateBtn">Revalidate</button></div>
+  </section>
+
+  <section class="admin-panel hidden" id="reviewPanel">
+    <h2>3. Review</h2>
+    <div id="seriesHeader"></div>
+    <div class="status-summary" id="statusSummary"></div>
+    <div class="checks" id="checks"></div>
+  </section>
+
+  <section class="admin-panel hidden" id="previewPanel">
+    <h2>4. Import Preview</h2>
+    <div id="teamPreview"></div>
+    <div style="height:14px"></div>
+    <div class="tablewrap"><table class="preview-table"><thead><tr><th>Player</th><th>Team</th><th>GP</th><th>PA</th><th>IP</th><th>W</th><th>L</th><th>SV</th></tr></thead><tbody id="playerPreview"></tbody></table></div>
+  </section>
+
+  <section class="admin-panel hidden" id="payloadPanel">
+    <h2>5. Publish-Ready Payload</h2>
+    <p class="publish-note">This is the exact normalized object the future backend can accept. <b>Publish is intentionally disabled in this prototype.</b> Once a second real series passes this validator, we can wire this page to an authenticated Cloudflare Worker + D1 transaction.</p>
+    <textarea class="payload" id="payload" readonly></textarea>
+    <div class="admin-actions"><button class="admin-btn" id="copyBtn">Copy Payload</button><button class="admin-btn primary" disabled>Publish Series (backend not connected)</button></div>
+  </section>
+</div></main>
+<footer><div class="container">ND Wiffle · Commissioner series-import prototype.</div></footer>
+<script src="/assets/data.js?v=21"></script>
+<script>
+const els={homeBat:homeBat,homePit:homePit,awayBat:awayBat,awayPit:awayPit,seriesFile:seriesFile};
+let parsed=null;
+let overrides=[];
+const knownPlayers=new Set((window.ND_DATA?.players||[]).map(p=>p.Name));
+
+function parseCSV(text){
+  const rows=[]; let row=[],field='',q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){if(ch==='"'&&text[i+1]==='"'){field+='"';i++;}else if(ch==='"'){q=false;}else field+=ch;}
+    else{if(ch==='"')q=true;else if(ch===','){row.push(field);field='';}else if(ch==='\n'){row.push(field.replace(/\r$/,''));rows.push(row);row=[];field='';}else field+=ch;}
+  }
+  if(field.length||row.length){row.push(field.replace(/\r$/,''));rows.push(row)}
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+function objects(rows){const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]??'').trim()])))}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function cleanName(v){return String(v||'').trim()}
+function blankDecision(v){const x=cleanName(v);return !x||/^n\/?a$/i.test(x)||x==='-'}
+function activeBat(r){return cleanName(r.Name)!=='TOTALS'&&num(r.PA)>0}
+function activePit(r){return cleanName(r.Name)!=='TOTALS'&&(num(r.IP)>0||num(r.BF)>0)}
+function totals(rows){return rows.find(r=>r.Name==='TOTALS')||{}}
+function sumGames(g,key){return g.reduce((a,r)=>a+num(r[key]),0)}
+function addCheck(arr,level,title,detail=''){arr.push({level,title,detail})}
+function playerPool(data){const s=new Set();['homeBat','awayBat'].forEach(k=>data[k].filter(activeBat).forEach(r=>s.add(r.Name)));['homePit','awayPit'].forEach(k=>data[k].filter(activePit).forEach(r=>s.add(r.Name)));return [...s].sort()}
+function overrideMap(){return new Map(overrides.filter(o=>o.player&&[1,2].includes(Number(o.gp))).map(o=>[o.player,Number(o.gp)]))}
+function gpFor(name){return overrideMap().get(name)||3}
+
+async function readInput(id){const f=els[id].files[0];if(!f)throw new Error('Missing '+id);const text=await f.text();return objects(parseCSV(text))}
+async function gather(){return {homeBat:await readInput('homeBat'),homePit:await readInput('homePit'),awayBat:await readInput('awayBat'),awayPit:await readInput('awayPit'),series:await readInput('seriesFile')}}
+
+function validate(data){
+ const checks=[]; const s=data.series;
+ if(s.length!==3)addCheck(checks,'error','Series Results must contain exactly 3 game rows',`Found ${s.length}.`); else addCheck(checks,'pass','Three game rows found');
+ const seasons=[...new Set(s.map(r=>r.season))], away=[...new Set(s.map(r=>r.away_team))], home=[...new Set(s.map(r=>r.home_team))];
+ if(seasons.length!==1||away.length!==1||home.length!==1)addCheck(checks,'error','Series metadata is inconsistent','Season, away team, and home team must be identical across all three rows.'); else addCheck(checks,'pass','Series metadata is consistent',`${away[0]} at ${home[0]} · ${seasons[0]}`);
+ const hb=totals(data.homeBat), ab=totals(data.awayBat), hp=totals(data.homePit), ap=totals(data.awayPit);
+ const homeRuns=sumGames(s,'home_score'), awayRuns=sumGames(s,'away_score');
+ num(hb.R)===homeRuns?addCheck(checks,'pass','Home batting runs match scoreboard',`${hb.R} runs`):addCheck(checks,'warn','Home batting runs do not match scoreboard',`Batting: ${hb.R}; scoreboard: ${homeRuns}. Review before publish.`);
+ num(ab.R)===awayRuns?addCheck(checks,'pass','Visitor batting runs match scoreboard',`${ab.R} runs`):addCheck(checks,'warn','Visitor batting runs do not match scoreboard',`Batting: ${ab.R}; scoreboard: ${awayRuns}. Review before publish.`);
+ const pairs=[['Home PA = visitor BF',hb.PA,ap.BF],['Visitor PA = home BF',ab.PA,hp.BF],['Home H = visitor pitching H',hb.H,ap.H],['Visitor H = home pitching H',ab.H,hp.H],['Home BB = visitor pitching BB',hb.BB,ap.BB],['Visitor BB = home pitching BB',ab.BB,hp.BB],['Home SO = visitor pitching K',hb.SO,ap.K],['Visitor SO = home pitching K',ab.SO,hp.K],['Home HR = visitor pitching HR',hb.HR,ap.HR],['Visitor HR = home pitching HR',ab.HR,hp.HR]];
+ pairs.forEach(([label,a,b])=>num(a)===num(b)?addCheck(checks,'pass',label,String(num(a))):addCheck(checks,'error',label,`${a} vs ${b}`));
+ // R and ER checks deliberately distinct.
+ num(hp.R)===awayRuns?addCheck(checks,'pass','Home pitching R matches opponent scoreboard',`${hp.R} R; ${hp.ER} ER`):addCheck(checks,'warn','Home pitching R differs from opponent scoreboard',`Pitching R: ${hp.R}; opponent scoreboard: ${awayRuns}. Do not auto-correct.`);
+ num(ap.R)===homeRuns?addCheck(checks,'pass','Visitor pitching R matches opponent scoreboard',`${ap.R} R; ${ap.ER} ER`):addCheck(checks,'warn','Visitor pitching R differs from opponent scoreboard',`Pitching R: ${ap.R}; opponent scoreboard: ${homeRuns}. Do not auto-correct.`);
+ if(num(hp.R)!==num(hp.ER))addCheck(checks,'info','Home pitching includes unearned runs',`${hp.R} R / ${hp.ER} ER. ERA will use ER.`);
+ if(num(ap.R)!==num(ap.ER))addCheck(checks,'info','Visitor pitching includes unearned runs',`${ap.R} R / ${ap.ER} ER. ERA will use ER.`);
+ // Player recognition: only active statistical participants count.
+ const active=playerPool(data); const unknown=active.filter(n=>!knownPlayers.has(n));
+ unknown.length?addCheck(checks,'error','Unknown active player name(s)',unknown.join(', ')):addCheck(checks,'pass','All active players match the league database',`${active.length} players recognized`);
+ const ignored=[...data.homeBat,...data.awayBat].filter(r=>r.Name&&r.Name!=='TOTALS'&&!activeBat(r)).map(r=>r.Name);
+ if(ignored.length)addCheck(checks,'info','Zero-PA roster entries will be ignored',[...new Set(ignored)].join(', '));
+ // Decisions
+ const activeSet=new Set(active);
+ s.forEach(r=>{
+   const g=r.game||'?'; const wp=cleanName(r.winning_pitcher),lp=cleanName(r.losing_pitcher),sv=cleanName(r.save_pitcher);
+   if(!wp||!lp)addCheck(checks,'error',`Game ${g}: missing pitching decision`,'Winning and losing pitcher are required.');
+   if(wp&&!activeSet.has(wp))addCheck(checks,'warn',`Game ${g}: winning pitcher not found among active series stat lines`,wp);
+   if(lp&&!activeSet.has(lp))addCheck(checks,'warn',`Game ${g}: losing pitcher not found among active series stat lines`,lp);
+   if(!blankDecision(sv)&&!activeSet.has(sv))addCheck(checks,'warn',`Game ${g}: save pitcher not found among active series stat lines`,sv);
+   if(!blankDecision(sv)&&sv===wp)addCheck(checks,'warn',`Game ${g}: winning pitcher is also listed for the save`,`${wp}. Confirm or remove the save before publishing.`);
+ });
+ // GP overrides
+ const ov=overrideMap();
+ overrides.forEach(o=>{
+   if(!o.player)return;
+   if(!activeSet.has(o.player))addCheck(checks,'error','GP override player is not an active statistical participant',o.player);
+   if(![1,2].includes(Number(o.gp)))addCheck(checks,'error','GP override must be 1 or 2',`${o.player}: ${o.gp}`);
+ });
+ if(ov.size)addCheck(checks,'info','Games Played overrides applied',[...ov.entries()].map(([p,g])=>`${p}: ${g} GP`).join('; '));
+ return checks;
+}
+
+function normalized(data){
+ const s=data.series; const meta={season:Number(s[0]?.season||0),away_team:s[0]?.away_team||'',home_team:s[0]?.home_team||'',dates:s.map(r=>r.date),series_id:`${s[0]?.season||''}_${(s[0]?.away_team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')}_${(s[0]?.home_team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')}_${s[0]?.date||''}`};
+ const teamBySide={home:meta.home_team,away:meta.away_team};
+ const b=[]; const p=[];
+ [['homeBat','home'],['awayBat','away']].forEach(([key,side])=>data[key].filter(activeBat).forEach(r=>b.push({player:r.Name,team:teamBySide[side],GP:gpFor(r.Name),PA:num(r.PA),AB:num(r.AB),R:num(r.R),H:num(r.H),'1B':num(r['1B']),'2B':num(r['2B']),'3B':num(r['3B']),HR:num(r.HR),RBI:num(r.RBI),BB:num(r.BB),SO:num(r.SO)})));
+ [['homePit','home'],['awayPit','away']].forEach(([key,side])=>data[key].filter(activePit).forEach(r=>p.push({player:r.Name,team:teamBySide[side],GP:gpFor(r.Name),IP:r.IP,BF:num(r.BF),R:num(r.R),ER:num(r.ER),K:num(r.K),H:num(r.H),BB:num(r.BB),HR:num(r.HR)})));
+ const decisions={};
+ s.forEach(r=>{for(const [field,key] of [['winning_pitcher','W'],['losing_pitcher','L'],['save_pitcher','SV']]){const name=cleanName(r[field]);if(field==='save_pitcher'&&blankDecision(name))continue;if(!name)continue;decisions[name]=decisions[name]||{W:0,L:0,SV:0};decisions[name][key]++;}});
+ const active=playerPool(data);
+ const players=active.map(name=>{const br=b.find(x=>x.player===name),pr=p.find(x=>x.player===name),d=decisions[name]||{W:0,L:0,SV:0};return {player:name,team:(br||pr)?.team||'',GP:gpFor(name),PA:br?.PA||0,IP:pr?.IP||'0.00',W:d.W,L:d.L,SV:d.SV}});
+ const awayW=s.filter(r=>num(r.away_score)>num(r.home_score)).length, homeW=s.filter(r=>num(r.home_score)>num(r.away_score)).length;
+ return {meta,games:s.map(r=>({game:Number(r.game),date:r.date,away_score:num(r.away_score),home_score:num(r.home_score),winning_pitcher:r.winning_pitcher,losing_pitcher:r.losing_pitcher,save_pitcher:blankDecision(r.save_pitcher)?null:r.save_pitcher})),team_changes:[{team:meta.away_team,W:awayW,L:homeW,RS:sumGames(s,'away_score'),RA:sumGames(s,'home_score')},{team:meta.home_team,W:homeW,L:awayW,RS:sumGames(s,'home_score'),RA:sumGames(s,'away_score')}],batting:b,pitching:p,players,gp_overrides:[...overrideMap()].map(([player,games_played])=>({player,games_played}))};
+}
+
+function renderGp(data){
+ const pool=playerPool(data); const box=document.getElementById('gpControls');box.innerHTML='';
+ overrides.forEach((o,i)=>{const row=document.createElement('div');row.className='gp-row';row.innerHTML=`<select data-i="${i}" class="gp-player"><option value="">Select player</option>${pool.map(p=>`<option ${p===o.player?'selected':''}>${p}</option>`).join('')}</select><select data-i="${i}" class="gp-games"><option value="1" ${Number(o.gp)===1?'selected':''}>1 game</option><option value="2" ${Number(o.gp)===2?'selected':''}>2 games</option></select><button class="gp-remove" data-i="${i}">×</button>`;box.appendChild(row)});
+ box.querySelectorAll('.gp-player').forEach(x=>x.onchange=e=>{overrides[+e.target.dataset.i].player=e.target.value});
+ box.querySelectorAll('.gp-games').forEach(x=>x.onchange=e=>{overrides[+e.target.dataset.i].gp=+e.target.value});
+ box.querySelectorAll('.gp-remove').forEach(x=>x.onclick=e=>{overrides.splice(+e.target.dataset.i,1);renderGp(data)});
+}
+function render(data){
+ const checks=validate(data), norm=normalized(data), errors=checks.filter(x=>x.level==='error').length,warns=checks.filter(x=>x.level==='warn').length,passes=checks.filter(x=>x.level==='pass').length;
+ gpPanel.classList.remove('hidden'); reviewPanel.classList.remove('hidden'); previewPanel.classList.remove('hidden'); payloadPanel.classList.remove('hidden'); renderGp(data);
+ const s=data.series; seriesHeader.innerHTML=`<div class="series-title">${s[0]?.away_team||'?'} at ${s[0]?.home_team||'?'}</div><div class="series-sub">Season ${s[0]?.season||'?'} · ${s.map(x=>x.date).join(' · ')}</div><div class="score-grid">${s.map(r=>`<div class="score-card"><b>Game ${r.game}</b>${r.away_team} ${r.away_score} · ${r.home_team} ${r.home_score}</div>`).join('')}</div>`;
+ statusSummary.innerHTML=`<div class="status-card"><span>Errors</span><strong>${errors}</strong></div><div class="status-card"><span>Warnings</span><strong>${warns}</strong></div><div class="status-card"><span>Passed</span><strong>${passes}</strong></div><div class="status-card"><span>Active Players</span><strong>${norm.players.length}</strong></div>`;
+ checksEl=document.getElementById('checks');checksEl.innerHTML=checks.map(c=>`<div class="check ${c.level}"><div class="icon">${c.level==='pass'?'✓':c.level==='error'?'✕':c.level==='warn'?'⚠':'i'}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:''}</div></div>`).join('');
+ teamPreview.innerHTML=`<div class="status-summary">${norm.team_changes.map(t=>`<div class="status-card"><span>${t.team}</span><strong>${t.W}-${t.L}</strong><small>+${t.RS} RS · +${t.RA} RA</small></div>`).join('')}</div>`;
+ playerPreview.innerHTML=norm.players.map(p=>`<tr><td>${p.player}</td><td>${p.team}</td><td>${p.GP}</td><td>${p.PA}</td><td>${p.IP}</td><td>${p.W}</td><td>${p.L}</td><td>${p.SV}</td></tr>`).join('');
+ payload.value=JSON.stringify({validation:{errors,warnings:warns,passed:passes,review_required:warns>0||errors>0},import:norm},null,2);
+}
+async function validateFiles(){try{parsed=await gather();render(parsed)}catch(e){alert(e.message)}}
+validateBtn.onclick=validateFiles; revalidateBtn.onclick=()=>parsed&&render(parsed); addGpBtn.onclick=()=>{if(!parsed)return;overrides.push({player:'',gp:2});renderGp(parsed)}; copyBtn.onclick=async()=>{await navigator.clipboard.writeText(payload.value);copyBtn.textContent='Copied';setTimeout(()=>copyBtn.textContent='Copy Payload',1200)};
+Object.entries(els).forEach(([id,input])=>input.addEventListener('change',()=>{const st=document.getElementById('state-'+id);st.textContent=input.files[0]?.name||'Waiting for file';st.className='file-state '+(input.files[0]?'ok':'')}));
+
+// Included sample loader uses files copied into /admin/sample/. Browsers cannot programmatically populate file inputs,
+// so this directly parses the sample text and is intended only for development/testing.
+async function loadSample(){
+ const files={homeBat:'statsHomeBatting.csv',homePit:'statsHomePitching.csv',awayBat:'statsVisitorBatting.csv',awayPit:'statsVisitorPitching.csv',series:'series.csv'};
+ const out={}; for(const [k,f] of Object.entries(files)){const res=await fetch('/admin/sample/'+f+'?v=21');const text=await res.text();out[k]=objects(parseCSV(text));}
+ parsed=out; overrides=[]; render(parsed);
+}
+loadSampleBtn.onclick=()=>loadSample().catch(e=>alert('Sample load failed: '+e.message));
+</script>
+</body></html>
