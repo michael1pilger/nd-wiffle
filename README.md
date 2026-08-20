@@ -1,4 +1,4 @@
-# ND Wiffle League Website v28
+# ND Wiffle League Website v29
 
 v26 connects the public 2026 league pages to D1.
 
@@ -43,3 +43,10 @@ The current static historical database is treated as the authoritative 2021–20
 - `/api/public/league` returns `build: "v28"`.
 - Public API caching is disabled while the publishing pipeline is being verified.
 - Retains v27 pitcher-only decision enforcement.
+
+## v29 deployment verification
+- Admin page visibly shows `BUILD v29`.
+- `/api/admin/health` returns `"build":"v29"`.
+- `/api/public/league` returns `"build":"v29"`.
+- `BUILD_VERSION.txt` is a new root file so GitHub Desktop must show a change.
+- Public API uses `Cache-Control: no-store` during verification.
