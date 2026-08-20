@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=24">
+<link rel="stylesheet" href="/assets/styles.css?v=25">
 <style>
 .admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
 
@@ -32,6 +32,10 @@
  .correction-row{grid-template-columns:1fr 1fr}
  .correction-row .corr-reason{grid-column:1/-1}
 }
+
+.publish-success{color:#6ed49a!important}
+.publish-error{color:#eb7884!important}
+.publish-warn{color:#e2b34a!important}
 </style>
 </head>
 <body>
@@ -124,8 +128,8 @@
 </div>
 <h3 style="margin-top:18px">Normalized Publish Payload</h3>
 <textarea class="payload" id="payload" readonly></textarea>
-<div class="publish-note" style="margin-top:14px">Publish remains disabled in this prototype. The next backend step will require a valid Cloudflare Access identity, save the raw import and audit record, then rebuild official 2026 totals transactionally.</div>
-<div class="admin-actions"><button class="admin-btn primary" id="publishBtn" disabled>Publish Series</button></div>
+<div class="publish-note" style="margin-top:14px">Publish writes to the protected D1 backend once the DB binding and Access verification variables are configured. Duplicate series are blocked unless a commissioner explicitly confirms replacement.</div>
+<div class="admin-actions"><button class="admin-btn primary" id="publishBtn" disabled>Publish Series</button></div><div id="publishStatus" class="file-state" style="margin-top:10px">Database publish is not ready until validation passes.</div>
 </div>
 </section>
 </div></main>
@@ -467,6 +471,23 @@ function summarizePitchingDecisions(games){
   return [...map.values()].sort((a,b)=>a.player.localeCompare(b.player));
 }
 let lastPayload=null,lastChecks=[];
+function syncPublishState(){
+  const btn=document.getElementById("publishBtn");
+  const status=document.getElementById("publishStatus");
+  if(!lastPayload){btn.disabled=true;return}
+  const ready=Number(lastPayload.validation?.error_count||0)===0 && lastPayload.validation?.all_warnings_approved===true;
+  btn.disabled=!ready;
+  if(ready){
+    status.textContent="Validation is complete. Ready to publish to D1.";
+    status.className="file-state ok";
+  }else if(Number(lastPayload.validation?.error_count||0)>0){
+    status.textContent="Fix validation errors before publishing.";
+    status.className="file-state bad";
+  }else{
+    status.textContent="Approve every remaining warning with an explanation before publishing.";
+    status.className="file-state";
+  }
+}
 function syncWarningApprovals(){
   if(!lastPayload)return;
   const warnings=lastChecks.filter(c=>c.type==="warn");
@@ -482,6 +503,7 @@ function syncWarningApprovals(){
   lastPayload.validation.warnings_approved=approved;
   lastPayload.validation.all_warnings_approved=approved.length===warnings.length && approved.every(x=>x.reason);
   document.getElementById("payload").value=JSON.stringify(lastPayload,null,2);
+  syncPublishState();
   document.querySelectorAll(".warning-approval").forEach(x=>{
     const cb=x.querySelector("input[type=checkbox]");
     x.classList.toggle("approved",cb.checked);
@@ -512,6 +534,7 @@ function renderReview(checks,payload){
   document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table><div class="payload-meta">${payload.batting.length} batting rows · ${payload.pitching.length} pitching rows · ${payload.pitching_decisions.length} pitchers with decisions · ${payload.manual_corrections.length} manual corrections</div>`;
   document.getElementById("payload").value=JSON.stringify(payload,null,2);
   document.getElementById("review").classList.remove("hidden");
+  syncPublishState();
 }
 document.getElementById("validateBtn").onclick=()=>{
   if(!parsed && !parseLoaded())return;
@@ -625,7 +648,7 @@ document.getElementById("validateBtn").onclick=()=>{
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v24",
+    source:"ndwiffle_admin_v25",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     games,
@@ -652,6 +675,54 @@ document.getElementById("validateBtn").onclick=()=>{
     }
   };
   renderReview(checks,payload);
+};
+
+
+async function postPublish(url){
+  const res=await fetch(url,{
+    method:"POST",
+    headers:{"content-type":"application/json"},
+    body:JSON.stringify(lastPayload)
+  });
+  let body={};
+  try{body=await res.json()}catch{}
+  return {res,body};
+}
+document.getElementById("publishBtn").onclick=async()=>{
+  if(!lastPayload)return;
+  const btn=document.getElementById("publishBtn");
+  const status=document.getElementById("publishStatus");
+  btn.disabled=true;
+  status.textContent="Publishing series...";
+  status.className="file-state";
+  try{
+    let result=await postPublish("/api/admin/publish");
+    if(result.res.status===409 && result.body?.code==="SERIES_EXISTS"){
+      const ok=confirm("This series already exists in the database. Replace the existing series with this validated import?");
+      if(!ok){
+        status.textContent="Publish canceled. Existing series was left unchanged.";
+        status.className="file-state";
+        syncPublishState();
+        return;
+      }
+      result=await postPublish("/api/admin/publish?replace=1");
+    }
+    if(!result.res.ok){
+      const details=(result.body?.errors||[]).join(" | ");
+      status.textContent=`Publish failed: ${result.body?.error||result.res.statusText}${details?` — ${details}`:""}`;
+      status.className="file-state publish-error";
+      syncPublishState();
+      return;
+    }
+    status.textContent=`✓ Series ${result.body.action}: ${result.body.series_id} by ${result.body.actor_email}`;
+    status.className="file-state publish-success";
+    btn.disabled=true;
+    btn.textContent=result.body.action==="replaced"?"Series Replaced":"Series Published";
+  }catch(err){
+    status.textContent=`Publish failed: ${err?.message||err}`;
+    status.className="file-state publish-error";
+    syncPublishState();
+  }
 };
 
 </script>

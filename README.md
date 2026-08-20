@@ -1,12 +1,28 @@
-# ND Wiffle League Website v24
+# ND Wiffle League Website v25
 
-Admin importer enhancements:
-- Adds required pitching appearances and starts inputs for every detected pitcher.
-- Validates Apps 1–3, Starts 0–3, Starts <= Apps, and normally 3 team starts per three-game series.
-- Adds player-level manual pitching stat corrections.
-- Manual corrections require pitcher, field, corrected value, and reason.
-- Original iScore source values remain preserved; corrections are stored separately in manual_corrections.
-- Corrected player pitching rows drive corrected team aggregate validation.
-- Warning approval remains available as an alternative, but an explanation is required for every approved warning.
-- Payload schema upgraded to version 3 and includes pitching_usage and manual_corrections.
-- Publish remains disabled until the Cloudflare Access + D1 backend is connected.
+v25 introduces the first production database backend.
+
+## New backend
+- Cloudflare Pages Functions under `/functions/api/admin/`
+- D1 binding name: `DB`
+- `/api/admin/health`
+- `/api/admin/publish`
+- server-side Cloudflare Access JWT verification
+- commissioner identity captured from the verified Access token
+- duplicate-series detection and explicit replace flow
+- D1 batch transaction for publish/replace
+- audit/import history
+
+## Database
+- `migrations/0001_initial.sql`: normalized league import schema
+- `migrations/0002_seed_registry.sql`: 10 teams + 181 current site players
+- historical rate stats are not copied into D1 yet
+- future season/career totals should be derived from normalized series rows
+
+## Admin
+- Publish Series is now connected to `/api/admin/publish`
+- button remains disabled until validation passes
+- duplicate series triggers a replace confirmation
+- publish result displays commissioner email and series ID
+
+See `D1_SETUP.md` for exact Cloudflare setup steps.
