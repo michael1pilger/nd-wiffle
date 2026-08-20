@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=25"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=26"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
 
@@ -14,6 +14,7 @@
   <button class="btn" id="pitBtn" onclick="setMode('pit')">Pitching</button>
   <select id="scopeSel" onchange="render()">
    <option value="career">Career</option>
+   <option value="2026">2026</option>
    <option value="2025">2025</option>
    <option value="2024">2024</option>
    <option value="2023">2023</option>
@@ -36,9 +37,10 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=25"></script>
+<script src="/assets/data.js?v=26"></script>
 <script>
 let mode="bat",sortKey=null,sortDir=-1;
+let liveBat=[],livePit=[],liveLoaded=false;
 
 const canonicalBattingFallback=[
  {"Player_ID":"patrick_thompson","Name":"Patrick Thompson","PAs":"493","ABs":"384","Hits":"147","Singles":"80","Doubles":"19","Triples":"6","HRs":"43","BA":"0.383","BB":"107","RBI":"39","OBP":"0.515","SLG":"0.802","Ks":"98","GP":"106","OPS":"1.317","wOBA":"0.546","Retired":"1","Class_Year":"2025"},
@@ -51,22 +53,65 @@ const canonicalPitchingFallback=[
 
 function mergeCanonical(base,fallback){
  const map=new Map((base||[]).map(r=>[r.Player_ID,r]));
- for(const r of fallback){map.set(r.Player_ID,{...(map.get(r.Player_ID)||{}),...r});}
+ for(const r of fallback)map.set(r.Player_ID,{...(map.get(r.Player_ID)||{}),...r});
  return [...map.values()];
 }
-const careerBat=mergeCanonical(ND_DATA.batting||[],canonicalBattingFallback);
-const careerPit=mergeCanonical(ND_DATA.pitching||[],canonicalPitchingFallback);
-
+const historicalCareerBat=mergeCanonical(ND_DATA.batting||[],canonicalBattingFallback);
+const historicalCareerPit=mergeCanonical(ND_DATA.pitching||[],canonicalPitchingFallback);
 const playerMetaById=Object.fromEntries((ND_DATA.players||[]).map(p=>[p.Player_ID,p]));
+
+function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:0}
+function historicalIpToOuts(v){
+ const s=String(v??"").trim(); if(!s)return 0;
+ const x=parseFloat(s); if(!Number.isFinite(x))return 0;
+ const whole=Math.floor(x), frac=s.includes(".")?s.split(".")[1].replace(/0+$/,""):"";
+ let rem=0;
+ if(["1","10","33","3"].includes(frac))rem=1;
+ else if(["2","20","67","66","7"].includes(frac))rem=2;
+ return whole*3+rem;
+}
+function outsToIp(outs){
+ const o=Math.round(num(outs)),w=Math.floor(o/3),r=o%3;
+ return r?`${w}.${r}`:String(w);
+}
+function rate(v,d,digits=3){return d>0?(v/d).toFixed(digits):(0).toFixed(digits)}
+function mergeCareerBat(){
+ const map=new Map(historicalCareerBat.map(r=>[r.Player_ID,{...r}]));
+ for(const l of liveBat){
+   const h=map.get(l.Player_ID)||{Player_ID:l.Player_ID,Name:l.Name,Retired:l.Retired,Class_Year:l.Class_Year};
+   const out={...h};
+   const fields=[["PAs","PAs"],["ABs","ABs"],["Runs","Runs"],["Hits","Hits"],["Singles","Singles"],["Doubles","Doubles"],["Triples","Triples"],["HRs","HRs"],["RBI","RBI"],["BB","BB"],["Ks","Ks"],["HBP","HBP"],["GP","GP"]];
+   for(const [k] of fields)out[k]=num(h[k])+num(l[k]);
+   const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB),hbp=num(out.HBP);
+   const tb=num(out.Singles)+2*num(out.Doubles)+3*num(out.Triples)+4*num(out.HRs);
+   out.BA=rate(hits,ab);out.OBP=rate(hits+bb+hbp,pa||ab+bb+hbp);out.SLG=rate(tb,ab);
+   out.OPS=(num(out.OBP)+num(out.SLG)).toFixed(3);
+   map.set(l.Player_ID,out);
+ }
+ return [...map.values()];
+}
+function mergeCareerPit(){
+ const map=new Map(historicalCareerPit.map(r=>[r.Player_ID,{...r,_outs:historicalIpToOuts(r.IP)}]));
+ for(const l of livePit){
+   const h=map.get(l.Player_ID)||{Player_ID:l.Player_ID,Name:l.Name,Retired:l.Retired,Class_Year:l.Class_Year,_outs:0};
+   const out={...h};
+   for(const k of ["Apps","Starts","W","L","S","BF","Walks","Hits","Ks","ER"])out[k]=num(h[k])+num(l[k]);
+   out._outs=num(h._outs)+num(l.Outs);
+   out.IP=outsToIp(out._outs);
+   const innings=out._outs/3;
+   out.ERA=innings?((num(out.ER)*3)/innings).toFixed(2):"0.00";
+   out.WHIP=innings?((num(out.Walks)+num(out.Hits))/innings).toFixed(2):"0.00";
+   map.set(l.Player_ID,out);
+ }
+ return [...map.values()];
+}
 function isRetiredRow(r){
-  const p=playerMetaById[r.Player_ID]||{};
-  return String(r.Retired??p.Retired??"0")==="1";
+ const p=playerMetaById[r.Player_ID]||{};
+ return String(r.Retired??p.Retired??"0")==="1";
 }
 function nameDisplay(r){
-  const retired=isRetiredRow(r);
-  return `${r.Name||""}${retired?'<span class="stats-retired-icon" title="Retired">R</span>':""}`;
+ return `${r.Name||""}${isRetiredRow(r)?'<span class="stats-retired-icon" title="Retired">R</span>':""}`;
 }
-
 function setMode(x){
  mode=x;sortKey=null;sortDir=-1;
  batBtn.className=x==="bat"?"btn gold":"btn";
@@ -74,10 +119,10 @@ function setMode(x){
  qualLabel.textContent=x==="bat"?"Qualified only (50+ PA)":"Qualified only (18+ IP)";
  render();
 }
-function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:null;}
 function sourceRows(){
  const scope=scopeSel.value;
- if(scope==="career")return mode==="bat"?careerBat:careerPit;
+ if(scope==="career")return mode==="bat"?mergeCareerBat():mergeCareerPit();
+ if(scope==="2026")return mode==="bat"?liveBat:livePit;
  const src=mode==="bat"?(ND_DATA.battingSeasons||[]):(ND_DATA.pitchingSeasons||[]);
  return src.filter(r=>String(r.Season)===scope);
 }
@@ -86,32 +131,29 @@ function columns(){
   ?["Name","PAs","Hits","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
   :["Name","Apps","W","L","IP","Ks","ERA","WHIP"];
 }
-function displayVal(c,v){if(c==="ERA"){const n=parseFloat(v);return Number.isFinite(n)?n.toFixed(2):(v??"")}return v??""}
+function displayVal(c,v){
+ if(c==="ERA"){const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):(v??"")}
+ return v??"";
+}
 function label(c){
  if(c==="Ks")return mode==="bat"?"Batting K":"Pitching K";
  if(c==="PAs")return "PA";
  return c;
 }
-function qualifies(r){
- return mode==="bat"?(num(r.PAs)||0)>=50:(num(r.IP)||0)>=18;
-}
+function qualifies(r){return mode==="bat"?num(r.PAs)>=50:num(r.IP)>=18}
 function sortRows(rows){
  if(!sortKey){
-  const k=mode==="bat"?"Hits":"Ks";
-  return [...rows].sort((a,b)=>(num(b[k])??-Infinity)-(num(a[k])??-Infinity));
+   const k=mode==="bat"?"Hits":"Ks";
+   return [...rows].sort((a,b)=>num(b[k])-num(a[k]));
  }
  return [...rows].sort((a,b)=>{
-  if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
-  const av=num(a[sortKey]),bv=num(b[sortKey]);
-  if(av===null&&bv===null)return 0;
-  if(av===null)return 1;
-  if(bv===null)return -1;
-  return sortDir*(av-bv);
+   if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
+   return sortDir*(num(a[sortKey])-num(b[sortKey]));
  });
 }
 function sortBy(k){
  if(sortKey===k)sortDir*=-1;
- else{sortKey=k;sortDir=(k==="Name"?1:-1);}
+ else{sortKey=k;sortDir=(k==="Name"?1:-1)}
  render();
 }
 function render(){
@@ -121,15 +163,25 @@ function render(){
  const before=rows.length;
  if(qualOnly.checked)rows=rows.filter(qualifies);
  rows=sortRows(rows);
- statsCount.textContent=`${rows.length}${qualOnly.checked?` qualified of ${before}`:" players"}`;
+ statsCount.textContent=`${rows.length}${qualOnly.checked?` qualified of ${before}`:" players"}${scopeSel.value==="2026"&&!liveLoaded?" · loading live data…":""}`;
  const cols=columns();
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>
-  <th class="stats-rank-col">#</th>${
-  cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")
- }</tr></thead><tbody>${
-  rows.map((r,i)=>`<tr><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
- }</tbody></table></div>`;
+  <th class="stats-rank-col">#</th>${cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")}
+ </tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+async function loadLive(){
+ try{
+   const res=await fetch("/api/public/league?season=2026",{cache:"no-store"});
+   const j=await res.json();
+   if(!res.ok||!j.ok)throw new Error(j.error||"Live stats unavailable");
+   liveBat=j.batting||[]; livePit=j.pitching||[]; liveLoaded=true; render();
+ }catch(err){
+   liveLoaded=true;
+   console.error(err);
+   if(scopeSel.value==="2026")statsCount.textContent="Live 2026 stats temporarily unavailable";
+ }
 }
 render();
+loadLive();
 </script>
-<footer><div class="container">ND Wiffle · Historical league database, 2021–2025.</div></footer></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer></body></html>

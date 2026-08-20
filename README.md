@@ -1,32 +1,30 @@
-# ND Wiffle League Website v25
+# ND Wiffle League Website v26
 
-v25 introduces the first production database backend.
+v26 connects the public 2026 league pages to D1.
 
-## New backend
-- Cloudflare Pages Functions under `/functions/api/admin/`
-- D1 binding name: `DB`
-- `/api/admin/health`
-- `/api/admin/publish`
-- server-side Cloudflare Access JWT verification
-- commissioner identity captured from the verified Access token
-- duplicate-series detection and explicit replace flow
-- D1 batch transaction for publish/replace
-- audit/import history
+## Public D1 API
+- `GET /api/public/league?season=2026`
+- public/read-only; no commissioner Access token required on production
+- returns published games, standings, normalized batting, normalized pitching, pitcher decisions, and participant/team history
+- response uses short cache headers and the pages request `no-store` while testing
 
-## Database
-- `migrations/0001_initial.sql`: normalized league import schema
-- `migrations/0002_seed_registry.sql`: 10 teams + 181 current site players
-- historical rate stats are not copied into D1 yet
-- future season/career totals should be derived from normalized series rows
+## 2026 Standings
+- `/standings/` now loads W, L, PCT, GB, RS, RA, and DIFF from D1
+- all nine active 2026 teams remain visible before their first game
+- top seven playoff cutoff remains
+- static preseason table is retained as a fallback if the API is unavailable
 
-## Admin
-- Publish Series is now connected to `/api/admin/publish`
-- button remains disabled until validation passes
-- duplicate series triggers a replace confirmation
-- publish result displays commissioner email and series ID
+## Stats
+- adds a 2026 season option
+- 2026 batting/pitching rows come from D1
+- Career view combines the static 2021–2025 cumulative database with official D1 2026 counting stats
+- derived batting rates are recalculated from combined counting stats
+- pitching IP is aggregated internally as outs; ERA and WHIP are recalculated
 
-See `D1_SETUP.md` for exact Cloudflare setup steps.
+## Players
+- career stat cards automatically add official 2026 D1 totals
+- 2026 is eligible for best-season summaries
+- team history is augmented from published 2026 series participants
 
-<</3>>
-<</3>>
-
+## Important
+The current static historical database is treated as the authoritative 2021–2025 base. D1 is treated as the authoritative source for 2026 onward. Do not manually add 2026 cumulative totals to `assets/data.js` while this hybrid model is in use, or career totals would double count 2026.
