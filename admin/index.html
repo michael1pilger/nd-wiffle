@@ -4,176 +4,330 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=21">
+<link rel="stylesheet" href="/assets/styles.css?v=22">
 <style>
-.admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:850px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.upload-slot.full{grid-column:1/-1}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.series-title{font-size:24px;font-weight:900}.series-sub{color:var(--muted);margin-top:4px}.score-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}.score-card{border:1px solid var(--border);border-radius:11px;padding:11px;background:#0c1728;text-align:center}.score-card b{display:block;margin-bottom:5px}.preview-table{width:100%;min-width:0}.preview-table th,.preview-table td{text-align:left}.preview-table th:nth-child(n+2),.preview-table td:nth-child(n+2){text-align:right}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(180px,1fr) 120px 42px;gap:8px}.gp-row select,.gp-row input{background:#0b1525;color:white;border:1px solid var(--border);border-radius:8px;padding:9px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.payload{width:100%;min-height:220px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}@media(max-width:760px){.upload-grid,.status-summary,.score-grid{grid-template-columns:1fr}.upload-slot.full{grid-column:auto}.gp-row{grid-template-columns:1fr 90px 42px}.admin-shell h1{font-size:34px}}
+.admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
 </style>
 </head>
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main class="admin-shell"><div class="container">
-  <div class="admin-kicker">Commissioner Tools · Prototype</div>
-  <h1>Series Upload & Review</h1>
-  <p class="admin-intro">Upload the four iScore series exports plus the manual Series Results CSV. Nothing on this page publishes to the live database yet. It validates the files, applies GP rules, and creates the normalized payload we will eventually send to Cloudflare D1.</p>
+<div class="admin-kicker">Commissioner Tools · Prototype</div>
+<h1>Series Upload & Review</h1>
+<p class="admin-intro">Upload the four iScore series exports, enter the three game results directly here, add any Games Played overrides, then validate everything before publishing. This prototype does not write to the live league database yet.</p>
 
-  <section class="admin-panel">
-    <h2>1. Upload Files</h2>
-    <div class="upload-grid">
-      <div class="upload-slot"><label>Home Batting</label><input id="homeBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homeBat">Waiting for file</div></div>
-      <div class="upload-slot"><label>Home Pitching</label><input id="homePit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homePit">Waiting for file</div></div>
-      <div class="upload-slot"><label>Visitor Batting</label><input id="awayBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayBat">Waiting for file</div></div>
-      <div class="upload-slot"><label>Visitor Pitching</label><input id="awayPit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayPit">Waiting for file</div></div>
-      <div class="upload-slot full"><label>Series Results</label><input id="seriesFile" type="file" accept=".csv,text/csv"><div class="file-state" id="state-seriesFile">Waiting for file</div></div>
-    </div>
-    <div class="admin-actions"><button class="admin-btn primary" id="validateBtn">Validate Series</button><button class="admin-btn" id="loadSampleBtn">Load Included Sample</button></div>
-  </section>
+<section class="admin-panel">
+<h2>1. Upload iScore Stats</h2>
+<p class="step-note">Only the four iScore exports are required. The old Series Results CSV is no longer used.</p>
+<div class="upload-grid">
+<div class="upload-slot"><label>Home Batting</label><input id="homeBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homeBat">Waiting for file</div></div>
+<div class="upload-slot"><label>Home Pitching</label><input id="homePit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-homePit">Waiting for file</div></div>
+<div class="upload-slot"><label>Visitor Batting</label><input id="awayBat" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayBat">Waiting for file</div></div>
+<div class="upload-slot"><label>Visitor Pitching</label><input id="awayPit" type="file" accept=".csv,text/csv"><div class="file-state" id="state-awayPit">Waiting for file</div></div>
+</div>
+<div class="admin-actions"><button class="admin-btn" id="loadSampleBtn">Load Included Sample</button><button class="admin-btn primary" id="parseBtn">Parse Uploaded Files</button></div>
+</section>
 
-  <section class="admin-panel hidden" id="gpPanel">
-    <h2>2. Games Played Overrides</h2>
-    <p class="muted">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to <b>3 GP</b>. Add only players who appeared in 1 or 2 games. Players with zero PA, zero IP, and zero BF are ignored completely.</p>
-    <div class="gp-controls" id="gpControls"></div>
-    <div class="admin-actions"><button class="admin-btn" id="addGpBtn">+ Add GP Override</button><button class="admin-btn primary" id="revalidateBtn">Revalidate</button></div>
-  </section>
+<section class="admin-panel">
+<h2>2. Series Details</h2>
+<div class="form-grid">
+<div class="field"><label>Season</label><select id="season"><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select></div>
+<div class="field"><label>Series Date</label><input id="seriesDate" type="date"></div>
+<div class="field"><label>Away Team</label><select id="awayTeam"></select><div class="detected" id="awayDetected"></div></div>
+<div class="field"><label>Home Team</label><select id="homeTeam"></select><div class="detected" id="homeDetected"></div></div>
+</div>
+</section>
 
-  <section class="admin-panel hidden" id="reviewPanel">
-    <h2>3. Review</h2>
-    <div id="seriesHeader"></div>
-    <div class="status-summary" id="statusSummary"></div>
-    <div class="checks" id="checks"></div>
-  </section>
+<section class="admin-panel">
+<h2>3. Game Results & Pitcher Decisions</h2>
+<p class="step-note">Scores and pitcher decisions are entered here instead of in a fifth CSV. Pitcher dropdowns are populated from the uploaded series participants.</p>
+<div class="game-table">
+<div class="game-head"><div>Game</div><div>Away</div><div>Home</div><div>Winning Pitcher</div><div>Losing Pitcher</div><div>Save</div></div>
+<div class="game-row" data-game="1"><div class="game-label">Game 1</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
+<div class="game-row" data-game="2"><div class="game-label">Game 2</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
+<div class="game-row" data-game="3"><div class="game-label">Game 3</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
+</div>
+</section>
 
-  <section class="admin-panel hidden" id="previewPanel">
-    <h2>4. Import Preview</h2>
-    <div id="teamPreview"></div>
-    <div style="height:14px"></div>
-    <div class="tablewrap"><table class="preview-table"><thead><tr><th>Player</th><th>Team</th><th>GP</th><th>PA</th><th>IP</th><th>W</th><th>L</th><th>SV</th></tr></thead><tbody id="playerPreview"></tbody></table></div>
-  </section>
+<section class="admin-panel">
+<h2>4. Games Played Overrides</h2>
+<p class="step-note">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to 3 GP. Add an override only if that player actually appeared in 1 or 2 games. Zero-stat roster entries are ignored.</p>
+<div id="gpEmpty" class="empty-state">No overrides. All active series participants will receive 3 GP.</div>
+<div class="gp-controls" id="gpControls"></div>
+<div class="admin-actions"><button class="admin-btn" id="addGpBtn">+ Add Override</button></div>
+</section>
 
-  <section class="admin-panel hidden" id="payloadPanel">
-    <h2>5. Publish-Ready Payload</h2>
-    <p class="publish-note">This is the exact normalized object the future backend can accept. <b>Publish is intentionally disabled in this prototype.</b> Once a second real series passes this validator, we can wire this page to an authenticated Cloudflare Worker + D1 transaction.</p>
-    <textarea class="payload" id="payload" readonly></textarea>
-    <div class="admin-actions"><button class="admin-btn" id="copyBtn">Copy Payload</button><button class="admin-btn primary" disabled>Publish Series (backend not connected)</button></div>
-  </section>
+<section class="admin-panel">
+<h2>5. Commissioner Notes</h2>
+<p class="step-note">Optional. Use this when approving an unusual warning or documenting a scoring decision.</p>
+<div class="field"><textarea id="notes" placeholder="Example: 8 runs allowed, 7 earned runs is correct; one run was unearned."></textarea></div>
+</section>
+
+<section class="admin-panel">
+<h2>6. Validate & Review</h2>
+<div class="admin-actions"><button class="admin-btn primary" id="validateBtn">Validate Series</button></div>
+<div id="review" class="hidden">
+<div class="status-summary">
+<div class="status-card"><span>Pass</span><strong id="passCount">0</strong></div>
+<div class="status-card"><span>Warnings</span><strong id="warnCount">0</strong></div>
+<div class="status-card"><span>Errors</span><strong id="errorCount">0</strong></div>
+<div class="status-card"><span>Participants</span><strong id="playerCount">0</strong></div>
+</div>
+<div class="checks" id="checks"></div>
+<div class="preview-grid" style="margin-top:16px">
+<div class="preview-card"><h3>Series / Standings Preview</h3><div id="seriesPreview"></div></div>
+<div class="preview-card"><h3>Player Import Preview</h3><div id="playerPreview"></div></div>
+</div>
+<h3 style="margin-top:18px">Normalized Publish Payload</h3>
+<textarea class="payload" id="payload" readonly></textarea>
+<div class="publish-note" style="margin-top:14px">Publish remains disabled in this prototype. The next backend step will require a valid Cloudflare Access identity, save the raw import and audit record, then rebuild official 2026 totals transactionally.</div>
+<div class="admin-actions"><button class="admin-btn primary" id="publishBtn" disabled>Publish Series</button></div>
+</div>
+</section>
 </div></main>
-<footer><div class="container">ND Wiffle · Commissioner series-import prototype.</div></footer>
-<script src="/assets/data.js?v=21"></script>
+
 <script>
-const els={homeBat:homeBat,homePit:homePit,awayBat:awayBat,awayPit:awayPit,seriesFile:seriesFile};
+const TEAM_OPTIONS=["Ball Busters", "Dirty Dawgs", "Goofy Goobers", "Midnight", "Silverbacks", "Stiff Wifflers", "Storm", "Twin Titans", "Underdawgs", "Zyns"];
+const SAMPLE={"homeBat": "\"#\",\"Name\",\"G\",\"PA\",\"AB\",\"R\",\"H\",\"B\",\"1B\",\"2B\",\"3B\",\"HR\",\"RBI\",\"AVG\",\"BB\",\"Kc\",\"Ks\",\"SO\",\"HBP\",\"SB\",\"CS\",\"SCB\",\"SF\",\"SAC\",\"RPA\",\"OBP\",\"OBPE\",\"SLG\",\"OPS\",\"GPA\",\"BABIP\",\"CT%\",\"CT2%\",\"ROE\",\"FC\",\"CI\",\"GDP\",\"GTP\",\"AB/RSP\",\"H/RSP\",\"BA/RSP\",\"QAB1%\",\"QAB2%\",\"QAB3%\"\n\"\",\"Brendan Mato\",1,8,6,3,2,0,2,0,0,0,1,0.333,2,1,3,4,0,0,0,0,0,0,0.500,0.500,0.500,0.333,0.833,0.308,1.000,0.333,0.250,0,0,0,0,0,0,0,0.000,37.5,37.5,12.5\n\"\",\"Tad Bates\",1,8,5,4,3,0,0,1,0,2,7,0.600,3,1,0,1,0,0,0,0,0,0,1.125,0.750,0.750,2.000,2.750,0.838,0.500,0.800,0.500,0,0,0,0,0,1,1,1.000,50.0,50.0,37.5\n\"\",\"Will Carter\",1,8,7,0,3,0,3,0,0,0,0,0.429,1,0,1,1,0,0,0,0,0,0,0.000,0.500,0.500,0.429,0.929,0.332,0.500,0.857,0.750,0,0,0,0,0,3,1,0.333,37.5,37.5,12.5\n\"\",\"Jack Foster\",1,2,2,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,1.000,1.000,0,1,0,0,0,1,0,0.000,0.0,0.0,0.0\n\"\",\"Kyler McCormack\",1,7,5,0,0,0,0,0,0,0,0,0.000,2,1,2,3,0,0,0,0,0,0,0.000,0.286,0.286,0.000,0.286,0.129,0.000,0.400,0.286,0,0,0,0,0,3,0,0.000,0.0,0.0,0.0\n\"\",\"Armand Martinez\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"Connor Wible\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"John Masjak\",1,6,5,1,1,0,1,0,0,0,0,0.200,1,0,4,4,0,0,0,0,0,0,0.167,0.333,0.333,0.200,0.533,0.200,1.000,0.200,0.167,0,0,0,0,0,3,1,0.333,16.7,16.7,16.7\n\"\",\"TOTALS\",1,39,30,8,9,0,6,1,0,2,8,0.300,9,3,10,13,0,0,0,0,0,0,0.359,0.462,0.462,0.533,0.995,0.341,0.467,0.567,0.436,0,1,0,0,0,11,3,0.273,28.2,28.2,15.4", "homePit": "\"#\",\"Name\",\"G\",\"W\",\"L\",\"SV\",\"IP\",\"BF\",\"Ball\",\"Str\",\"PIT\",\"R\",\"RA\",\"ER\",\"ERA\",\"ERA9\",\"FIP\",\"K\",\"Kc\",\"Ks\",\"H\",\"BB\",\"IBB\",\"K/BB\",\"K/GI\",\"BB/GI\",\"H/GI\",\"HB\",\"BK\",\"WP\",\"HR\",\"WHIP\",\"OBP\",\"BAA\",\"BABIP\",\"GO\",\"AO\",\"FPS\",\"FPB\",\"FPS%\"\n\"\",\"Brendan Mato\",1,0,0,0,4.00,18,26,27,53,4,1.00,4,20.00,9.00,1.850,10,3,7,1,5,0,2.00,50.00,25.00,5.00,0,0,0,0,1.500,0.333,0.077,0.333,2,0,7,11,0.389\n\"\",\"Tad Bates\",1,0,0,0,5.00,23,25,35,60,1,0.20,1,4.00,1.80,1.300,12,4,8,3,5,0,2.40,48.00,20.00,12.00,0,0,0,0,1.600,0.348,0.167,0.500,2,1,15,8,0.652\n\"\",\"TOTALS\",1,0,0,0,9.00,41,51,62,113,5,0.56,5,11.11,5.00,1.544,22,7,15,4,10,0,2.20,48.89,22.22,8.89,0,0,0,0,1.556,0.341,0.129,0.444,4,1,22,19,0.537", "awayBat": "\"#\",\"Name\",\"G\",\"PA\",\"AB\",\"R\",\"H\",\"B\",\"1B\",\"2B\",\"3B\",\"HR\",\"RBI\",\"AVG\",\"BB\",\"Kc\",\"Ks\",\"SO\",\"HBP\",\"SB\",\"CS\",\"SCB\",\"SF\",\"SAC\",\"RPA\",\"OBP\",\"OBPE\",\"SLG\",\"OPS\",\"GPA\",\"BABIP\",\"CT%\",\"CT2%\",\"ROE\",\"FC\",\"CI\",\"GDP\",\"GTP\",\"AB/RSP\",\"H/RSP\",\"BA/RSP\",\"QAB1%\",\"QAB2%\",\"QAB3%\"\n\"\",\"Will Stevens\",1,8,7,2,2,0,1,1,0,0,1,0.286,1,0,3,3,0,0,0,0,0,0,0.375,0.375,0.375,0.429,0.804,0.276,0.500,0.571,0.500,0,1,0,0,0,2,0,0.000,25.0,25.0,12.5\n\"\",\"JP Cardenas\",1,7,5,0,1,0,0,1,0,0,3,0.200,2,0,4,4,0,0,0,0,0,0,0.429,0.429,0.429,0.400,0.829,0.293,1.000,0.200,0.143,0,0,0,0,0,2,1,0.500,14.3,14.3,14.3\n\"\",\"Alex Tsvetkov\",1,8,7,0,0,0,0,0,0,0,0,0.000,1,4,2,6,0,0,0,0,0,0,0.000,0.125,0.125,0.000,0.125,0.056,0.000,0.143,0.125,0,0,0,0,0,3,0,0.000,0.0,0.0,0.0\n\"\",\"Jack Powers\",1,7,4,0,0,0,0,0,0,0,0,0.000,3,1,3,4,0,0,0,0,0,0,0.000,0.429,0.429,0.000,0.429,0.193,0.000,0.000,0.000,0,0,0,0,0,1,0,0.000,0.0,0.0,0.0\n\"\",\"Nate Ernst\",1,6,4,1,0,0,0,0,0,0,0,0.000,2,2,2,4,0,0,0,0,0,0,0.167,0.333,0.333,0.000,0.333,0.150,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"Michael Pilger\",1,5,4,2,1,0,1,0,0,0,1,0.250,1,0,1,1,0,0,0,0,0,0,0.600,0.400,0.400,0.250,0.650,0.243,0.333,0.750,0.600,0,1,0,0,0,0,0,0.000,40.0,40.0,20.0\n\"\",\"Quinn Brown\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"TOTALS\",1,41,31,5,4,0,2,2,0,0,5,0.129,10,7,15,22,0,0,0,0,0,0,0.244,0.341,0.341,0.194,0.535,0.202,0.444,0.290,0.220,0,2,0,0,0,8,1,0.125,12.2,12.2,7.3", "awayPit": "\"#\",\"Name\",\"G\",\"W\",\"L\",\"SV\",\"IP\",\"BF\",\"Ball\",\"Str\",\"PIT\",\"R\",\"RA\",\"ER\",\"ERA\",\"ERA9\",\"FIP\",\"K\",\"Kc\",\"Ks\",\"H\",\"BB\",\"IBB\",\"K/BB\",\"K/GI\",\"BB/GI\",\"H/GI\",\"HB\",\"BK\",\"WP\",\"HR\",\"WHIP\",\"OBP\",\"BAA\",\"BABIP\",\"GO\",\"AO\",\"FPS\",\"FPB\",\"FPS%\"\n\"\",\"Will Stevens\",1,0,0,0,4.00,23,24,34,58,6,1.50,5,25.00,11.25,8.600,8,2,6,7,4,0,2.00,40.00,20.00,35.00,0,0,0,2,2.750,0.478,0.368,0.556,4,0,11,12,0.478\n\"\",\"Nate Ernst\",1,0,0,0,1.00,3,4,6,10,0,0.00,0,0.00,0.00,3.100,0,0,0,0,0,0,0.00,0.00,0.00,0.00,0,0,0,0,0.000,0.000,0.000,0.000,2,1,2,1,0.667\n\"\",\"JP Cardenas\",1,0,0,0,1.00,6,13,10,23,0,0.00,0,0.00,0.00,6.100,3,1,2,0,3,0,1.00,60.00,60.00,0.00,0,0,0,0,3.000,0.500,0.000,0.000,0,0,2,4,0.333\n\"\",\"Michael Pilger\",1,0,0,0,1.00,7,9,13,22,1,1.00,1,20.00,9.00,5.100,2,0,2,2,2,0,1.00,40.00,40.00,40.00,0,0,0,0,4.000,0.571,0.400,0.667,1,0,4,3,0.571\n\"\",\"TOTALS\",1,0,0,0,7.00,39,50,63,113,7,1.00,6,17.14,7.71,6.957,13,3,10,9,9,0,1.44,37.14,25.71,25.71,0,0,0,2,2.571,0.462,0.300,0.467,7,1,19,20,0.487"};
+const fileData={homeBat:null,homePit:null,awayBat:null,awayPit:null};
 let parsed=null;
-let overrides=[];
-const knownPlayers=new Set((window.ND_DATA?.players||[]).map(p=>p.Name));
 
-function parseCSV(text){
-  const rows=[]; let row=[],field='',q=false;
+function csvParse(text){
+  const rows=[]; let row=[], cell="", q=false;
   for(let i=0;i<text.length;i++){
-    const ch=text[i];
-    if(q){if(ch==='"'&&text[i+1]==='"'){field+='"';i++;}else if(ch==='"'){q=false;}else field+=ch;}
-    else{if(ch==='"')q=true;else if(ch===','){row.push(field);field='';}else if(ch==='\n'){row.push(field.replace(/\r$/,''));rows.push(row);row=[];field='';}else field+=ch;}
+    const ch=text[i], nx=text[i+1];
+    if(q){
+      if(ch==='"' && nx==='"'){cell+='"';i++;}
+      else if(ch==='"'){q=false;}
+      else cell+=ch;
+    }else{
+      if(ch==='"') q=true;
+      else if(ch===','){row.push(cell);cell="";}
+      else if(ch==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell="";}
+      else cell+=ch;
+    }
   }
-  if(field.length||row.length){row.push(field.replace(/\r$/,''));rows.push(row)}
-  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+  if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row);}
+  const headers=(rows.shift()||[]).map(x=>x.trim());
+  return rows.filter(r=>r.some(x=>String(x).trim()!=="")).map(r=>{
+    const o={}; headers.forEach((h,i)=>o[h]=(r[i]??"").trim()); return o;
+  });
 }
-function objects(rows){const h=rows[0].map(x=>x.trim());return rows.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]??'').trim()])))}
-function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
-function cleanName(v){return String(v||'').trim()}
-function blankDecision(v){const x=cleanName(v);return !x||/^n\/?a$/i.test(x)||x==='-'}
-function activeBat(r){return cleanName(r.Name)!=='TOTALS'&&num(r.PA)>0}
-function activePit(r){return cleanName(r.Name)!=='TOTALS'&&(num(r.IP)>0||num(r.BF)>0)}
-function totals(rows){return rows.find(r=>r.Name==='TOTALS')||{}}
-function sumGames(g,key){return g.reduce((a,r)=>a+num(r[key]),0)}
-function addCheck(arr,level,title,detail=''){arr.push({level,title,detail})}
-function playerPool(data){const s=new Set();['homeBat','awayBat'].forEach(k=>data[k].filter(activeBat).forEach(r=>s.add(r.Name)));['homePit','awayPit'].forEach(k=>data[k].filter(activePit).forEach(r=>s.add(r.Name)));return [...s].sort()}
-function overrideMap(){return new Map(overrides.filter(o=>o.player&&[1,2].includes(Number(o.gp))).map(o=>[o.player,Number(o.gp)]))}
-function gpFor(name){return overrideMap().get(name)||3}
+const n=v=>Number(v||0)||0;
+function rowsWithoutTotals(rows){return rows.filter(r=>(r.Name||"").toUpperCase()!=="TOTALS");}
+function totalRow(rows){return rows.find(r=>(r.Name||"").toUpperCase()==="TOTALS")||{};}
+function activeNameSet(bat,pit){
+  const s=new Set();
+  rowsWithoutTotals(bat).forEach(r=>{if(n(r.PA)>0)s.add(r.Name)});
+  rowsWithoutTotals(pit).forEach(r=>{if(n(r.IP)>0||n(r.BF)>0)s.add(r.Name)});
+  return s;
+}
+function fillTeams(){
+  ["awayTeam","homeTeam"].forEach(id=>{
+    const el=document.getElementById(id); el.innerHTML='<option value="">Select team...</option>'+TEAM_OPTIONS.map(t=>`<option>${t}</option>`).join("");
+  });
+}
+fillTeams();
 
-async function readInput(id){const f=els[id].files[0];if(!f)throw new Error('Missing '+id);const text=await f.text();return objects(parseCSV(text))}
-async function gather(){return {homeBat:await readInput('homeBat'),homePit:await readInput('homePit'),awayBat:await readInput('awayBat'),awayPit:await readInput('awayPit'),series:await readInput('seriesFile')}}
+function setFileState(id,text,ok=true){
+  const e=document.getElementById("state-"+id); e.textContent=text; e.className="file-state "+(ok?"ok":"bad");
+}
+["homeBat","homePit","awayBat","awayPit"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",async e=>{
+    const f=e.target.files[0]; if(!f)return;
+    fileData[id]=await f.text(); setFileState(id,"✓ "+f.name,true);
+  });
+});
 
-function validate(data){
- const checks=[]; const s=data.series;
- if(s.length!==3)addCheck(checks,'error','Series Results must contain exactly 3 game rows',`Found ${s.length}.`); else addCheck(checks,'pass','Three game rows found');
- const seasons=[...new Set(s.map(r=>r.season))], away=[...new Set(s.map(r=>r.away_team))], home=[...new Set(s.map(r=>r.home_team))];
- if(seasons.length!==1||away.length!==1||home.length!==1)addCheck(checks,'error','Series metadata is inconsistent','Season, away team, and home team must be identical across all three rows.'); else addCheck(checks,'pass','Series metadata is consistent',`${away[0]} at ${home[0]} · ${seasons[0]}`);
- const hb=totals(data.homeBat), ab=totals(data.awayBat), hp=totals(data.homePit), ap=totals(data.awayPit);
- const homeRuns=sumGames(s,'home_score'), awayRuns=sumGames(s,'away_score');
- num(hb.R)===homeRuns?addCheck(checks,'pass','Home batting runs match scoreboard',`${hb.R} runs`):addCheck(checks,'warn','Home batting runs do not match scoreboard',`Batting: ${hb.R}; scoreboard: ${homeRuns}. Review before publish.`);
- num(ab.R)===awayRuns?addCheck(checks,'pass','Visitor batting runs match scoreboard',`${ab.R} runs`):addCheck(checks,'warn','Visitor batting runs do not match scoreboard',`Batting: ${ab.R}; scoreboard: ${awayRuns}. Review before publish.`);
- const pairs=[['Home PA = visitor BF',hb.PA,ap.BF],['Visitor PA = home BF',ab.PA,hp.BF],['Home H = visitor pitching H',hb.H,ap.H],['Visitor H = home pitching H',ab.H,hp.H],['Home BB = visitor pitching BB',hb.BB,ap.BB],['Visitor BB = home pitching BB',ab.BB,hp.BB],['Home SO = visitor pitching K',hb.SO,ap.K],['Visitor SO = home pitching K',ab.SO,hp.K],['Home HR = visitor pitching HR',hb.HR,ap.HR],['Visitor HR = home pitching HR',ab.HR,hp.HR]];
- pairs.forEach(([label,a,b])=>num(a)===num(b)?addCheck(checks,'pass',label,String(num(a))):addCheck(checks,'error',label,`${a} vs ${b}`));
- // R and ER checks deliberately distinct.
- num(hp.R)===awayRuns?addCheck(checks,'pass','Home pitching R matches opponent scoreboard',`${hp.R} R; ${hp.ER} ER`):addCheck(checks,'warn','Home pitching R differs from opponent scoreboard',`Pitching R: ${hp.R}; opponent scoreboard: ${awayRuns}. Do not auto-correct.`);
- num(ap.R)===homeRuns?addCheck(checks,'pass','Visitor pitching R matches opponent scoreboard',`${ap.R} R; ${ap.ER} ER`):addCheck(checks,'warn','Visitor pitching R differs from opponent scoreboard',`Pitching R: ${ap.R}; opponent scoreboard: ${homeRuns}. Do not auto-correct.`);
- if(num(hp.R)!==num(hp.ER))addCheck(checks,'info','Home pitching includes unearned runs',`${hp.R} R / ${hp.ER} ER. ERA will use ER.`);
- if(num(ap.R)!==num(ap.ER))addCheck(checks,'info','Visitor pitching includes unearned runs',`${ap.R} R / ${ap.ER} ER. ERA will use ER.`);
- // Player recognition: only active statistical participants count.
- const active=playerPool(data); const unknown=active.filter(n=>!knownPlayers.has(n));
- unknown.length?addCheck(checks,'error','Unknown active player name(s)',unknown.join(', ')):addCheck(checks,'pass','All active players match the league database',`${active.length} players recognized`);
- const ignored=[...data.homeBat,...data.awayBat].filter(r=>r.Name&&r.Name!=='TOTALS'&&!activeBat(r)).map(r=>r.Name);
- if(ignored.length)addCheck(checks,'info','Zero-PA roster entries will be ignored',[...new Set(ignored)].join(', '));
- // Decisions
- const activeSet=new Set(active);
- s.forEach(r=>{
-   const g=r.game||'?'; const wp=cleanName(r.winning_pitcher),lp=cleanName(r.losing_pitcher),sv=cleanName(r.save_pitcher);
-   if(!wp||!lp)addCheck(checks,'error',`Game ${g}: missing pitching decision`,'Winning and losing pitcher are required.');
-   if(wp&&!activeSet.has(wp))addCheck(checks,'warn',`Game ${g}: winning pitcher not found among active series stat lines`,wp);
-   if(lp&&!activeSet.has(lp))addCheck(checks,'warn',`Game ${g}: losing pitcher not found among active series stat lines`,lp);
-   if(!blankDecision(sv)&&!activeSet.has(sv))addCheck(checks,'warn',`Game ${g}: save pitcher not found among active series stat lines`,sv);
-   if(!blankDecision(sv)&&sv===wp)addCheck(checks,'warn',`Game ${g}: winning pitcher is also listed for the save`,`${wp}. Confirm or remove the save before publishing.`);
- });
- // GP overrides
- const ov=overrideMap();
- overrides.forEach(o=>{
-   if(!o.player)return;
-   if(!activeSet.has(o.player))addCheck(checks,'error','GP override player is not an active statistical participant',o.player);
-   if(![1,2].includes(Number(o.gp)))addCheck(checks,'error','GP override must be 1 or 2',`${o.player}: ${o.gp}`);
- });
- if(ov.size)addCheck(checks,'info','Games Played overrides applied',[...ov.entries()].map(([p,g])=>`${p}: ${g} GP`).join('; '));
- return checks;
+function populatePlayerSelects(){
+  if(!parsed)return;
+  const opts=['<option value="">Select...</option>'];
+  for(const p of parsed.participants.sort((a,b)=>a.name.localeCompare(b.name))){
+    opts.push(`<option value="${p.name}" data-team="${p.team}">${p.name} — ${p.team}</option>`);
+  }
+  document.querySelectorAll(".wp,.lp").forEach(s=>s.innerHTML=opts.join(""));
+  document.querySelectorAll(".sv").forEach(s=>s.innerHTML='<option value="">No save</option>'+opts.slice(1).join(""));
 }
+function parseLoaded(){
+  const missing=Object.entries(fileData).filter(([,v])=>!v).map(([k])=>k);
+  if(missing.length){alert("Upload all four iScore files first.");return false}
+  const HB=csvParse(fileData.homeBat), HP=csvParse(fileData.homePit), AB=csvParse(fileData.awayBat), AP=csvParse(fileData.awayPit);
+  const homeNames=activeNameSet(HB,HP), awayNames=activeNameSet(AB,AP);
+  const homeTeam=document.getElementById("homeTeam").value||"Home Team";
+  const awayTeam=document.getElementById("awayTeam").value||"Away Team";
+  const participants=[
+    ...[...homeNames].map(name=>({name,side:"home",team:homeTeam})),
+    ...[...awayNames].map(name=>({name,side:"away",team:awayTeam}))
+  ];
+  parsed={HB,HP,AB,AP,participants,homeNames,awayNames};
+  populatePlayerSelects(); refreshGpRows();
+  setFileState("homeBat","✓ Parsed "+rowsWithoutTotals(HB).length+" batting rows");
+  setFileState("homePit","✓ Parsed "+rowsWithoutTotals(HP).length+" pitching rows");
+  setFileState("awayBat","✓ Parsed "+rowsWithoutTotals(AB).length+" batting rows");
+  setFileState("awayPit","✓ Parsed "+rowsWithoutTotals(AP).length+" pitching rows");
+  return true;
+}
+document.getElementById("parseBtn").onclick=parseLoaded;
 
-function normalized(data){
- const s=data.series; const meta={season:Number(s[0]?.season||0),away_team:s[0]?.away_team||'',home_team:s[0]?.home_team||'',dates:s.map(r=>r.date),series_id:`${s[0]?.season||''}_${(s[0]?.away_team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')}_${(s[0]?.home_team||'').toLowerCase().replace(/[^a-z0-9]+/g,'-')}_${s[0]?.date||''}`};
- const teamBySide={home:meta.home_team,away:meta.away_team};
- const b=[]; const p=[];
- [['homeBat','home'],['awayBat','away']].forEach(([key,side])=>data[key].filter(activeBat).forEach(r=>b.push({player:r.Name,team:teamBySide[side],GP:gpFor(r.Name),PA:num(r.PA),AB:num(r.AB),R:num(r.R),H:num(r.H),'1B':num(r['1B']),'2B':num(r['2B']),'3B':num(r['3B']),HR:num(r.HR),RBI:num(r.RBI),BB:num(r.BB),SO:num(r.SO)})));
- [['homePit','home'],['awayPit','away']].forEach(([key,side])=>data[key].filter(activePit).forEach(r=>p.push({player:r.Name,team:teamBySide[side],GP:gpFor(r.Name),IP:r.IP,BF:num(r.BF),R:num(r.R),ER:num(r.ER),K:num(r.K),H:num(r.H),BB:num(r.BB),HR:num(r.HR)})));
- const decisions={};
- s.forEach(r=>{for(const [field,key] of [['winning_pitcher','W'],['losing_pitcher','L'],['save_pitcher','SV']]){const name=cleanName(r[field]);if(field==='save_pitcher'&&blankDecision(name))continue;if(!name)continue;decisions[name]=decisions[name]||{W:0,L:0,SV:0};decisions[name][key]++;}});
- const active=playerPool(data);
- const players=active.map(name=>{const br=b.find(x=>x.player===name),pr=p.find(x=>x.player===name),d=decisions[name]||{W:0,L:0,SV:0};return {player:name,team:(br||pr)?.team||'',GP:gpFor(name),PA:br?.PA||0,IP:pr?.IP||'0.00',W:d.W,L:d.L,SV:d.SV}});
- const awayW=s.filter(r=>num(r.away_score)>num(r.home_score)).length, homeW=s.filter(r=>num(r.home_score)>num(r.away_score)).length;
- return {meta,games:s.map(r=>({game:Number(r.game),date:r.date,away_score:num(r.away_score),home_score:num(r.home_score),winning_pitcher:r.winning_pitcher,losing_pitcher:r.losing_pitcher,save_pitcher:blankDecision(r.save_pitcher)?null:r.save_pitcher})),team_changes:[{team:meta.away_team,W:awayW,L:homeW,RS:sumGames(s,'away_score'),RA:sumGames(s,'home_score')},{team:meta.home_team,W:homeW,L:awayW,RS:sumGames(s,'home_score'),RA:sumGames(s,'away_score')}],batting:b,pitching:p,players,gp_overrides:[...overrideMap()].map(([player,games_played])=>({player,games_played}))};
-}
+document.getElementById("loadSampleBtn").onclick=()=>{
+  Object.assign(fileData,SAMPLE);
+  ["homeBat","homePit","awayBat","awayPit"].forEach(id=>setFileState(id,"✓ Included sample loaded"));
+  document.getElementById("season").value="2025";
+  document.getElementById("seriesDate").value="2025-09-26";
+  document.getElementById("awayTeam").value="Storm";
+  document.getElementById("homeTeam").value="Stiff Wifflers";
+  document.getElementById("awayDetected").textContent="Sample: Storm";
+  document.getElementById("homeDetected").textContent="Sample: Stiff Wifflers";
+  parseLoaded();
+  const games=[
+    [4,0,"Will Stevens","Brendan Mato",""],
+    [0,5,"Brendan Mato","Will Stevens","Tad Bates"],
+    [1,3,"Tad Bates","Will Stevens",""]
+  ];
+  document.querySelectorAll(".game-row").forEach((r,i)=>{
+    const g=games[i]; r.querySelector(".awayScore").value=g[0]; r.querySelector(".homeScore").value=g[1];
+    r.querySelector(".wp").value=g[2]; r.querySelector(".lp").value=g[3]; r.querySelector(".sv").value=g[4];
+  });
+};
 
-function renderGp(data){
- const pool=playerPool(data); const box=document.getElementById('gpControls');box.innerHTML='';
- overrides.forEach((o,i)=>{const row=document.createElement('div');row.className='gp-row';row.innerHTML=`<select data-i="${i}" class="gp-player"><option value="">Select player</option>${pool.map(p=>`<option ${p===o.player?'selected':''}>${p}</option>`).join('')}</select><select data-i="${i}" class="gp-games"><option value="1" ${Number(o.gp)===1?'selected':''}>1 game</option><option value="2" ${Number(o.gp)===2?'selected':''}>2 games</option></select><button class="gp-remove" data-i="${i}">×</button>`;box.appendChild(row)});
- box.querySelectorAll('.gp-player').forEach(x=>x.onchange=e=>{overrides[+e.target.dataset.i].player=e.target.value});
- box.querySelectorAll('.gp-games').forEach(x=>x.onchange=e=>{overrides[+e.target.dataset.i].gp=+e.target.value});
- box.querySelectorAll('.gp-remove').forEach(x=>x.onclick=e=>{overrides.splice(+e.target.dataset.i,1);renderGp(data)});
-}
-function render(data){
- const checks=validate(data), norm=normalized(data), errors=checks.filter(x=>x.level==='error').length,warns=checks.filter(x=>x.level==='warn').length,passes=checks.filter(x=>x.level==='pass').length;
- gpPanel.classList.remove('hidden'); reviewPanel.classList.remove('hidden'); previewPanel.classList.remove('hidden'); payloadPanel.classList.remove('hidden'); renderGp(data);
- const s=data.series; seriesHeader.innerHTML=`<div class="series-title">${s[0]?.away_team||'?'} at ${s[0]?.home_team||'?'}</div><div class="series-sub">Season ${s[0]?.season||'?'} · ${s.map(x=>x.date).join(' · ')}</div><div class="score-grid">${s.map(r=>`<div class="score-card"><b>Game ${r.game}</b>${r.away_team} ${r.away_score} · ${r.home_team} ${r.home_score}</div>`).join('')}</div>`;
- statusSummary.innerHTML=`<div class="status-card"><span>Errors</span><strong>${errors}</strong></div><div class="status-card"><span>Warnings</span><strong>${warns}</strong></div><div class="status-card"><span>Passed</span><strong>${passes}</strong></div><div class="status-card"><span>Active Players</span><strong>${norm.players.length}</strong></div>`;
- checksEl=document.getElementById('checks');checksEl.innerHTML=checks.map(c=>`<div class="check ${c.level}"><div class="icon">${c.level==='pass'?'✓':c.level==='error'?'✕':c.level==='warn'?'⚠':'i'}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:''}</div></div>`).join('');
- teamPreview.innerHTML=`<div class="status-summary">${norm.team_changes.map(t=>`<div class="status-card"><span>${t.team}</span><strong>${t.W}-${t.L}</strong><small>+${t.RS} RS · +${t.RA} RA</small></div>`).join('')}</div>`;
- playerPreview.innerHTML=norm.players.map(p=>`<tr><td>${p.player}</td><td>${p.team}</td><td>${p.GP}</td><td>${p.PA}</td><td>${p.IP}</td><td>${p.W}</td><td>${p.L}</td><td>${p.SV}</td></tr>`).join('');
- payload.value=JSON.stringify({validation:{errors,warnings:warns,passed:passes,review_required:warns>0||errors>0},import:norm},null,2);
-}
-async function validateFiles(){try{parsed=await gather();render(parsed)}catch(e){alert(e.message)}}
-validateBtn.onclick=validateFiles; revalidateBtn.onclick=()=>parsed&&render(parsed); addGpBtn.onclick=()=>{if(!parsed)return;overrides.push({player:'',gp:2});renderGp(parsed)}; copyBtn.onclick=async()=>{await navigator.clipboard.writeText(payload.value);copyBtn.textContent='Copied';setTimeout(()=>copyBtn.textContent='Copy Payload',1200)};
-Object.entries(els).forEach(([id,input])=>input.addEventListener('change',()=>{const st=document.getElementById('state-'+id);st.textContent=input.files[0]?.name||'Waiting for file';st.className='file-state '+(input.files[0]?'ok':'')}));
+["awayTeam","homeTeam"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{
+  if(parsed){
+    const away=document.getElementById("awayTeam").value||"Away Team", home=document.getElementById("homeTeam").value||"Home Team";
+    parsed.participants.forEach(p=>p.team=p.side==="away"?away:home);
+    populatePlayerSelects(); refreshGpRows();
+  }
+}));
 
-// Included sample loader uses files copied into /admin/sample/. Browsers cannot programmatically populate file inputs,
-// so this directly parses the sample text and is intended only for development/testing.
-async function loadSample(){
- const files={homeBat:'statsHomeBatting.csv',homePit:'statsHomePitching.csv',awayBat:'statsVisitorBatting.csv',awayPit:'statsVisitorPitching.csv',series:'series.csv'};
- const out={}; for(const [k,f] of Object.entries(files)){const res=await fetch('/admin/sample/'+f+'?v=21');const text=await res.text();out[k]=objects(parseCSV(text));}
- parsed=out; overrides=[]; render(parsed);
+function addGpRow(name="",gp="2"){
+  if(!parsed){alert("Parse the four iScore files first.");return}
+  const row=document.createElement("div"); row.className="gp-row";
+  const names=parsed.participants.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  row.innerHTML=`<select class="gpPlayer"><option value="">Select player...</option>${names.map(p=>`<option ${p.name===name?"selected":""}>${p.name}</option>`).join("")}</select><select class="gpValue"><option value="1" ${gp==="1"?"selected":""}>1 game</option><option value="2" ${gp==="2"?"selected":""}>2 games</option></select><button class="gp-remove" type="button">×</button>`;
+  row.querySelector(".gp-remove").onclick=()=>{row.remove();syncGpEmpty()};
+  document.getElementById("gpControls").appendChild(row);syncGpEmpty();
 }
-loadSampleBtn.onclick=()=>loadSample().catch(e=>alert('Sample load failed: '+e.message));
+function refreshGpRows(){
+  const old=[...document.querySelectorAll(".gp-row")].map(r=>[r.querySelector(".gpPlayer").value,r.querySelector(".gpValue").value]);
+  document.getElementById("gpControls").innerHTML="";
+  old.forEach(x=>addGpRow(x[0],x[1]));syncGpEmpty();
+}
+function syncGpEmpty(){document.getElementById("gpEmpty").classList.toggle("hidden",document.querySelectorAll(".gp-row").length>0)}
+document.getElementById("addGpBtn").onclick=()=>addGpRow();
+
+function check(list,type,title,detail=""){list.push({type,title,detail})}
+function teamForPlayer(name){
+  if(!parsed)return null;
+  const p=parsed.participants.find(x=>x.name===name); return p?p.team:null;
+}
+function sumGameScores(){
+  let away=0,home=0;
+  document.querySelectorAll(".game-row").forEach(r=>{away+=n(r.querySelector(".awayScore").value);home+=n(r.querySelector(".homeScore").value)});
+  return {away,home};
+}
+function readGames(){
+  return [...document.querySelectorAll(".game-row")].map((r,i)=>({
+    game:i+1,
+    away_score:n(r.querySelector(".awayScore").value),
+    home_score:n(r.querySelector(".homeScore").value),
+    winning_pitcher:r.querySelector(".wp").value,
+    losing_pitcher:r.querySelector(".lp").value,
+    save_pitcher:r.querySelector(".sv").value||null
+  }));
+}
+function readOverrides(){
+  return [...document.querySelectorAll(".gp-row")].filter(r=>r.querySelector(".gpPlayer").value).map(r=>({
+    player:r.querySelector(".gpPlayer").value,
+    games_played:Number(r.querySelector(".gpValue").value)
+  }));
+}
+function renderReview(checks,payload){
+  const counts={pass:0,warn:0,error:0,info:0};checks.forEach(c=>counts[c.type]++);
+  document.getElementById("passCount").textContent=counts.pass;
+  document.getElementById("warnCount").textContent=counts.warn;
+  document.getElementById("errorCount").textContent=counts.error;
+  document.getElementById("playerCount").textContent=parsed.participants.length;
+  document.getElementById("checks").innerHTML=checks.map(c=>`<div class="check ${c.type}"><div class="icon">${c.type==="pass"?"✓":c.type==="warn"?"⚠":c.type==="error"?"✕":"ℹ"}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:""}</div></div>`).join("");
+  const away=payload.series.away_team,home=payload.series.home_team;
+  const aw=payload.games.filter(g=>g.away_score>g.home_score).length, hw=payload.games.filter(g=>g.home_score>g.away_score).length;
+  const runs=sumGameScores();
+  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
+  document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table>`;
+  document.getElementById("payload").value=JSON.stringify(payload,null,2);
+  document.getElementById("review").classList.remove("hidden");
+}
+document.getElementById("validateBtn").onclick=()=>{
+  if(!parsed && !parseLoaded())return;
+  const checks=[];
+  const away=document.getElementById("awayTeam").value, home=document.getElementById("homeTeam").value;
+  if(!away||!home)check(checks,"error","Select both teams");
+  else if(away===home)check(checks,"error","Home and away teams cannot match");
+  else check(checks,"pass","Series teams selected",`${away} at ${home}`);
+
+  const HBt=totalRow(parsed.HB), HPt=totalRow(parsed.HP), ABt=totalRow(parsed.AB), APt=totalRow(parsed.AP);
+  const reconcile=(a,b,label)=>n(a)===n(b)?check(checks,"pass",label,`${n(a)} = ${n(b)}`):check(checks,"warn",label,`${n(a)} vs ${n(b)}. Review before publishing.`);
+  reconcile(HBt.PA,APt.BF,"Home batting PA = visitor pitching BF");
+  reconcile(ABt.PA,HPt.BF,"Visitor batting PA = home pitching BF");
+  reconcile(HBt.H,APt.H,"Home batting H = visitor pitching H");
+  reconcile(ABt.H,HPt.H,"Visitor batting H = home pitching H");
+  reconcile(HBt.BB,APt.BB,"Home batting BB = visitor pitching BB");
+  reconcile(ABt.BB,HPt.BB,"Visitor batting BB = home pitching BB");
+  reconcile(HBt.SO,APt.K,"Home batting SO = visitor pitching K");
+  reconcile(ABt.SO,HPt.K,"Visitor batting SO = home pitching K");
+  reconcile(HBt.HR,APt.HR,"Home batting HR = visitor pitching HR");
+  reconcile(ABt.HR,HPt.HR,"Visitor batting HR = home pitching HR");
+
+  const games=readGames(); let gameError=false;
+  games.forEach(g=>{
+    if(g.away_score===g.home_score){check(checks,"error",`Game ${g.game} cannot end tied`);gameError=true}
+    if(!g.winning_pitcher||!g.losing_pitcher){check(checks,"error",`Game ${g.game} is missing a pitcher decision`);gameError=true}
+    if(g.winning_pitcher && g.winning_pitcher===g.losing_pitcher){check(checks,"error",`Game ${g.game}: winning and losing pitcher are the same`);gameError=true}
+    if(g.save_pitcher && g.save_pitcher===g.winning_pitcher)check(checks,"warn",`Game ${g.game}: winning pitcher is also listed for the save`,"Confirm this unusual scoring decision before publishing.");
+    const winnerTeam=g.away_score>g.home_score?away:home, loserTeam=g.away_score>g.home_score?home:away;
+    if(g.winning_pitcher && teamForPlayer(g.winning_pitcher)!==winnerTeam)check(checks,"warn",`Game ${g.game}: winning pitcher appears to be on the losing team`,`${g.winning_pitcher} is associated with ${teamForPlayer(g.winning_pitcher)||"unknown team"}.`);
+    if(g.losing_pitcher && teamForPlayer(g.losing_pitcher)!==loserTeam)check(checks,"warn",`Game ${g.game}: losing pitcher appears to be on the winning team`,`${g.losing_pitcher} is associated with ${teamForPlayer(g.losing_pitcher)||"unknown team"}.`);
+    if(g.save_pitcher && teamForPlayer(g.save_pitcher)!==winnerTeam)check(checks,"warn",`Game ${g.game}: save pitcher appears to be on the losing team`,`${g.save_pitcher} is associated with ${teamForPlayer(g.save_pitcher)||"unknown team"}.`);
+  });
+  if(!gameError)check(checks,"pass","All three games have valid non-tied scores and pitcher decisions");
+
+  const scoreTotals=sumGameScores();
+  reconcile(HBt.R,scoreTotals.home,"Home batting runs = entered home scores");
+  reconcile(ABt.R,scoreTotals.away,"Visitor batting runs = entered away scores");
+  if(n(HPt.R)!==scoreTotals.away)check(checks,"warn","Home pitching R differs from opponent scoreboard runs",`${n(HPt.R)} pitching R vs ${scoreTotals.away} scoreboard runs. Do not override automatically.`);
+  else check(checks,"pass","Home pitching R matches opponent scoreboard runs");
+  if(n(APt.R)!==scoreTotals.home)check(checks,"warn","Visitor pitching R differs from opponent scoreboard runs",`${n(APt.R)} pitching R vs ${scoreTotals.home} scoreboard runs. Do not override automatically.`);
+  else check(checks,"pass","Visitor pitching R matches opponent scoreboard runs");
+  check(checks,"info","R and ER remain separate",`Home staff: ${n(HPt.R)} R / ${n(HPt.ER)} ER. Visitor staff: ${n(APt.R)} R / ${n(APt.ER)} ER.`);
+
+  const overrides=readOverrides(); const seen=new Set();
+  overrides.forEach(o=>{
+    if(seen.has(o.player))check(checks,"error",`Duplicate GP override: ${o.player}`);
+    seen.add(o.player);
+    if(!parsed.participants.some(p=>p.name===o.player))check(checks,"error",`GP override player is not an active series participant: ${o.player}`);
+    else check(checks,"info",`GP override: ${o.player}`,`${o.games_played} games instead of the default 3.`);
+  });
+  const overrideMap=Object.fromEntries(overrides.map(o=>[o.player,o.games_played]));
+  const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||3}));
+  check(checks,"pass","Zero-stat roster entries ignored","Only players with PA > 0, IP > 0, or BF > 0 are included.");
+
+  const payload={
+    schema_version:1,
+    source:"ndwiffle_admin_v22",
+    series:{
+      season:Number(document.getElementById("season").value),
+      date:document.getElementById("seriesDate").value||null,
+      away_team:away,
+      home_team:home
+    },
+    games,
+    gp_overrides:overrides,
+    commissioner_notes:document.getElementById("notes").value.trim()||null,
+    participants,
+    raw_totals:{
+      home_batting:HBt,home_pitching:HPt,visitor_batting:ABt,visitor_pitching:APt
+    }
+  };
+  renderReview(checks,payload);
+};
 </script>
-</body></html>
+</body>
+</html>
