@@ -4,7 +4,7 @@ function json(body,status=200){
     status,
     headers:{
       "content-type":"application/json; charset=utf-8",
-      "cache-control":"public, max-age=30, s-maxage=60"
+      "cache-control":"no-store"
     }
   });
 }
@@ -168,7 +168,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,season,
+      ok:true,build:"v28",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

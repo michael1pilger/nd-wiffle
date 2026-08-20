@@ -1,4 +1,4 @@
-# ND Wiffle League Website v27
+# ND Wiffle League Website v28
 
 v26 connects the public 2026 league pages to D1.
 
@@ -35,3 +35,11 @@ The current static historical database is treated as the authoritative 2021–20
 - Server-side publish validation rejects WP/LP/SV values for players who do not appear in normalized pitching stats.
 - Included Storm/Stiffies sample uses Brendan Mato as Game 2 WP, Will Stevens as LP, and no save.
 - This prevents a non-pitcher such as Jack Foster from accidentally being stored as a pitcher decision.
+
+
+## v28 deployment verification
+- Admin page visibly displays BUILD v28.
+- `/api/admin/health` returns `build: "v28"`.
+- `/api/public/league` returns `build: "v28"`.
+- Public API caching is disabled while the publishing pipeline is being verified.
+- Retains v27 pitcher-only decision enforcement.
