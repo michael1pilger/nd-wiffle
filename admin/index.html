@@ -4,15 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=22">
+<link rel="stylesheet" href="/assets/styles.css?v=23">
 <style>
 .admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
+
+.warning-approval{margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:flex-start}
+.warning-approval input{margin-top:2px}
+.warning-approval label{font-size:12px;color:#e8c56f;font-weight:800;cursor:pointer}
+.warning-approval.approved label{color:#73d49c}
+.payload-meta{font-size:12px;color:var(--muted);margin:6px 0 12px}
 </style>
 </head>
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Prototype</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype</div>
 <h1>Series Upload & Review</h1>
 <p class="admin-intro">Upload the four iScore series exports, enter the three game results directly here, add any Games Played overrides, then validate everything before publishing. This prototype does not write to the live league database yet.</p>
 
@@ -219,6 +225,24 @@ function teamForPlayer(name){
   if(!parsed)return null;
   const p=parsed.participants.find(x=>x.name===name); return p?p.team:null;
 }
+function slug(v){
+  return String(v||"").toLowerCase().trim().replace(/['’]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function ipToOuts(value){
+  const s=String(value??"").trim();
+  if(!s)return 0;
+  const num=Number(s);
+  if(!Number.isFinite(num))return 0;
+  const whole=Math.floor(num+1e-9);
+  const frac=s.includes(".")?s.split(".")[1].replace(/0+$/,""):"";
+  let extra=0;
+  if(frac==="1"||frac==="10"||frac==="33"||frac==="3") extra=1;
+  else if(frac==="2"||frac==="20"||frac==="67"||frac==="66"||frac==="7") extra=2;
+  else if(frac && Number("0."+frac)>0){
+    extra=Math.max(0,Math.min(2,Math.round(Number("0."+frac)*3)));
+  }
+  return whole*3+extra;
+}
 function sumGameScores(){
   let away=0,home=0;
   document.querySelectorAll(".game-row").forEach(r=>{away+=n(r.querySelector(".awayScore").value);home+=n(r.querySelector(".homeScore").value)});
@@ -240,18 +264,80 @@ function readOverrides(){
     games_played:Number(r.querySelector(".gpValue").value)
   }));
 }
+function normalizedBatting(rows,team,side,gpMap){
+  return rowsWithoutTotals(rows).filter(r=>n(r.PA)>0).map(r=>({
+    player:r.Name,
+    team,
+    side,
+    games_played:gpMap[r.Name]||3,
+    PA:n(r.PA),AB:n(r.AB),R:n(r.R),H:n(r.H),
+    "1B":n(r["1B"]),"2B":n(r["2B"]),"3B":n(r["3B"]),HR:n(r.HR),
+    RBI:n(r.RBI),BB:n(r.BB),SO:n(r.SO),HBP:n(r.HBP)
+  }));
+}
+function normalizedPitching(rows,team,side,gpMap){
+  return rowsWithoutTotals(rows).filter(r=>n(r.IP)>0||n(r.BF)>0).map(r=>({
+    player:r.Name,
+    team,
+    side,
+    games_played:gpMap[r.Name]||3,
+    outs_recorded:ipToOuts(r.IP),
+    BF:n(r.BF),R:n(r.R),ER:n(r.ER),K:n(r.K),H:n(r.H),BB:n(r.BB),HR:n(r.HR),
+    HBP:n(r.HB),WP:n(r.WP)
+  }));
+}
+function summarizePitchingDecisions(games){
+  const map=new Map();
+  function get(name){
+    if(!name)return null;
+    if(!map.has(name))map.set(name,{player:name,team:teamForPlayer(name),W:0,L:0,SV:0});
+    return map.get(name);
+  }
+  games.forEach(g=>{
+    const w=get(g.winning_pitcher); if(w)w.W++;
+    const l=get(g.losing_pitcher); if(l)l.L++;
+    const s=get(g.save_pitcher); if(s)s.SV++;
+  });
+  return [...map.values()].sort((a,b)=>a.player.localeCompare(b.player));
+}
+let lastPayload=null,lastChecks=[];
+function syncWarningApprovals(){
+  if(!lastPayload)return;
+  const approved=[...document.querySelectorAll(".warningApproval:checked")].map(cb=>{
+    const idx=Number(cb.dataset.warningIndex);
+    const w=lastChecks.filter(c=>c.type==="warn")[idx];
+    return {id:`warning_${idx+1}`,title:w.title,detail:w.detail||null,approved:true};
+  });
+  lastPayload.validation.warnings_approved=approved;
+  lastPayload.validation.all_warnings_approved=approved.length===lastChecks.filter(c=>c.type==="warn").length;
+  document.getElementById("payload").value=JSON.stringify(lastPayload,null,2);
+  document.querySelectorAll(".warning-approval").forEach(x=>{
+    const cb=x.querySelector("input"); x.classList.toggle("approved",cb.checked);
+    x.querySelector("label").textContent=cb.checked?"Approved by commissioner":"Approve this warning";
+  });
+}
 function renderReview(checks,payload){
+  lastChecks=checks;lastPayload=payload;
   const counts={pass:0,warn:0,error:0,info:0};checks.forEach(c=>counts[c.type]++);
   document.getElementById("passCount").textContent=counts.pass;
   document.getElementById("warnCount").textContent=counts.warn;
   document.getElementById("errorCount").textContent=counts.error;
   document.getElementById("playerCount").textContent=parsed.participants.length;
-  document.getElementById("checks").innerHTML=checks.map(c=>`<div class="check ${c.type}"><div class="icon">${c.type==="pass"?"✓":c.type==="warn"?"⚠":c.type==="error"?"✕":"ℹ"}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:""}</div></div>`).join("");
+  let warnIndex=0;
+  document.getElementById("checks").innerHTML=checks.map(c=>{
+    let approval="";
+    if(c.type==="warn"){
+      const idx=warnIndex++;
+      approval=`<div class="warning-approval"><input class="warningApproval" data-warning-index="${idx}" id="warn-${idx}" type="checkbox"><label for="warn-${idx}">Approve this warning</label></div>`;
+    }
+    return `<div class="check ${c.type}"><div class="icon">${c.type==="pass"?"✓":c.type==="warn"?"⚠":c.type==="error"?"✕":"ℹ"}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:""}${approval}</div></div>`;
+  }).join("");
+  document.querySelectorAll(".warningApproval").forEach(cb=>cb.addEventListener("change",syncWarningApprovals));
   const away=payload.series.away_team,home=payload.series.home_team;
   const aw=payload.games.filter(g=>g.away_score>g.home_score).length, hw=payload.games.filter(g=>g.home_score>g.away_score).length;
   const runs=sumGameScores();
-  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
-  document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table>`;
+  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div><div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
+  document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table><div class="payload-meta">${payload.batting.length} batting rows · ${payload.pitching.length} pitching rows · ${payload.pitching_decisions.length} pitchers with decisions</div>`;
   document.getElementById("payload").value=JSON.stringify(payload,null,2);
   document.getElementById("review").classList.remove("hidden");
 }
@@ -259,9 +345,19 @@ document.getElementById("validateBtn").onclick=()=>{
   if(!parsed && !parseLoaded())return;
   const checks=[];
   const away=document.getElementById("awayTeam").value, home=document.getElementById("homeTeam").value;
+  const season=Number(document.getElementById("season").value);
+  const date=document.getElementById("seriesDate").value||null;
+
   if(!away||!home)check(checks,"error","Select both teams");
   else if(away===home)check(checks,"error","Home and away teams cannot match");
   else check(checks,"pass","Series teams selected",`${away} at ${home}`);
+
+  if(!date)check(checks,"error","Series date is required","A date is required to generate a stable series ID and detect duplicates.");
+  else{
+    const dateYear=Number(date.slice(0,4));
+    if(dateYear!==season)check(checks,"warn","Series date is outside the selected season",`Selected season is ${season}, but the date is ${date}. Confirm that this is intentional.`);
+    else check(checks,"pass","Series date matches selected season",`${date} is within ${season}.`);
+  }
 
   const HBt=totalRow(parsed.HB), HPt=totalRow(parsed.HP), ABt=totalRow(parsed.AB), APt=totalRow(parsed.AP);
   const reconcile=(a,b,label)=>n(a)===n(b)?check(checks,"pass",label,`${n(a)} = ${n(b)}`):check(checks,"warn",label,`${n(a)} vs ${n(b)}. Review before publishing.`);
@@ -292,9 +388,9 @@ document.getElementById("validateBtn").onclick=()=>{
   const scoreTotals=sumGameScores();
   reconcile(HBt.R,scoreTotals.home,"Home batting runs = entered home scores");
   reconcile(ABt.R,scoreTotals.away,"Visitor batting runs = entered away scores");
-  if(n(HPt.R)!==scoreTotals.away)check(checks,"warn","Home pitching R differs from opponent scoreboard runs",`${n(HPt.R)} pitching R vs ${scoreTotals.away} scoreboard runs. Do not override automatically.`);
+  if(n(HPt.R)!==scoreTotals.away)check(checks,"warn","Home pitching R differs from opponent scoreboard runs",`${n(HPt.R)} pitching R vs ${scoreTotals.away} scoreboard runs. Preserve the source value unless a commissioner determines it is incorrect.`);
   else check(checks,"pass","Home pitching R matches opponent scoreboard runs");
-  if(n(APt.R)!==scoreTotals.home)check(checks,"warn","Visitor pitching R differs from opponent scoreboard runs",`${n(APt.R)} pitching R vs ${scoreTotals.home} scoreboard runs. Do not override automatically.`);
+  if(n(APt.R)!==scoreTotals.home)check(checks,"warn","Visitor pitching R differs from opponent scoreboard runs",`${n(APt.R)} pitching R vs ${scoreTotals.home} scoreboard runs. Preserve the source value unless a commissioner determines it is incorrect.`);
   else check(checks,"pass","Visitor pitching R matches opponent scoreboard runs");
   check(checks,"info","R and ER remain separate",`Home staff: ${n(HPt.R)} R / ${n(HPt.ER)} ER. Visitor staff: ${n(APt.R)} R / ${n(APt.ER)} ER.`);
 
@@ -309,25 +405,44 @@ document.getElementById("validateBtn").onclick=()=>{
   const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||3}));
   check(checks,"pass","Zero-stat roster entries ignored","Only players with PA > 0, IP > 0, or BF > 0 are included.");
 
+  const batting=[
+    ...normalizedBatting(parsed.AB,away,"away",overrideMap),
+    ...normalizedBatting(parsed.HB,home,"home",overrideMap)
+  ];
+  const pitching=[
+    ...normalizedPitching(parsed.AP,away,"away",overrideMap),
+    ...normalizedPitching(parsed.HP,home,"home",overrideMap)
+  ];
+  const pitchingDecisions=summarizePitchingDecisions(games);
+  if(pitching.every(r=>Number.isInteger(r.outs_recorded)&&r.outs_recorded>=0))check(checks,"pass","Pitching innings normalized to outs",`${pitching.reduce((a,r)=>a+r.outs_recorded,0)} total outs stored across all pitcher rows.`);
+  else check(checks,"error","Unable to normalize one or more innings-pitched values");
+
+  const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
   const payload={
-    schema_version:1,
-    source:"ndwiffle_admin_v22",
-    series:{
-      season:Number(document.getElementById("season").value),
-      date:document.getElementById("seriesDate").value||null,
-      away_team:away,
-      home_team:home
-    },
+    schema_version:2,
+    source:"ndwiffle_admin_v23",
+    series_id:seriesId,
+    series:{season,date,away_team:away,home_team:home},
     games,
     gp_overrides:overrides,
     commissioner_notes:document.getElementById("notes").value.trim()||null,
     participants,
-    raw_totals:{
+    batting,
+    pitching,
+    pitching_decisions:pitchingDecisions,
+    validation:{
+      warning_count:checks.filter(c=>c.type==="warn").length,
+      error_count:checks.filter(c=>c.type==="error").length,
+      warnings_approved:[],
+      all_warnings_approved:checks.filter(c=>c.type==="warn").length===0
+    },
+    source_totals:{
       home_batting:HBt,home_pitching:HPt,visitor_batting:ABt,visitor_pitching:APt
     }
   };
   renderReview(checks,payload);
 };
+
 </script>
 </body>
 </html>
