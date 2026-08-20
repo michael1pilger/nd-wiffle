@@ -1,4 +1,4 @@
-# ND Wiffle League Website v26
+# ND Wiffle League Website v27
 
 v26 connects the public 2026 league pages to D1.
 
@@ -28,3 +28,10 @@ v26 connects the public 2026 league pages to D1.
 
 ## Important
 The current static historical database is treated as the authoritative 2021–2025 base. D1 is treated as the authoritative source for 2026 onward. Do not manually add 2026 cumulative totals to `assets/data.js` while this hybrid model is in use, or career totals would double count 2026.
+
+
+## v27 safety fix
+- WP, LP, and SV dropdowns only include players detected in the uploaded pitching files.
+- Server-side publish validation rejects WP/LP/SV values for players who do not appear in normalized pitching stats.
+- Included Storm/Stiffies sample uses Brendan Mato as Game 2 WP, Will Stevens as LP, and no save.
+- This prevents a non-pitcher such as Jack Foster from accidentally being stored as a pitcher decision.

@@ -45,6 +45,7 @@ function serverValidate(payload, teamIds, playerIds){
   const games=payload.games||[];
   if(games.length!==3) errors.push("Exactly 3 games are required.");
   const participantByName=new Map((payload.participants||[]).map(p=>[norm(p.name),p]));
+  const pitcherByName=new Map((payload.pitching||[]).map(p=>[norm(p.player),p]));
   const participantNames=new Set();
   for(const p of payload.participants||[]){
     if(participantNames.has(norm(p.name))) errors.push(`Duplicate participant: ${p.name}`);
@@ -62,8 +63,12 @@ function serverValidate(payload, teamIds, playerIds){
     awayRS+=Number(g.away_score||0); homeRS+=Number(g.home_score||0);
     const wp=participantByName.get(norm(g.winning_pitcher));
     const lp=participantByName.get(norm(g.losing_pitcher));
+    const wpPitch= pitcherByName.get(norm(g.winning_pitcher));
+    const lpPitch= pitcherByName.get(norm(g.losing_pitcher));
     if(!wp||!lp) errors.push(`Game ${g.game}: pitcher decision references a non-participant.`);
-    else{
+    if(!wpPitch) errors.push(`Game ${g.game}: winning pitcher ${g.winning_pitcher||"(blank)"} does not appear in the uploaded pitching stats.`);
+    if(!lpPitch) errors.push(`Game ${g.game}: losing pitcher ${g.losing_pitcher||"(blank)"} does not appear in the uploaded pitching stats.`);
+    if(wp&&lp&&wpPitch&&lpPitch){
       const winnerSide=g.away_score>g.home_score?"away":"home";
       const loserSide=winnerSide==="away"?"home":"away";
       if(wp.side!==winnerSide) warnings.push(`Game ${g.game}: winning pitcher team does not match game winner.`);
@@ -71,9 +76,11 @@ function serverValidate(payload, teamIds, playerIds){
     }
     if(g.save_pitcher){
       const sv=participantByName.get(norm(g.save_pitcher));
+      const svPitch=pitcherByName.get(norm(g.save_pitcher));
       const winnerSide=g.away_score>g.home_score?"away":"home";
       if(!sv) errors.push(`Game ${g.game}: save pitcher is not a participant.`);
-      else if(sv.side!==winnerSide) warnings.push(`Game ${g.game}: save pitcher team does not match game winner.`);
+      if(!svPitch) errors.push(`Game ${g.game}: save pitcher ${g.save_pitcher} does not appear in the uploaded pitching stats.`);
+      if(sv&&svPitch&&sv.side!==winnerSide) warnings.push(`Game ${g.game}: save pitcher team does not match game winner.`);
       if(norm(g.save_pitcher)===norm(g.winning_pitcher)) warnings.push(`Game ${g.game}: winning pitcher is also save pitcher.`);
     }
   }
