@@ -1,9 +1,7 @@
-# ND Wiffle League Website v17
+# ND Wiffle League Website v19
 
-Corrections and visual polish:
-- 2024 Storm vs Stiff Wifflers Quarterfinal corrected to Storm 2-0.
-- 2021 Midnight vs Zyns Semifinal corrected to Midnight 3-0.
-- Max Dow, Travis Frame, John Frederickson, Jack Coons, and Jack Horton marked retired.
-- Team colors are used subtly in 2026 standings rows, schedule series cards, historical standings, playoff brackets, and team-page hero areas.
-- Homepage now includes a link to Instagram @nd_wiffleball.
-- Team all-time and playoff records were recalculated after playoff-series corrections.
+Grid update:
+- New validated default grid selected.
+- Initial load now correctly uses DATA.defaultGrid rather than always loading gridPool[0].
+- Team categories display the team's logo next to the category name.
+- Existing 300-board validated grid pool and all v18 functionality are preserved.

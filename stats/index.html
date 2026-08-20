@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=17"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=19"></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
 
@@ -36,7 +36,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=17"></script>
+<script src="/assets/data.js?v=19"></script>
 <script>
 let mode="bat",sortKey=null,sortDir=-1;
 
@@ -123,10 +123,11 @@ function render(){
  rows=sortRows(rows);
  statsCount.textContent=`${rows.length}${qualOnly.checked?` qualified of ${before}`:" players"}`;
  const cols=columns();
- table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>${
+ table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>
+  <th class="stats-rank-col">#</th>${
   cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")
  }</tr></thead><tbody>${
-  rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
+  rows.map((r,i)=>`<tr><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")
  }</tbody></table></div>`;
 }
 render();
