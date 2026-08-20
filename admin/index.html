@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=23">
+<link rel="stylesheet" href="/assets/styles.css?v=24">
 <style>
 .admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
 
@@ -13,6 +13,25 @@
 .warning-approval label{font-size:12px;color:#e8c56f;font-weight:800;cursor:pointer}
 .warning-approval.approved label{color:#73d49c}
 .payload-meta{font-size:12px;color:var(--muted);margin:6px 0 12px}
+
+.pitching-meta-grid{display:grid;gap:8px}
+.pitching-meta-head,.pitching-meta-row{display:grid;grid-template-columns:minmax(180px,1.4fr) minmax(120px,1fr) 100px 100px;gap:8px;align-items:center}
+.pitching-meta-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase;padding:0 2px}
+.pitching-meta-row{border:1px solid var(--border);background:#0c1728;border-radius:10px;padding:9px}
+.pitching-meta-row input{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}
+.correction-controls{display:grid;gap:8px}
+.correction-row{display:grid;grid-template-columns:minmax(180px,1.3fr) 130px 110px minmax(220px,1.5fr) 44px;gap:8px;align-items:center}
+.correction-row select,.correction-row input{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}
+.correction-remove{border:1px solid var(--border);background:#17243b;color:#fff;border-radius:8px;cursor:pointer;height:40px}
+.audit-hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+.warning-reason{margin-top:8px;width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:12px}
+@media(max-width:800px){
+ .pitching-meta-head{display:none}
+ .pitching-meta-row{grid-template-columns:1fr 1fr}
+ .pitching-meta-row .pitcher-name{grid-column:1/-1}
+ .correction-row{grid-template-columns:1fr 1fr}
+ .correction-row .corr-reason{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -64,13 +83,32 @@
 </section>
 
 <section class="admin-panel">
-<h2>5. Commissioner Notes</h2>
-<p class="step-note">Optional. Use this when approving an unusual warning or documenting a scoring decision.</p>
-<div class="field"><textarea id="notes" placeholder="Example: 8 runs allowed, 7 earned runs is correct; one run was unearned."></textarea></div>
+<h2>5. Pitching Appearances & Starts</h2>
+<p class="step-note">Enter the number of pitching appearances and starts for every pitcher detected in the iScore exports. These cannot be reconstructed reliably from the aggregate series files.</p>
+<div id="pitchingMetaEmpty" class="empty-state">Parse the four iScore files to load detected pitchers.</div>
+<div id="pitchingMeta" class="pitching-meta-grid hidden">
+  <div class="pitching-meta-head"><div>Pitcher</div><div>Team</div><div>Apps</div><div>Starts</div></div>
+  <div id="pitchingMetaRows"></div>
+</div>
 </section>
 
 <section class="admin-panel">
-<h2>6. Validate & Review</h2>
+<h2>6. Manual Stat Corrections</h2>
+<p class="step-note">Use this only when the iScore export is known to be wrong. Corrections are applied to the normalized player row, while the original export remains preserved in <code>source_totals</code> and the correction is saved in the audit payload.</p>
+<div id="correctionEmpty" class="empty-state">No manual corrections.</div>
+<div id="correctionControls" class="correction-controls"></div>
+<div class="admin-actions"><button class="admin-btn" id="addCorrectionBtn">+ Add Pitching Correction</button></div>
+<div class="audit-hint">Examples: correct a pitcher's R from 1 → 2 or ER from 1 → 2. Correcting the individual pitcher automatically changes the corrected team aggregate used by validation.</div>
+</section>
+
+<section class="admin-panel">
+<h2>7. Commissioner Notes</h2>
+<p class="step-note">Optional general notes about the series. Warning approvals and manual corrections have their own required explanations.</p>
+<div class="field"><textarea id="notes" placeholder="Example: Game 2 ended on an extra-inning runner."></textarea></div>
+</section>
+
+<section class="admin-panel">
+<h2>8. Validate & Review</h2>
 <div class="admin-actions"><button class="admin-btn primary" id="validateBtn">Validate Series</button></div>
 <div id="review" class="hidden">
 <div class="status-summary">
@@ -166,7 +204,7 @@ function parseLoaded(){
     ...[...awayNames].map(name=>({name,side:"away",team:awayTeam}))
   ];
   parsed={HB,HP,AB,AP,participants,homeNames,awayNames};
-  populatePlayerSelects(); refreshGpRows();
+  populatePlayerSelects(); refreshGpRows(); renderPitchingMeta(); refreshCorrectionRows();
   setFileState("homeBat","✓ Parsed "+rowsWithoutTotals(HB).length+" batting rows");
   setFileState("homePit","✓ Parsed "+rowsWithoutTotals(HP).length+" pitching rows");
   setFileState("awayBat","✓ Parsed "+rowsWithoutTotals(AB).length+" batting rows");
@@ -200,7 +238,7 @@ document.getElementById("loadSampleBtn").onclick=()=>{
   if(parsed){
     const away=document.getElementById("awayTeam").value||"Away Team", home=document.getElementById("homeTeam").value||"Home Team";
     parsed.participants.forEach(p=>p.team=p.side==="away"?away:home);
-    populatePlayerSelects(); refreshGpRows();
+    populatePlayerSelects(); refreshGpRows(); renderPitchingMeta(); refreshCorrectionRows();
   }
 }));
 
@@ -220,6 +258,120 @@ function refreshGpRows(){
 function syncGpEmpty(){document.getElementById("gpEmpty").classList.toggle("hidden",document.querySelectorAll(".gp-row").length>0)}
 document.getElementById("addGpBtn").onclick=()=>addGpRow();
 
+function detectedPitchers(){
+  if(!parsed)return [];
+  const awayTeam=document.getElementById("awayTeam").value||"Away Team";
+  const homeTeam=document.getElementById("homeTeam").value||"Home Team";
+  const rows=[];
+  rowsWithoutTotals(parsed.AP).filter(r=>n(r.IP)>0||n(r.BF)>0).forEach(r=>rows.push({name:r.Name,team:awayTeam,side:"away"}));
+  rowsWithoutTotals(parsed.HP).filter(r=>n(r.IP)>0||n(r.BF)>0).forEach(r=>rows.push({name:r.Name,team:homeTeam,side:"home"}));
+  return rows.sort((a,b)=>a.name.localeCompare(b.name));
+}
+function renderPitchingMeta(){
+  if(!parsed)return;
+  const old={};
+  document.querySelectorAll(".pitching-meta-row").forEach(r=>{
+    old[r.dataset.player]={
+      appearances:r.querySelector(".pitchApps").value,
+      starts:r.querySelector(".pitchStarts").value
+    };
+  });
+  const pitchers=detectedPitchers();
+  const wrap=document.getElementById("pitchingMetaRows");
+  wrap.innerHTML=pitchers.map(p=>{
+    const prior=old[p.name]||{};
+    return `<div class="pitching-meta-row" data-player="${p.name}">
+      <div class="pitcher-name"><b>${p.name}</b></div>
+      <div class="muted">${p.team}</div>
+      <input class="pitchApps" type="number" min="1" max="3" step="1" placeholder="Apps" value="${prior.appearances??""}">
+      <input class="pitchStarts" type="number" min="0" max="3" step="1" placeholder="Starts" value="${prior.starts??""}">
+    </div>`;
+  }).join("");
+  document.getElementById("pitchingMetaEmpty").classList.toggle("hidden",pitchers.length>0);
+  document.getElementById("pitchingMeta").classList.toggle("hidden",pitchers.length===0);
+}
+function readPitchingMeta(){
+  const out={};
+  document.querySelectorAll(".pitching-meta-row").forEach(r=>{
+    const apps=r.querySelector(".pitchApps").value;
+    const starts=r.querySelector(".pitchStarts").value;
+    out[r.dataset.player]={
+      appearances:apps===""?null:Number(apps),
+      starts:starts===""?null:Number(starts)
+    };
+  });
+  return out;
+}
+
+const CORRECTION_FIELDS=[
+  ["R","Runs Allowed"],
+  ["ER","Earned Runs"],
+  ["K","Strikeouts"],
+  ["H","Hits Allowed"],
+  ["BB","Walks"],
+  ["HR","Home Runs Allowed"],
+  ["BF","Batters Faced"],
+  ["HBP","Hit Batters"],
+  ["WP","Wild Pitches"],
+  ["outs_recorded","Outs Recorded"]
+];
+function basePitchingRows(gpMap={}){
+  const away=document.getElementById("awayTeam").value||"Away Team";
+  const home=document.getElementById("homeTeam").value||"Home Team";
+  const meta=readPitchingMeta();
+  const make=(rows,team,side)=>rowsWithoutTotals(rows).filter(r=>n(r.IP)>0||n(r.BF)>0).map(r=>({
+    player:r.Name,team,side,games_played:gpMap[r.Name]||3,
+    appearances:meta[r.Name]?.appearances??null,
+    starts:meta[r.Name]?.starts??null,
+    outs_recorded:ipToOuts(r.IP),
+    BF:n(r.BF),R:n(r.R),ER:n(r.ER),K:n(r.K),H:n(r.H),BB:n(r.BB),HR:n(r.HR),
+    HBP:n(r.HB),WP:n(r.WP)
+  }));
+  return [...make(parsed.AP,away,"away"),...make(parsed.HP,home,"home")];
+}
+function correctionOriginal(player,field){
+  if(!parsed||!player||!field)return null;
+  const row=basePitchingRows({}).find(r=>r.player===player);
+  return row&&Object.prototype.hasOwnProperty.call(row,field)?row[field]:null;
+}
+function updateCorrectionOriginal(row){
+  const p=row.querySelector(".corr-player").value;
+  const f=row.querySelector(".corr-field").value;
+  const original=correctionOriginal(p,f);
+  const input=row.querySelector(".corr-value");
+  input.placeholder=original===null?"Corrected value":`Original: ${original}`;
+}
+function addCorrectionRow(player="",field="R",value="",reason=""){
+  if(!parsed){alert("Parse the four iScore files first.");return}
+  const pitchers=detectedPitchers();
+  const row=document.createElement("div"); row.className="correction-row";
+  row.innerHTML=`<select class="corr-player"><option value="">Select pitcher...</option>${pitchers.map(p=>`<option ${p.name===player?"selected":""}>${p.name}</option>`).join("")}</select>
+  <select class="corr-field">${CORRECTION_FIELDS.map(([k,l])=>`<option value="${k}" ${k===field?"selected":""}>${l}</option>`).join("")}</select>
+  <input class="corr-value" type="number" min="0" step="1" value="${value}" placeholder="Corrected value">
+  <input class="corr-reason" type="text" value="${reason.replace(/"/g,"&quot;")}" placeholder="Required correction reason">
+  <button class="correction-remove" type="button">×</button>`;
+  row.querySelector(".corr-player").addEventListener("change",()=>updateCorrectionOriginal(row));
+  row.querySelector(".corr-field").addEventListener("change",()=>updateCorrectionOriginal(row));
+  row.querySelector(".correction-remove").onclick=()=>{row.remove();syncCorrectionEmpty()};
+  document.getElementById("correctionControls").appendChild(row);
+  updateCorrectionOriginal(row); syncCorrectionEmpty();
+}
+function refreshCorrectionRows(){
+  const old=[...document.querySelectorAll(".correction-row")].map(r=>({
+    p:r.querySelector(".corr-player").value,
+    f:r.querySelector(".corr-field").value,
+    v:r.querySelector(".corr-value").value,
+    reason:r.querySelector(".corr-reason").value
+  }));
+  document.getElementById("correctionControls").innerHTML="";
+  old.forEach(x=>addCorrectionRow(x.p,x.f,x.v,x.reason));
+  syncCorrectionEmpty();
+}
+function syncCorrectionEmpty(){
+  document.getElementById("correctionEmpty").classList.toggle("hidden",document.querySelectorAll(".correction-row").length>0);
+}
+document.getElementById("addCorrectionBtn").onclick=()=>addCorrectionRow();
+
 function check(list,type,title,detail=""){list.push({type,title,detail})}
 function teamForPlayer(name){
   if(!parsed)return null;
@@ -238,9 +390,7 @@ function ipToOuts(value){
   let extra=0;
   if(frac==="1"||frac==="10"||frac==="33"||frac==="3") extra=1;
   else if(frac==="2"||frac==="20"||frac==="67"||frac==="66"||frac==="7") extra=2;
-  else if(frac && Number("0."+frac)>0){
-    extra=Math.max(0,Math.min(2,Math.round(Number("0."+frac)*3)));
-  }
+  else if(frac && Number("0."+frac)>0)extra=Math.max(0,Math.min(2,Math.round(Number("0."+frac)*3)));
   return whole*3+extra;
 }
 function sumGameScores(){
@@ -266,25 +416,41 @@ function readOverrides(){
 }
 function normalizedBatting(rows,team,side,gpMap){
   return rowsWithoutTotals(rows).filter(r=>n(r.PA)>0).map(r=>({
-    player:r.Name,
-    team,
-    side,
-    games_played:gpMap[r.Name]||3,
+    player:r.Name,team,side,games_played:gpMap[r.Name]||3,
     PA:n(r.PA),AB:n(r.AB),R:n(r.R),H:n(r.H),
     "1B":n(r["1B"]),"2B":n(r["2B"]),"3B":n(r["3B"]),HR:n(r.HR),
     RBI:n(r.RBI),BB:n(r.BB),SO:n(r.SO),HBP:n(r.HBP)
   }));
 }
-function normalizedPitching(rows,team,side,gpMap){
-  return rowsWithoutTotals(rows).filter(r=>n(r.IP)>0||n(r.BF)>0).map(r=>({
-    player:r.Name,
-    team,
-    side,
-    games_played:gpMap[r.Name]||3,
-    outs_recorded:ipToOuts(r.IP),
-    BF:n(r.BF),R:n(r.R),ER:n(r.ER),K:n(r.K),H:n(r.H),BB:n(r.BB),HR:n(r.HR),
-    HBP:n(r.HB),WP:n(r.WP)
-  }));
+function readCorrections(baseRows){
+  return [...document.querySelectorAll(".correction-row")].map((r,i)=>{
+    const player=r.querySelector(".corr-player").value;
+    const field=r.querySelector(".corr-field").value;
+    const raw=r.querySelector(".corr-value").value;
+    const reason=r.querySelector(".corr-reason").value.trim();
+    const source=baseRows.find(x=>x.player===player);
+    return {
+      id:`correction_${i+1}`,
+      scope:"pitching_player",
+      player,
+      team:source?.team||teamForPlayer(player),
+      field,
+      original_value:source&&Object.prototype.hasOwnProperty.call(source,field)?source[field]:null,
+      corrected_value:raw===""?null:Number(raw),
+      reason
+    };
+  });
+}
+function applyPitchingCorrections(rows,corrections){
+  const corrected=rows.map(r=>({...r}));
+  corrections.forEach(c=>{
+    const row=corrected.find(r=>r.player===c.player);
+    if(row&&c.field&&c.corrected_value!==null)row[c.field]=c.corrected_value;
+  });
+  return corrected;
+}
+function sumPitching(rows,side,field){
+  return rows.filter(r=>r.side===side).reduce((a,r)=>a+n(r[field]),0);
 }
 function summarizePitchingDecisions(games){
   const map=new Map();
@@ -303,17 +469,23 @@ function summarizePitchingDecisions(games){
 let lastPayload=null,lastChecks=[];
 function syncWarningApprovals(){
   if(!lastPayload)return;
-  const approved=[...document.querySelectorAll(".warningApproval:checked")].map(cb=>{
+  const warnings=lastChecks.filter(c=>c.type==="warn");
+  const approved=[];
+  document.querySelectorAll(".warningApproval").forEach(cb=>{
     const idx=Number(cb.dataset.warningIndex);
-    const w=lastChecks.filter(c=>c.type==="warn")[idx];
-    return {id:`warning_${idx+1}`,title:w.title,detail:w.detail||null,approved:true};
+    const reason=document.getElementById(`warn-reason-${idx}`)?.value.trim()||"";
+    if(cb.checked){
+      const w=warnings[idx];
+      approved.push({id:`warning_${idx+1}`,title:w.title,detail:w.detail||null,approved:true,reason});
+    }
   });
   lastPayload.validation.warnings_approved=approved;
-  lastPayload.validation.all_warnings_approved=approved.length===lastChecks.filter(c=>c.type==="warn").length;
+  lastPayload.validation.all_warnings_approved=approved.length===warnings.length && approved.every(x=>x.reason);
   document.getElementById("payload").value=JSON.stringify(lastPayload,null,2);
   document.querySelectorAll(".warning-approval").forEach(x=>{
-    const cb=x.querySelector("input"); x.classList.toggle("approved",cb.checked);
-    x.querySelector("label").textContent=cb.checked?"Approved by commissioner":"Approve this warning";
+    const cb=x.querySelector("input[type=checkbox]");
+    x.classList.toggle("approved",cb.checked);
+    x.querySelector("label").textContent=cb.checked?"Approved — explanation required":"Approve this warning as-is";
   });
 }
 function renderReview(checks,payload){
@@ -328,16 +500,16 @@ function renderReview(checks,payload){
     let approval="";
     if(c.type==="warn"){
       const idx=warnIndex++;
-      approval=`<div class="warning-approval"><input class="warningApproval" data-warning-index="${idx}" id="warn-${idx}" type="checkbox"><label for="warn-${idx}">Approve this warning</label></div>`;
+      approval=`<div class="warning-approval"><input class="warningApproval" data-warning-index="${idx}" id="warn-${idx}" type="checkbox"><label for="warn-${idx}">Approve this warning as-is</label></div><input class="warning-reason" id="warn-reason-${idx}" type="text" placeholder="Required explanation if approved">`;
     }
     return `<div class="check ${c.type}"><div class="icon">${c.type==="pass"?"✓":c.type==="warn"?"⚠":c.type==="error"?"✕":"ℹ"}</div><div><strong>${c.title}</strong>${c.detail?`<small>${c.detail}</small>`:""}${approval}</div></div>`;
   }).join("");
-  document.querySelectorAll(".warningApproval").forEach(cb=>cb.addEventListener("change",syncWarningApprovals));
+  document.querySelectorAll(".warningApproval,.warning-reason").forEach(el=>el.addEventListener("input",syncWarningApprovals));
   const away=payload.series.away_team,home=payload.series.home_team;
   const aw=payload.games.filter(g=>g.away_score>g.home_score).length, hw=payload.games.filter(g=>g.home_score>g.away_score).length;
   const runs=sumGameScores();
   document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div><div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
-  document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table><div class="payload-meta">${payload.batting.length} batting rows · ${payload.pitching.length} pitching rows · ${payload.pitching_decisions.length} pitchers with decisions</div>`;
+  document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table><div class="payload-meta">${payload.batting.length} batting rows · ${payload.pitching.length} pitching rows · ${payload.pitching_decisions.length} pitchers with decisions · ${payload.manual_corrections.length} manual corrections</div>`;
   document.getElementById("payload").value=JSON.stringify(payload,null,2);
   document.getElementById("review").classList.remove("hidden");
 }
@@ -359,18 +531,46 @@ document.getElementById("validateBtn").onclick=()=>{
     else check(checks,"pass","Series date matches selected season",`${date} is within ${season}.`);
   }
 
+  const overrides=readOverrides(); const seenGp=new Set();
+  overrides.forEach(o=>{
+    if(seenGp.has(o.player))check(checks,"error",`Duplicate GP override: ${o.player}`);
+    seenGp.add(o.player);
+    if(!parsed.participants.some(p=>p.name===o.player))check(checks,"error",`GP override player is not an active series participant: ${o.player}`);
+    else check(checks,"info",`GP override: ${o.player}`,`${o.games_played} games instead of the default 3.`);
+  });
+  const overrideMap=Object.fromEntries(overrides.map(o=>[o.player,o.games_played]));
+  const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||3}));
+
+  const pitchingUsage=readPitchingMeta();
+  const pitchers=detectedPitchers();
+  const startsByTeam={};
+  pitchers.forEach(p=>{
+    const u=pitchingUsage[p.name]||{};
+    if(u.appearances===null||u.starts===null)check(checks,"error",`Enter Apps and Starts for ${p.name}`);
+    else{
+      if(!Number.isInteger(u.appearances)||u.appearances<1||u.appearances>3)check(checks,"error",`${p.name}: Apps must be 1–3`);
+      if(!Number.isInteger(u.starts)||u.starts<0||u.starts>3)check(checks,"error",`${p.name}: Starts must be 0–3`);
+      if(Number.isInteger(u.appearances)&&Number.isInteger(u.starts)&&u.starts>u.appearances)check(checks,"error",`${p.name}: Starts cannot exceed Apps`);
+    }
+    startsByTeam[p.team]=(startsByTeam[p.team]||0)+(Number.isFinite(u.starts)?u.starts:0);
+  });
+  [away,home].forEach(team=>{
+    if((startsByTeam[team]||0)!==3)check(checks,"warn",`${team} has ${startsByTeam[team]||0} recorded pitching starts`,`A normal three-game series should total 3 team starts. Correct the Apps/Starts inputs or approve with explanation.`);
+    else check(checks,"pass",`${team} pitching starts total 3`);
+  });
+
   const HBt=totalRow(parsed.HB), HPt=totalRow(parsed.HP), ABt=totalRow(parsed.AB), APt=totalRow(parsed.AP);
-  const reconcile=(a,b,label)=>n(a)===n(b)?check(checks,"pass",label,`${n(a)} = ${n(b)}`):check(checks,"warn",label,`${n(a)} vs ${n(b)}. Review before publishing.`);
-  reconcile(HBt.PA,APt.BF,"Home batting PA = visitor pitching BF");
-  reconcile(ABt.PA,HPt.BF,"Visitor batting PA = home pitching BF");
-  reconcile(HBt.H,APt.H,"Home batting H = visitor pitching H");
-  reconcile(ABt.H,HPt.H,"Visitor batting H = home pitching H");
-  reconcile(HBt.BB,APt.BB,"Home batting BB = visitor pitching BB");
-  reconcile(ABt.BB,HPt.BB,"Visitor batting BB = home pitching BB");
-  reconcile(HBt.SO,APt.K,"Home batting SO = visitor pitching K");
-  reconcile(ABt.SO,HPt.K,"Visitor batting SO = home pitching K");
-  reconcile(HBt.HR,APt.HR,"Home batting HR = visitor pitching HR");
-  reconcile(ABt.HR,HPt.HR,"Visitor batting HR = home pitching HR");
+  const sourceReconcile=(a,b,label)=>n(a)===n(b)?check(checks,"pass",label,`${n(a)} = ${n(b)}`):check(checks,"warn",label,`${n(a)} vs ${n(b)}. Review before publishing.`);
+  sourceReconcile(HBt.PA,APt.BF,"Home batting PA = visitor pitching BF");
+  sourceReconcile(ABt.PA,HPt.BF,"Visitor batting PA = home pitching BF");
+  sourceReconcile(HBt.H,APt.H,"Home batting H = visitor pitching H");
+  sourceReconcile(ABt.H,HPt.H,"Visitor batting H = home pitching H");
+  sourceReconcile(HBt.BB,APt.BB,"Home batting BB = visitor pitching BB");
+  sourceReconcile(ABt.BB,HPt.BB,"Visitor batting BB = home pitching BB");
+  sourceReconcile(HBt.SO,APt.K,"Home batting SO = visitor pitching K");
+  sourceReconcile(ABt.SO,HPt.K,"Visitor batting SO = home pitching K");
+  sourceReconcile(HBt.HR,APt.HR,"Home batting HR = visitor pitching HR");
+  sourceReconcile(ABt.HR,HPt.HR,"Visitor batting HR = home pitching HR");
 
   const games=readGames(); let gameError=false;
   games.forEach(g=>{
@@ -385,46 +585,57 @@ document.getElementById("validateBtn").onclick=()=>{
   });
   if(!gameError)check(checks,"pass","All three games have valid non-tied scores and pitcher decisions");
 
-  const scoreTotals=sumGameScores();
-  reconcile(HBt.R,scoreTotals.home,"Home batting runs = entered home scores");
-  reconcile(ABt.R,scoreTotals.away,"Visitor batting runs = entered away scores");
-  if(n(HPt.R)!==scoreTotals.away)check(checks,"warn","Home pitching R differs from opponent scoreboard runs",`${n(HPt.R)} pitching R vs ${scoreTotals.away} scoreboard runs. Preserve the source value unless a commissioner determines it is incorrect.`);
-  else check(checks,"pass","Home pitching R matches opponent scoreboard runs");
-  if(n(APt.R)!==scoreTotals.home)check(checks,"warn","Visitor pitching R differs from opponent scoreboard runs",`${n(APt.R)} pitching R vs ${scoreTotals.home} scoreboard runs. Preserve the source value unless a commissioner determines it is incorrect.`);
-  else check(checks,"pass","Visitor pitching R matches opponent scoreboard runs");
-  check(checks,"info","R and ER remain separate",`Home staff: ${n(HPt.R)} R / ${n(HPt.ER)} ER. Visitor staff: ${n(APt.R)} R / ${n(APt.ER)} ER.`);
-
-  const overrides=readOverrides(); const seen=new Set();
-  overrides.forEach(o=>{
-    if(seen.has(o.player))check(checks,"error",`Duplicate GP override: ${o.player}`);
-    seen.add(o.player);
-    if(!parsed.participants.some(p=>p.name===o.player))check(checks,"error",`GP override player is not an active series participant: ${o.player}`);
-    else check(checks,"info",`GP override: ${o.player}`,`${o.games_played} games instead of the default 3.`);
+  const basePitching=basePitchingRows(overrideMap);
+  const corrections=readCorrections(basePitching);
+  const seenCorrections=new Set();
+  corrections.forEach(c=>{
+    const key=`${c.player}|${c.field}`;
+    if(!c.player)check(checks,"error",`${c.id}: select a pitcher`);
+    if(seenCorrections.has(key))check(checks,"error",`Duplicate correction for ${c.player} ${c.field}`);
+    seenCorrections.add(key);
+    if(c.original_value===null)check(checks,"error",`${c.id}: source field could not be resolved`);
+    if(c.corrected_value===null||!Number.isFinite(c.corrected_value)||c.corrected_value<0)check(checks,"error",`${c.id}: enter a valid non-negative corrected value`);
+    if(!c.reason)check(checks,"error",`${c.id}: correction reason is required`);
+    if(c.player&&c.original_value!==null&&c.corrected_value!==null&&c.reason)check(checks,"info",`Manual correction: ${c.player} ${c.field}`,`${c.original_value} → ${c.corrected_value}. Reason: ${c.reason}`);
   });
-  const overrideMap=Object.fromEntries(overrides.map(o=>[o.player,o.games_played]));
-  const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||3}));
+  const pitching=applyPitchingCorrections(basePitching,corrections);
+
+  const scoreTotals=sumGameScores();
+  sourceReconcile(HBt.R,scoreTotals.home,"Home batting runs = entered home scores");
+  sourceReconcile(ABt.R,scoreTotals.away,"Visitor batting runs = entered away scores");
+
+  const correctedHomeR=sumPitching(pitching,"home","R");
+  const correctedAwayR=sumPitching(pitching,"away","R");
+  if(correctedHomeR!==scoreTotals.away)check(checks,"warn","Corrected home pitching R differs from opponent scoreboard runs",`${correctedHomeR} pitching R vs ${scoreTotals.away} scoreboard runs. Correct the affected pitcher or approve as-is.`);
+  else check(checks,"pass","Corrected home pitching R matches opponent scoreboard runs",`${correctedHomeR} = ${scoreTotals.away}`);
+  if(correctedAwayR!==scoreTotals.home)check(checks,"warn","Corrected visitor pitching R differs from opponent scoreboard runs",`${correctedAwayR} pitching R vs ${scoreTotals.home} scoreboard runs. Correct the affected pitcher or approve as-is.`);
+  else check(checks,"pass","Corrected visitor pitching R matches opponent scoreboard runs",`${correctedAwayR} = ${scoreTotals.home}`);
+
+  check(checks,"info","R and ER remain separate after corrections",`Home staff: ${correctedHomeR} R / ${sumPitching(pitching,"home","ER")} ER. Visitor staff: ${correctedAwayR} R / ${sumPitching(pitching,"away","ER")} ER.`);
   check(checks,"pass","Zero-stat roster entries ignored","Only players with PA > 0, IP > 0, or BF > 0 are included.");
+  if(pitching.every(r=>Number.isInteger(r.outs_recorded)&&r.outs_recorded>=0))check(checks,"pass","Pitching innings normalized to outs",`${pitching.reduce((a,r)=>a+r.outs_recorded,0)} total outs stored across all pitcher rows.`);
+  else check(checks,"error","Unable to normalize one or more innings-pitched values");
 
   const batting=[
     ...normalizedBatting(parsed.AB,away,"away",overrideMap),
     ...normalizedBatting(parsed.HB,home,"home",overrideMap)
   ];
-  const pitching=[
-    ...normalizedPitching(parsed.AP,away,"away",overrideMap),
-    ...normalizedPitching(parsed.HP,home,"home",overrideMap)
-  ];
   const pitchingDecisions=summarizePitchingDecisions(games);
-  if(pitching.every(r=>Number.isInteger(r.outs_recorded)&&r.outs_recorded>=0))check(checks,"pass","Pitching innings normalized to outs",`${pitching.reduce((a,r)=>a+r.outs_recorded,0)} total outs stored across all pitcher rows.`);
-  else check(checks,"error","Unable to normalize one or more innings-pitched values");
-
   const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
+
   const payload={
-    schema_version:2,
-    source:"ndwiffle_admin_v23",
+    schema_version:3,
+    source:"ndwiffle_admin_v24",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     games,
     gp_overrides:overrides,
+    pitching_usage:pitchers.map(p=>({
+      player:p.name,team:p.team,side:p.side,
+      appearances:pitchingUsage[p.name]?.appearances??null,
+      starts:pitchingUsage[p.name]?.starts??null
+    })),
+    manual_corrections:corrections,
     commissioner_notes:document.getElementById("notes").value.trim()||null,
     participants,
     batting,

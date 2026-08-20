@@ -1,13 +1,12 @@
-# ND Wiffle League Website v23
+# ND Wiffle League Website v24
 
-Admin importer payload hardening:
-- Payload schema upgraded to version 2.
-- Adds normalized individual batting rows using trusted counting stats only.
-- Adds normalized individual pitching rows with innings converted to integer outs_recorded.
-- Adds pitcher decision summaries derived only from the three admin-entered games.
-- Adds deterministic series_id for duplicate/replace handling.
-- Adds season/date consistency validation.
-- Adds explicit per-warning commissioner approval checkboxes and records approved warnings in the payload.
-- Preserves source totals for reconciliation/audit.
-- GP overrides and zero-stat roster exclusion remain unchanged.
-- Publish remains disabled until the protected Cloudflare/D1 backend is implemented.
+Admin importer enhancements:
+- Adds required pitching appearances and starts inputs for every detected pitcher.
+- Validates Apps 1–3, Starts 0–3, Starts <= Apps, and normally 3 team starts per three-game series.
+- Adds player-level manual pitching stat corrections.
+- Manual corrections require pitcher, field, corrected value, and reason.
+- Original iScore source values remain preserved; corrections are stored separately in manual_corrections.
+- Corrected player pitching rows drive corrected team aggregate validation.
+- Warning approval remains available as an alternative, but an explanation is required for every approved warning.
+- Payload schema upgraded to version 3 and includes pitching_usage and manual_corrections.
+- Publish remains disabled until the Cloudflare Access + D1 backend is connected.
