@@ -1,2 +1,2 @@
-ND Wiffle build v33
-Enhanced homepage series cards + full public Results archive.
+ND Wiffle build v34
+Live 2026 schedule: one 3-game series per event, Upcoming -> Final.

@@ -1,4 +1,4 @@
-# ND Wiffle League Website v33
+# ND Wiffle League Website v34
 
 v26 connects the public 2026 league pages to D1.
 
@@ -90,3 +90,12 @@ The current static historical database is treated as the authoritative 2021–20
   - full series pitching box scores for both teams
 - `View Series` links from the homepage deep-link to the correct expanded series.
 - Adds Results to the site navigation.
+
+## v34: live schedule
+- Keeps the authoritative 36-series 2026 home/away schedule.
+- Treats each matchup as one three-game series event rather than three separate scheduled games.
+- Normal public state is intentionally simple: `Upcoming` or `Final`.
+- When a completed series is published through `/admin`, the matching schedule card automatically becomes Final.
+- Final cards show the series record, all three game scores, official date from D1, and a `View Series` deep-link.
+- Adds All / Upcoming / Final and team filters.
+- Rare weather delays require no special normal workflow; the commissioner publishes after the three-game set is complete.
