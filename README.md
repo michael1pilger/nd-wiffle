@@ -1,4 +1,4 @@
-# ND Wiffle League Website v30
+# ND Wiffle League Website v32
 
 v26 connects the public 2026 league pages to D1.
 
@@ -61,3 +61,19 @@ The current static historical database is treated as the authoritative 2021–20
 - Publish generates a deterministic D1 player ID and inserts the new player in the same D1 batch as the series.
 - The original iScore name remains in the payload for auditability through `player_resolutions`.
 - Server-side validation repeats the identity checks and refuses unconfirmed/invalid new players.
+
+## v31: homepage series results
+- Adds a live `Recent Series` section immediately below the 2026 season banner.
+- Reads official 2026 games from the existing public D1 API.
+- Groups each three-game set into one series card.
+- Shows series winner, series record, individual game scores, team logos, and series date.
+- Displays the six most recent published series.
+- Shows a clean preseason empty state until the first 2026 series is published.
+
+## v32
+- Adds the user-supplied South Quad wiffleball photo beside `The Home of ND Wiffleball`.
+- Uses the actual supplied photo, with web compression only.
+- New default Grid:
+  - Rows: 10+ Career RBI / Goobers / .900+ Career OPS
+  - Columns: 5+ Career HR / 50+ Career PA / Midnight
+- All existing Grid rarity, scoring, compact team-logo, answer-rank, and New Grid behavior is retained.

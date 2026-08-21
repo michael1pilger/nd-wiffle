@@ -1,4 +1,40 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=30"></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=32">
+<style>
+.home-results{margin-top:28px}
+.home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:12px}
+.home-results-head h2{margin:3px 0 0;font-size:27px}
+.home-results-link{font-size:13px;font-weight:850;color:var(--gold);text-decoration:none;white-space:nowrap}
+.home-results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.series-result-card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:14px;min-width:0}
+.series-result-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.series-result-date{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.series-result-status{font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase}
+.series-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0}
+.series-team{display:flex;gap:9px;align-items:center;min-width:0;font-weight:850}
+.series-team img{width:27px;height:27px;object-fit:contain;flex:0 0 27px}
+.series-team span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.series-wins{font-size:22px;font-weight:950;line-height:1}
+.series-team-row.winner .series-team,.series-team-row.winner .series-wins{color:#fff}
+.series-team-row.loser{color:var(--muted)}
+.series-games{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid rgba(255,255,255,.08);padding-top:11px;margin-top:5px}
+.series-game{border-radius:8px;background:#0b1525;padding:7px 5px;text-align:center}
+.series-game small{display:block;font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:3px}
+.series-game strong{font-size:13px}
+.series-empty{border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);background:rgba(255,255,255,.015)}
+.series-loading{border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted)}
+@media(max-width:900px){.home-results-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.home-results-head{display:block}.home-results-link{display:inline-block;margin-top:8px}.home-results-grid{grid-template-columns:1fr}}
+</style>
+
+<style>
+.home-hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:34px;align-items:center;margin-bottom:26px}
+.home-hero-copy h1{margin-top:5px}
+.home-hero-photo{position:relative;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+.home-hero-photo img{display:block;width:100%;height:440px;object-fit:cover;object-position:center}
+.home-hero-photo:after{content:"South Quad · Notre Dame";position:absolute;left:12px;bottom:12px;background:rgba(5,13,25,.78);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px);border-radius:999px;padding:7px 10px;color:#fff;font-size:11px;font-weight:850;letter-spacing:.03em}
+@media(max-width:900px){.home-hero-grid{grid-template-columns:1fr;gap:20px}.home-hero-photo{order:-1}.home-hero-photo img{height:min(68vw,520px)}}
+</style>
+</head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <div class="game-ticker" aria-label="Upcoming events">
   <div class="game-ticker-inner">
@@ -16,8 +52,103 @@
     </div>
   </div>
 </div>
-<main><div class="container league-main"><div class="eyebrow">Notre Dame Wiffleball League</div><h1>The Home of ND Wiffleball</h1><p>The Notre Dame Wiffleball League is a league where students of all baseball backgrounds and skill levels can compete and get to know each other on the South Quad of Notre Dame’s campus, right outside Alumni Hall. Founded in 2021 by then-Freshmen Matthew Doty and Michael Pilger, the league has grown to 10 teams and over 100 players annually. Each season begins on the first day of the academic year for Notre Dame, often the 2nd-to-last Monday in August, and typically ends in mid-to-late November.</p><a class="instagram-callout" href="https://www.instagram.com/nd_wiffleball/" target="_blank" rel="noopener noreferrer" aria-label="Follow ND Wiffleball on Instagram">
+<main><div class="container league-main"><div class="home-hero-grid">
+<div class="home-hero-copy"><div class="eyebrow">Notre Dame Wiffleball League</div><h1>The Home of ND Wiffleball</h1><p>The Notre Dame Wiffleball League is a league where students of all baseball backgrounds and skill levels can compete and get to know each other on the South Quad of Notre Dame’s campus, right outside Alumni Hall. Founded in 2021 by then-Freshmen Matthew Doty and Michael Pilger, the league has grown to 10 teams and over 100 players annually. Each season begins on the first day of the academic year for Notre Dame, often the 2nd-to-last Monday in August, and typically ends in mid-to-late November.</p><a class="instagram-callout" href="https://www.instagram.com/nd_wiffleball/" target="_blank" rel="noopener noreferrer" aria-label="Follow ND Wiffleball on Instagram">
   <span class="instagram-mark">◎</span>
   <span><small>FOLLOW THE LEAGUE</small><strong>@nd_wiffleball</strong></span>
   <span class="instagram-arrow">↗</span>
-</a><div class="season-banner"><div><div class="eyebrow">2026 Season</div><div style="font-size:22px;font-weight:800;margin-top:6px">The league enters its 6th year.</div><div class="muted" style="margin-top:6px">9 teams compete for the 2026 title.</div></div><div class="season-number">2026</div></div></div><section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 9 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer></body></html>
+</a></div>
+<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=32" alt="ND Wiffleball game on South Quad"></div>
+</div><div class="season-banner"><div><div class="eyebrow">2026 Season</div><div style="font-size:22px;font-weight:800;margin-top:6px">The league enters its 6th year.</div><div class="muted" style="margin-top:6px">9 teams compete for the 2026 title.</div></div><div class="season-number">2026</div></div>
+
+<div class="home-results" aria-live="polite">
+  <div class="home-results-head">
+    <div><div class="eyebrow">2026 Results</div><h2>Recent Series</h2></div>
+    <a class="home-results-link" href="/schedule/">View 2026 Schedule →</a>
+  </div>
+  <div id="homeSeriesResults" class="series-loading">Loading published 2026 results…</div>
+</div></div><section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 9 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
+<script>
+const HOME_TEAM_LOGOS={
+  "storm":"/assets/logos/storm.png?v=32",
+  "midnight":"/assets/logos/midnight.png?v=32",
+  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=32",
+  "ball-busters":"/assets/logos/ball-busters.png?v=32",
+  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=32",
+  "twin-titans":"/assets/logos/twin-titans.png?v=32",
+  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=32",
+  "silverbacks":"/assets/logos/silverbacks.png?v=32",
+  "underdawgs":"/assets/logos/underdawgs.png?v=32",
+  "zyns":"/assets/logos/zyns.png?v=32"
+};
+function formatSeriesDate(value){
+  if(!value)return "";
+  const d=new Date(`${value}T12:00:00`);
+  if(Number.isNaN(d.getTime()))return value;
+  return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+}
+function groupSeries(games){
+  const map=new Map();
+  for(const g of games||[]){
+    let s=map.get(g.series_id);
+    if(!s){
+      s={
+        series_id:g.series_id,date:g.series_date,
+        away_team_id:g.away_team_id,home_team_id:g.home_team_id,
+        away_team:g.away_team,home_team:g.home_team,games:[]
+      };
+      map.set(g.series_id,s);
+    }
+    s.games.push(g);
+  }
+  return [...map.values()].map(s=>{
+    s.games.sort((a,b)=>a.game_number-b.game_number);
+    s.awayWins=s.games.filter(g=>Number(g.away_score)>Number(g.home_score)).length;
+    s.homeWins=s.games.filter(g=>Number(g.home_score)>Number(g.away_score)).length;
+    return s;
+  }).sort((a,b)=>String(b.date).localeCompare(String(a.date)) || b.series_id.localeCompare(a.series_id));
+}
+function teamRow(teamId,name,wins,isWinner){
+  const logo=HOME_TEAM_LOGOS[teamId];
+  return `<div class="series-team-row ${isWinner?"winner":"loser"}">
+    <div class="series-team">${logo?`<img src="${logo}" alt="">`:""}<span>${name}</span></div>
+    <div class="series-wins">${wins}</div>
+  </div>`;
+}
+function renderHomeSeries(games){
+  const target=document.getElementById("homeSeriesResults");
+  const series=groupSeries(games);
+  if(!series.length){
+    target.className="series-empty";
+    target.innerHTML="<strong>No 2026 results yet.</strong><br>Published series will appear here automatically after commissioners submit them.";
+    return;
+  }
+  const latest=series.slice(0,6);
+  target.className="home-results-grid";
+  target.innerHTML=latest.map(s=>{
+    const awayWon=s.awayWins>s.homeWins,homeWon=s.homeWins>s.awayWins;
+    const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
+    const status=awayWon||homeWon?`${winner} wins ${Math.max(s.awayWins,s.homeWins)}–${Math.min(s.awayWins,s.homeWins)}`:"Series tied";
+    const games=s.games.map(g=>`<div class="series-game"><small>Game ${g.game_number}</small><strong>${g.away_score}–${g.home_score}</strong></div>`).join("");
+    return `<article class="series-result-card">
+      <div class="series-result-top"><div class="series-result-date">${formatSeriesDate(s.date)}</div><div class="series-result-status">${status}</div></div>
+      ${teamRow(s.away_team_id,s.away_team,s.awayWins,awayWon)}
+      ${teamRow(s.home_team_id,s.home_team,s.homeWins,homeWon)}
+      <div class="series-games">${games}</div>
+    </article>`;
+  }).join("");
+}
+fetch("/api/public/league?season=2026",{cache:"no-store"})
+  .then(async r=>({ok:r.ok,body:await r.json()}))
+  .then(({ok,body})=>{
+    if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");
+    renderHomeSeries(body.games||[]);
+  })
+  .catch(err=>{
+    console.error(err);
+    const target=document.getElementById("homeSeriesResults");
+    target.className="series-empty";
+    target.textContent="Recent results are temporarily unavailable.";
+  });
+</script>
+</body></html>

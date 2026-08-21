@@ -1,2 +1,2 @@
-ND Wiffle build v30
-Unknown-player review + confirmed rookie auto-creation.
+ND Wiffle build v32
+Homepage photo hero + new default Immaculate Grid.
