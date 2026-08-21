@@ -1,2 +1,2 @@
-ND Wiffle build v34
-Live 2026 schedule: one 3-game series per event, Upcoming -> Final.
+ND Wiffle build v35
+2026 roster manager + homepage league format/rules section.

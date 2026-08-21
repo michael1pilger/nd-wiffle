@@ -1,0 +1,82 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roster Manager | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=35">
+<style>
+.roster-shell{padding:34px 0 55px}.roster-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:15px 0}
+.roster-btn{border:1px solid var(--border);background:#132138;color:#fff;border-radius:9px;padding:10px 13px;font-weight:850;cursor:pointer}.roster-btn.primary{background:var(--gold);border-color:var(--gold);color:#111}
+.roster-status{font-size:12px;color:var(--muted)}.roster-status.ok{color:#71d49c}.roster-status.err{color:#eb7884}
+.new-player-box{border:1px solid var(--border);border-radius:13px;padding:14px;background:var(--panel);margin:18px 0}
+.new-player-grid{display:grid;grid-template-columns:minmax(200px,1.5fr) 120px minmax(160px,1fr) 130px auto;gap:8px;align-items:end}
+.new-player-grid label,.roster-filter label{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase}.new-player-grid input,.new-player-grid select,.roster-filter input,.roster-filter select,.roster-row select{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}
+.roster-filter{display:grid;grid-template-columns:minmax(220px,1fr) 180px auto;gap:8px;align-items:end;margin:17px 0}
+.roster-table{display:grid;gap:7px}.roster-head,.roster-row{display:grid;grid-template-columns:minmax(220px,1.4fr) 110px minmax(180px,1fr) 140px;gap:8px;align-items:center}
+.roster-head{padding:0 10px;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase}.roster-row{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:9px 10px}
+.roster-name{font-weight:900}.roster-name small{display:block;color:var(--muted);font-weight:500;margin-top:2px}.roster-counts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.roster-chip{font-size:11px;border:1px solid var(--border);border-radius:999px;padding:5px 8px;color:var(--muted)}
+@media(max-width:760px){.new-player-grid,.roster-filter{grid-template-columns:1fr}.roster-head{display:none}.roster-row{grid-template-columns:1fr 1fr}.roster-name{grid-column:1/-1}}
+</style></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Series Upload</a><a class="active" href="/admin/rosters/">Rosters</a></div></div></div>
+<main class="roster-shell"><div class="container"><div class="eyebrow">Commissioner Tools · BUILD v35</div><h1>2026 Roster Manager</h1>
+<p class="muted">Assign signed-up players to 2026 teams. Unassigned players stay in the registry but do not appear on a 2026 roster. New rookies can be created here before they ever appear in an iScore upload.</p>
+<div class="new-player-box"><h2 style="margin-top:0">Add New Player</h2><div class="new-player-grid">
+<div><label>Name</label><input id="newName" placeholder="Full name"></div>
+<div><label>Class Year</label><input id="newClass" type="number" min="2026" max="2100" placeholder="2029"></div>
+<div><label>Team</label><select id="newTeam"><option value="">Unassigned</option></select></div>
+<div><label>Role</label><select id="newRole"><option value="player">Player</option><option value="captain">Captain</option><option value="protected">Protected</option></select></div>
+<button class="roster-btn" id="addPlayerBtn" type="button">Add Player</button>
+</div></div>
+<div class="roster-filter"><div><label>Search</label><input id="rosterSearch" placeholder="Search players..."></div><div><label>Show</label><select id="showFilter"><option value="active">Active registry players</option><option value="all">All players</option><option value="assigned">Assigned only</option><option value="unassigned">Unassigned only</option></select></div><button class="roster-btn primary" id="saveBtn" type="button">Save 2026 Rosters</button></div>
+<div id="rosterCounts" class="roster-counts"></div><div id="status" class="roster-status"></div>
+<div class="roster-table"><div class="roster-head"><div>Player</div><div>Class</div><div>2026 Team</div><div>Role</div></div><div id="rosterRows"></div></div>
+</div></main>
+<script>
+let DATA={players:[],teams:[],rosters:[]};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const byAssignment=()=>new Map((DATA.rosters||[]).map(r=>[r.player_id,r]));
+function setStatus(msg,type=""){const el=document.getElementById("status");el.textContent=msg;el.className="roster-status "+type}
+function teamOptions(selected=""){return '<option value="">Unassigned</option>'+DATA.teams.map(t=>`<option value="${t.team_id}" ${t.team_id===selected?"selected":""}>${esc(t.display_name)}</option>`).join("")}
+function render(){
+ const q=document.getElementById("rosterSearch").value.trim().toLowerCase(),show=document.getElementById("showFilter").value,a=byAssignment();
+ const rows=DATA.players.filter(p=>{
+   const assigned=a.has(p.player_id);
+   if(show==="active"&&Number(p.retired)===1)return false;
+   if(show==="assigned"&&!assigned)return false;
+   if(show==="unassigned"&&assigned)return false;
+   if(q&&!`${p.name} ${p.class_year||""}`.toLowerCase().includes(q))return false;
+   return true;
+ });
+ document.getElementById("rosterRows").innerHTML=rows.map(p=>{
+   const x=a.get(p.player_id)||{};
+   return `<div class="roster-row" data-player="${p.player_id}"><div class="roster-name">${esc(p.name)}${Number(p.retired)===1?'<small>Retired</small>':""}</div><div>${p.class_year||"—"}</div><div><select class="teamSel">${teamOptions(x.team_id||"")}</select></div><div><select class="roleSel"><option value="player" ${(x.role||"player")==="player"?"selected":""}>Player</option><option value="captain" ${x.role==="captain"?"selected":""}>Captain</option><option value="protected" ${x.role==="protected"?"selected":""}>Protected</option></select></div></div>`;
+ }).join("");
+ const counts=new Map(DATA.teams.map(t=>[t.team_id,0]));for(const x of a.values())counts.set(x.team_id,(counts.get(x.team_id)||0)+1);
+ document.getElementById("rosterCounts").innerHTML=DATA.teams.map(t=>`<span class="roster-chip">${esc(t.display_name)}: ${counts.get(t.team_id)||0}</span>`).join("");
+}
+async function load(){
+ setStatus("Loading roster registry...");
+ const res=await fetch("/api/admin/rosters?season=2026",{cache:"no-store"}),j=await res.json();
+ if(!res.ok||!j.ok){setStatus(j.error||"Roster manager unavailable.","err");return}
+ DATA=j;
+ document.getElementById("newTeam").innerHTML=teamOptions("");
+ render();setStatus(`${DATA.rosters.length} players currently assigned to 2026 teams.`,"ok");
+}
+document.getElementById("rosterSearch").addEventListener("input",render);
+document.getElementById("showFilter").addEventListener("change",render);
+document.getElementById("addPlayerBtn").addEventListener("click",async()=>{
+ const body={action:"create_player",season:2026,name:document.getElementById("newName").value,class_year:Number(document.getElementById("newClass").value),team_id:document.getElementById("newTeam").value,role:document.getElementById("newRole").value};
+ setStatus("Creating player...");
+ const res=await fetch("/api/admin/rosters",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),j=await res.json();
+ if(!res.ok||!j.ok){setStatus(j.error||"Could not create player.","err");return}
+ document.getElementById("newName").value="";document.getElementById("newClass").value="";document.getElementById("newTeam").value="";document.getElementById("newRole").value="player";
+ await load();setStatus(`${j.player.name} was added to the registry.`,"ok");
+});
+document.getElementById("saveBtn").addEventListener("click",async()=>{
+ const assignments=[...document.querySelectorAll(".roster-row")].map(row=>({player_id:row.dataset.player,team_id:row.querySelector(".teamSel").value,role:row.querySelector(".roleSel").value})).filter(x=>x.team_id);
+ // Preserve assignments hidden by current search/filter.
+ const visible=new Set([...document.querySelectorAll(".roster-row")].map(r=>r.dataset.player));
+ for(const r of DATA.rosters)if(!visible.has(r.player_id))assignments.push({player_id:r.player_id,team_id:r.team_id,role:r.role||"player"});
+ setStatus("Saving roster snapshot...");
+ const res=await fetch("/api/admin/rosters",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"save",season:2026,assignments})}),j=await res.json();
+ if(!res.ok||!j.ok){setStatus((j.errors||[j.error]).join(" · "),"err");return}
+ await load();setStatus(`Saved ${j.assigned} 2026 roster assignments.`,"ok");
+});
+load().catch(e=>setStatus(String(e.message||e),"err"));
+</script></body></html>

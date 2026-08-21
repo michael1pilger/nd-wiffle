@@ -1,4 +1,4 @@
-# ND Wiffle League Website v34
+# ND Wiffle League Website v35
 
 v26 connects the public 2026 league pages to D1.
 
@@ -99,3 +99,19 @@ The current static historical database is treated as the authoritative 2021–20
 - Final cards show the series record, all three game scores, official date from D1, and a `View Series` deep-link.
 - Adds All / Upcoming / Final and team filters.
 - Rare weather delays require no special normal workflow; the commissioner publishes after the three-game set is complete.
+
+## v35: roster management + league format
+- Adds `migrations/0003_team_rosters.sql`.
+- Adds Access-protected `/admin/rosters/`.
+- Commissioners can assign existing registry players to 2026 teams and mark them Player / Captain / Protected.
+- Commissioners can create new players before games begin; class year is required for newly created players.
+- Adds `/api/admin/rosters` and read-only `/api/public/rosters?season=2026`.
+- Active team pages now show a live 2026 roster.
+- Player directory merges published 2026 roster assignments into team history, even before a player appears in a game.
+- Homepage now contains `How ND Wiffle Works` immediately after Recent Series and before League History, covering:
+  - season timing
+  - 24-game schedule and 7-team playoff format
+  - attendance / 4v4 norms / typical game windows
+  - protected-player and compensatory-pick draft system
+  - three-game series structure
+  - six major ND Wiffle rule differences

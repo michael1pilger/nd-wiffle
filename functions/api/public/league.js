@@ -168,7 +168,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v34",season,
+      ok:true,build:"v35",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,
