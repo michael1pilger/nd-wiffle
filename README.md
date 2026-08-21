@@ -1,4 +1,4 @@
-# ND Wiffle League Website v32
+# ND Wiffle League Website v33
 
 v26 connects the public 2026 league pages to D1.
 
@@ -77,3 +77,16 @@ The current static historical database is treated as the authoritative 2021–20
   - Rows: 10+ Career RBI / Goobers / .900+ Career OPS
   - Columns: 5+ Career HR / 50+ Career PA / Midnight
 - All existing Grid rarity, scoring, compact team-logo, answer-rank, and New Grid behavior is retained.
+
+## v33: public results experience
+- Adds `GET /api/public/results?season=2026` for normalized series-level public data.
+- Homepage Recent Series cards now show top batter, top pitcher, and `View Series`.
+- Adds `/results/` as a chronological archive of every published 2026 series.
+- Results cards expand to show:
+  - all three game scores
+  - WP / LP / SV for each game
+  - top batter and top pitcher
+  - full series batting box scores for both teams
+  - full series pitching box scores for both teams
+- `View Series` links from the homepage deep-link to the correct expanded series.
+- Adds Results to the site navigation.

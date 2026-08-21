@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=32">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=33">
 <style>
 .home-results{margin-top:28px}
 .home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:12px}
@@ -34,7 +34,18 @@
 .home-hero-photo:after{content:"South Quad · Notre Dame";position:absolute;left:12px;bottom:12px;background:rgba(5,13,25,.78);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px);border-radius:999px;padding:7px 10px;color:#fff;font-size:11px;font-weight:850;letter-spacing:.03em}
 @media(max-width:900px){.home-hero-grid{grid-template-columns:1fr;gap:20px}.home-hero-photo{order:-1}.home-hero-photo img{height:min(68vw,520px)}}
 </style>
-</head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
+
+<style>
+.series-result-card{display:flex;flex-direction:column}
+.series-performers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.series-performer{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:9px;min-width:0}
+.series-performer small{display:block;color:var(--gold);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.series-performer strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.series-performer span{display:block;color:var(--muted);font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.series-card-link{display:inline-flex;margin-top:11px;color:var(--gold);font-size:11px;font-weight:900;text-decoration:none;align-self:flex-start}
+@media(max-width:620px){.series-performers{grid-template-columns:1fr 1fr}}
+</style>
+</head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/results/">Results</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <div class="game-ticker" aria-label="Upcoming events">
   <div class="game-ticker-inner">
@@ -58,91 +69,80 @@
   <span><small>FOLLOW THE LEAGUE</small><strong>@nd_wiffleball</strong></span>
   <span class="instagram-arrow">↗</span>
 </a></div>
-<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=32" alt="ND Wiffleball game on South Quad"></div>
+<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=33" alt="ND Wiffleball game on South Quad"></div>
 </div><div class="season-banner"><div><div class="eyebrow">2026 Season</div><div style="font-size:22px;font-weight:800;margin-top:6px">The league enters its 6th year.</div><div class="muted" style="margin-top:6px">9 teams compete for the 2026 title.</div></div><div class="season-number">2026</div></div>
 
 <div class="home-results" aria-live="polite">
   <div class="home-results-head">
     <div><div class="eyebrow">2026 Results</div><h2>Recent Series</h2></div>
-    <a class="home-results-link" href="/schedule/">View 2026 Schedule →</a>
+    <a class="home-results-link" href="/results/">View All Results →</a>
   </div>
   <div id="homeSeriesResults" class="series-loading">Loading published 2026 results…</div>
 </div></div><section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 9 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script>
 const HOME_TEAM_LOGOS={
-  "storm":"/assets/logos/storm.png?v=32",
-  "midnight":"/assets/logos/midnight.png?v=32",
-  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=32",
-  "ball-busters":"/assets/logos/ball-busters.png?v=32",
-  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=32",
-  "twin-titans":"/assets/logos/twin-titans.png?v=32",
-  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=32",
-  "silverbacks":"/assets/logos/silverbacks.png?v=32",
-  "underdawgs":"/assets/logos/underdawgs.png?v=32",
-  "zyns":"/assets/logos/zyns.png?v=32"
+  "storm":"/assets/logos/storm.png?v=33","midnight":"/assets/logos/midnight.png?v=33",
+  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=33","ball-busters":"/assets/logos/ball-busters.png?v=33",
+  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=33","twin-titans":"/assets/logos/twin-titans.png?v=33",
+  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=33","silverbacks":"/assets/logos/silverbacks.png?v=33",
+  "underdawgs":"/assets/logos/underdawgs.png?v=33","zyns":"/assets/logos/zyns.png?v=33"
 };
-function formatSeriesDate(value){
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+function fmtDate(value){
   if(!value)return "";
   const d=new Date(`${value}T12:00:00`);
-  if(Number.isNaN(d.getTime()))return value;
-  return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+  return Number.isNaN(d.getTime())?value:d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 }
-function groupSeries(games){
-  const map=new Map();
-  for(const g of games||[]){
-    let s=map.get(g.series_id);
-    if(!s){
-      s={
-        series_id:g.series_id,date:g.series_date,
-        away_team_id:g.away_team_id,home_team_id:g.home_team_id,
-        away_team:g.away_team,home_team:g.home_team,games:[]
-      };
-      map.set(g.series_id,s);
-    }
-    s.games.push(g);
-  }
-  return [...map.values()].map(s=>{
-    s.games.sort((a,b)=>a.game_number-b.game_number);
-    s.awayWins=s.games.filter(g=>Number(g.away_score)>Number(g.home_score)).length;
-    s.homeWins=s.games.filter(g=>Number(g.home_score)>Number(g.away_score)).length;
-    return s;
-  }).sort((a,b)=>String(b.date).localeCompare(String(a.date)) || b.series_id.localeCompare(a.series_id));
+function topBatter(rows){
+  return [...(rows||[])].sort((a,b)=>{
+    const as=Number(a.H||0)+2*Number(a.HR||0)+Number(a.RBI||0)+Number(a.BB||0);
+    const bs=Number(b.H||0)+2*Number(b.HR||0)+Number(b.RBI||0)+Number(b.BB||0);
+    return bs-as || Number(b.HR||0)-Number(a.HR||0) || Number(b.H||0)-Number(a.H||0);
+  })[0]||null;
 }
-function teamRow(teamId,name,wins,isWinner){
-  const logo=HOME_TEAM_LOGOS[teamId];
-  return `<div class="series-team-row ${isWinner?"winner":"loser"}">
-    <div class="series-team">${logo?`<img src="${logo}" alt="">`:""}<span>${name}</span></div>
-    <div class="series-wins">${wins}</div>
-  </div>`;
+function topPitcher(rows){
+  return [...(rows||[])].sort((a,b)=>{
+    const as=6*Number(a.W||0)+3*Number(a.S||0)+Number(a.K||0)-2*Number(a.ER||0)-0.5*Number(a.BB||0);
+    const bs=6*Number(b.W||0)+3*Number(b.S||0)+Number(b.K||0)-2*Number(b.ER||0)-0.5*Number(b.BB||0);
+    return bs-as || Number(b.K||0)-Number(a.K||0) || Number(a.ER||0)-Number(b.ER||0);
+  })[0]||null;
 }
-function renderHomeSeries(games){
+function teamRow(id,name,wins,isWinner){
+  const logo=HOME_TEAM_LOGOS[id];
+  return `<div class="series-team-row ${isWinner?"winner":"loser"}"><div class="series-team">${logo?`<img src="${logo}" alt="">`:""}<span>${esc(name)}</span></div><div class="series-wins">${wins}</div></div>`;
+}
+function renderHomeSeries(series){
   const target=document.getElementById("homeSeriesResults");
-  const series=groupSeries(games);
   if(!series.length){
     target.className="series-empty";
     target.innerHTML="<strong>No 2026 results yet.</strong><br>Published series will appear here automatically after commissioners submit them.";
     return;
   }
-  const latest=series.slice(0,6);
   target.className="home-results-grid";
-  target.innerHTML=latest.map(s=>{
-    const awayWon=s.awayWins>s.homeWins,homeWon=s.homeWins>s.awayWins;
+  target.innerHTML=series.slice(0,6).map(s=>{
+    const awayWon=s.away_wins>s.home_wins,homeWon=s.home_wins>s.away_wins;
     const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
-    const status=awayWon||homeWon?`${winner} wins ${Math.max(s.awayWins,s.homeWins)}–${Math.min(s.awayWins,s.homeWins)}`:"Series tied";
-    const games=s.games.map(g=>`<div class="series-game"><small>Game ${g.game_number}</small><strong>${g.away_score}–${g.home_score}</strong></div>`).join("");
+    const status=awayWon||homeWon?`${winner} wins ${Math.max(s.away_wins,s.home_wins)}–${Math.min(s.away_wins,s.home_wins)}`:"Series tied";
+    const games=(s.games||[]).map(g=>`<div class="series-game"><small>Game ${g.game_number}</small><strong>${g.away_score}–${g.home_score}</strong></div>`).join("");
+    const bat=topBatter(s.batting),pit=topPitcher(s.pitching);
     return `<article class="series-result-card">
-      <div class="series-result-top"><div class="series-result-date">${formatSeriesDate(s.date)}</div><div class="series-result-status">${status}</div></div>
-      ${teamRow(s.away_team_id,s.away_team,s.awayWins,awayWon)}
-      ${teamRow(s.home_team_id,s.home_team,s.homeWins,homeWon)}
+      <div class="series-result-top"><div class="series-result-date">${fmtDate(s.series_date)}</div><div class="series-result-status">${esc(status)}</div></div>
+      ${teamRow(s.away_team_id,s.away_team,s.away_wins,awayWon)}
+      ${teamRow(s.home_team_id,s.home_team,s.home_wins,homeWon)}
       <div class="series-games">${games}</div>
+      <div class="series-performers">
+        <div class="series-performer"><small>Top Batter</small>${bat?`<strong>${esc(bat.name)}</strong><span>${bat.H} H · ${bat.HR} HR · ${bat.RBI} RBI</span>`:"<span>—</span>"}</div>
+        <div class="series-performer"><small>Top Pitcher</small>${pit?`<strong>${esc(pit.name)}</strong><span>${pit.W}-${pit.L}${pit.S?` · ${pit.S} SV`:""} · ${pit.IP} IP · ${pit.K} K · ${pit.ER} ER</span>`:"<span>—</span>"}</div>
+      </div>
+      <a class="series-card-link" href="/results/?series=${encodeURIComponent(s.series_id)}">View Series →</a>
     </article>`;
   }).join("");
 }
-fetch("/api/public/league?season=2026",{cache:"no-store"})
+fetch("/api/public/results?season=2026",{cache:"no-store"})
   .then(async r=>({ok:r.ok,body:await r.json()}))
   .then(({ok,body})=>{
     if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");
-    renderHomeSeries(body.games||[]);
+    renderHomeSeries(body.series||[]);
   })
   .catch(err=>{
     console.error(err);

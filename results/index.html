@@ -1,0 +1,108 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=33">
+<style>
+.results-list{display:grid;gap:15px;padding-bottom:40px}
+.result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
+.result-summary{display:grid;grid-template-columns:140px minmax(0,1fr) 170px 28px;gap:18px;align-items:center;padding:17px 18px;cursor:pointer}
+.result-summary:hover{background:rgba(255,255,255,.018)}
+.result-date{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}
+.result-matchup{display:flex;align-items:center;gap:12px;min-width:0}
+.result-team{display:flex;align-items:center;gap:7px;font-weight:900;min-width:0}
+.result-team img{width:28px;height:28px;object-fit:contain}
+.result-team span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result-vs{color:var(--muted);font-size:11px;font-weight:800}
+.result-outcome{text-align:right;color:var(--gold);font-size:12px;font-weight:900;text-transform:uppercase}
+.result-chevron{font-size:18px;transition:transform .18s ease}
+.result-series.open .result-chevron{transform:rotate(180deg)}
+.result-detail{display:none;border-top:1px solid var(--border);padding:18px}
+.result-series.open .result-detail{display:block}
+.result-score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.result-game{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px}
+.result-game .game-num{font-size:9px;color:var(--gold);font-weight:900;text-transform:uppercase}
+.result-game .game-score{font-size:18px;font-weight:950;margin:5px 0}
+.result-game .decision{font-size:10px;color:var(--muted);line-height:1.5}
+.result-stars{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.result-star{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px}
+.result-star small{display:block;color:var(--gold);font-size:9px;font-weight:900;text-transform:uppercase}
+.result-star strong{display:block;margin-top:4px}
+.result-star span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.boxscore-title{font-size:14px;font-weight:900;margin:18px 0 8px}
+.result-table{width:100%;font-size:11px;border-collapse:collapse}
+.result-table th,.result-table td{padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right;white-space:nowrap}
+.result-table th:first-child,.result-table td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+.result-table th{color:var(--muted);font-size:9px;text-transform:uppercase}
+.result-team-heading{display:flex;align-items:center;gap:8px;margin-top:15px;font-weight:900}
+.result-team-heading img{width:25px;height:25px;object-fit:contain}
+.result-empty{border:1px dashed var(--border);border-radius:14px;padding:20px;color:var(--muted)}
+.results-meta{margin-top:5px;color:var(--muted);font-size:12px}
+@media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
+</style></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="active" href="/results/">Results</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
+<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
+<div class="container"><div id="resultsList" class="results-list"><div class="result-empty">Loading published results…</div></div></div></main>
+<footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
+<script>
+const TEAM_LOGOS={
+ "storm":"/assets/logos/storm.png?v=33","midnight":"/assets/logos/midnight.png?v=33","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=33",
+ "ball-busters":"/assets/logos/ball-busters.png?v=33","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=33","twin-titans":"/assets/logos/twin-titans.png?v=33",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=33","silverbacks":"/assets/logos/silverbacks.png?v=33","underdawgs":"/assets/logos/underdawgs.png?v=33","zyns":"/assets/logos/zyns.png?v=33"
+};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
+function logo(id,name){return TEAM_LOGOS[id]?`<img src="${TEAM_LOGOS[id]}" alt="${esc(name)}">`:""}
+function topBatter(rows){
+ return [...rows].sort((a,b)=>(Number(b.H)+2*Number(b.HR)+Number(b.RBI)+Number(b.BB))-(Number(a.H)+2*Number(a.HR)+Number(a.RBI)+Number(a.BB))||Number(b.HR)-Number(a.HR)||Number(b.H)-Number(a.H))[0]||null
+}
+function topPitcher(rows){
+ return [...rows].sort((a,b)=>(6*Number(b.W)+3*Number(b.S)+Number(b.K)-2*Number(b.ER)-.5*Number(b.BB))-(6*Number(a.W)+3*Number(a.S)+Number(a.K)-2*Number(a.ER)-.5*Number(a.BB))||Number(b.K)-Number(a.K)||Number(a.ER)-Number(b.ER))[0]||null
+}
+function teamHeader(id,name){return `<div class="result-team-heading">${logo(id,name)}<span>${esc(name)}</span></div>`}
+function battingTable(rows){
+ return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.PA}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.RBI}</td><td>${r.BB}</td><td>${r.SO}</td><td>${r.BA}</td><td>${r.OPS}</td></tr>`).join("")}</tbody></table></div>`
+}
+function pitchingTable(rows){
+ return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Pitcher</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>K</th><th>ER</th><th>BB</th><th>ERA</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.W}</td><td>${r.L}</td><td>${r.S}</td><td>${r.IP}</td><td>${r.K}</td><td>${r.ER}</td><td>${r.BB}</td><td>${r.ERA}</td></tr>`).join("")}</tbody></table></div>`
+}
+function render(series){
+ const list=document.getElementById("resultsList");
+ document.getElementById("resultsMeta").textContent=`${series.length} published ${series.length===1?"series":"series"}`;
+ if(!series.length){list.innerHTML='<div class="result-empty"><strong>No 2026 results yet.</strong><br>Published series will appear here automatically.</div>';return}
+ const requested=new URLSearchParams(location.search).get("series");
+ list.innerHTML=series.map((s,idx)=>{
+   const awayWon=s.away_wins>s.home_wins,homeWon=s.home_wins>s.away_wins;
+   const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
+   const result=awayWon||homeWon?`${winner} wins ${Math.max(s.away_wins,s.home_wins)}–${Math.min(s.away_wins,s.home_wins)}`:"Series tied";
+   const bat=topBatter(s.batting||[]),pit=topPitcher(s.pitching||[]);
+   const games=(s.games||[]).map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(s.away_team)} ${g.away_score} · ${esc(s.home_team)} ${g.home_score}</div><div class="decision">WP: ${esc(g.winning_pitcher)} · LP: ${esc(g.losing_pitcher)}${g.save_pitcher?` · SV: ${esc(g.save_pitcher)}`:""}</div></div>`).join("");
+   const teamBoxes=[["away",s.away_team_id,s.away_team],["home",s.home_team_id,s.home_team]].map(([side,id,name])=>{
+     const batRows=(s.batting||[]).filter(r=>r.side===side),pitRows=(s.pitching||[]).filter(r=>r.side===side);
+     return `${teamHeader(id,name)}<div class="boxscore-title">Batting</div>${battingTable(batRows)}<div class="boxscore-title">Pitching</div>${pitchingTable(pitRows)}`;
+   }).join("");
+   const open=requested===s.series_id || (!requested&&idx===0);
+   return `<section class="result-series ${open?"open":""}" id="${esc(s.series_id)}">
+    <div class="result-summary" data-series="${esc(s.series_id)}" role="button" tabindex="0" aria-expanded="${open}">
+      <div class="result-date">${fmtDate(s.series_date)}</div>
+      <div class="result-matchup"><div class="result-team">${logo(s.away_team_id,s.away_team)}<span>${esc(s.away_team)}</span></div><span class="result-vs">at</span><div class="result-team">${logo(s.home_team_id,s.home_team)}<span>${esc(s.home_team)}</span></div></div>
+      <div class="result-outcome">${esc(result)}</div><div class="result-chevron">⌄</div>
+    </div>
+    <div class="result-detail"><div class="result-score-strip">${games}</div>
+      <div class="result-stars">
+        <div class="result-star"><small>Top Batter</small>${bat?`<strong>${esc(bat.name)}</strong><span>${bat.H} H · ${bat.HR} HR · ${bat.RBI} RBI · ${bat.OPS} OPS</span>`:"<span>—</span>"}</div>
+        <div class="result-star"><small>Top Pitcher</small>${pit?`<strong>${esc(pit.name)}</strong><span>${pit.W}-${pit.L}${pit.S?` · ${pit.S} SV`:""} · ${pit.IP} IP · ${pit.K} K · ${pit.ER} ER</span>`:"<span>—</span>"}</div>
+      </div>${teamBoxes}
+    </div></section>`;
+ }).join("");
+ document.querySelectorAll(".result-summary").forEach(el=>{
+   const toggle=()=>{
+     const parent=el.closest(".result-series");parent.classList.toggle("open");
+     el.setAttribute("aria-expanded",parent.classList.contains("open"));
+   };
+   el.addEventListener("click",toggle);el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle()}});
+ });
+ if(requested){document.getElementById(requested)?.scrollIntoView({behavior:"smooth",block:"start"})}
+}
+fetch("/api/public/results?season=2026",{cache:"no-store"})
+ .then(async r=>({ok:r.ok,body:await r.json()}))
+ .then(({ok,body})=>{if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");render(body.series||[])})
+ .catch(err=>{console.error(err);document.getElementById("resultsList").innerHTML='<div class="result-empty">Results are temporarily unavailable.</div>'});
+</script></body></html>
