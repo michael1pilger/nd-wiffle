@@ -1,2 +1,2 @@
-ND Wiffle build v29
-Verified preview marker build.
+ND Wiffle build v30
+Unknown-player review + confirmed rookie auto-creation.

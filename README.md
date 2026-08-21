@@ -1,4 +1,4 @@
-# ND Wiffle League Website v29
+# ND Wiffle League Website v30
 
 v26 connects the public 2026 league pages to D1.
 
@@ -50,3 +50,14 @@ The current static historical database is treated as the authoritative 2021–20
 - `/api/public/league` returns `"build":"v29"`.
 - `BUILD_VERSION.txt` is a new root file so GitHub Desktop must show a change.
 - Public API uses `Cache-Control: no-store` during verification.
+
+## v30: automatic rookie creation with commissioner review
+- `/admin/` checks every active uploaded name against D1 after parsing.
+- Exact player-name and player-alias matches resolve automatically.
+- Similar names are flagged with up to three possible existing matches.
+- Names with no plausible match are still visibly flagged; they are never silently created.
+- A commissioner must explicitly choose `Confirm as new player` for a new player.
+- Class year is mandatory for a confirmed new player only. Existing players do not require class-year entry.
+- Publish generates a deterministic D1 player ID and inserts the new player in the same D1 batch as the series.
+- The original iScore name remains in the payload for auditability through `player_resolutions`.
+- Server-side validation repeats the identity checks and refuses unconfirmed/invalid new players.

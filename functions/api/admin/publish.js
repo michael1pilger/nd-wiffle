@@ -10,15 +10,23 @@ function nonnegInt(v){ return Number.isInteger(v) && v >= 0; }
 function sum(rows, key){ return rows.reduce((a,r)=>a+Number(r[key]||0),0); }
 
 async function registry(DB) {
-  const [playersRes, teamsRes, aliasesRes] = await DB.batch([
-    DB.prepare("SELECT player_id,name FROM players"),
+  const [playersRes, playerAliasesRes, teamsRes, teamAliasesRes] = await DB.batch([
+    DB.prepare("SELECT player_id,name,class_year,retired FROM players"),
+    DB.prepare("SELECT alias,player_id FROM player_aliases"),
     DB.prepare("SELECT team_id,display_name FROM teams"),
     DB.prepare("SELECT alias,team_id FROM team_aliases")
   ]);
-  const playersByName = new Map((playersRes.results||[]).map(r=>[norm(r.name),r]));
-  const teamsByName = new Map((teamsRes.results||[]).map(r=>[norm(r.display_name),r.team_id]));
-  for (const r of aliasesRes.results||[]) teamsByName.set(norm(r.alias),r.team_id);
-  return {playersByName,teamsByName};
+  const players=playersRes.results||[];
+  const playersByName=new Map(players.map(r=>[norm(r.name),r]));
+  const playersById=new Map(players.map(r=>[r.player_id,r]));
+  const playerAliasesByName=new Map();
+  for(const a of playerAliasesRes.results||[]){
+    const player=playersById.get(a.player_id);
+    if(player)playerAliasesByName.set(norm(a.alias),player);
+  }
+  const teamsByName=new Map((teamsRes.results||[]).map(r=>[norm(r.display_name),r.team_id]));
+  for(const r of teamAliasesRes.results||[])teamsByName.set(norm(r.alias),r.team_id);
+  return {playersByName,playersById,playerAliasesByName,teamsByName};
 }
 function collectPlayerNames(payload){
   const names=new Set();
@@ -30,7 +38,47 @@ function collectPlayerNames(payload){
     if(g.save_pitcher) names.add(g.save_pitcher);
   }
   for(const c of payload.manual_corrections||[]) if(c.player) names.add(c.player);
-  return [...names].filter(Boolean);
+  const byNorm=new Map();
+  for(const name of names)if(name && !byNorm.has(norm(name)))byNorm.set(norm(name),name);
+  return [...byNorm.values()];
+}
+
+function playerIdBase(name){
+  const base=String(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+  return base||"player";
+}
+function resolvePlayerIds(payload,reg,names){
+  const errors=[],newPlayers=[],playerIds=new Map();
+  const resolutions=new Map((payload.player_resolutions||[]).map(r=>[norm(r.uploaded_name),r]));
+  const reserved=new Set(reg.playersById.keys());
+  for(const name of names){
+    const k=norm(name);
+    const exact=reg.playersByName.get(k)||reg.playerAliasesByName.get(k);
+    if(exact){playerIds.set(k,exact.player_id);continue}
+    const r=resolutions.get(k);
+    if(!r){errors.push(`Unrecognized player requires commissioner review: ${name}`);continue}
+    if(r.action==="existing"){
+      const existing=reg.playersById.get(r.player_id);
+      if(!existing)errors.push(`${name}: selected existing player no longer exists.`);
+      else playerIds.set(k,existing.player_id);
+      continue;
+    }
+    if(r.action==="new"){
+      if(r.confirmed!==true){errors.push(`${name}: new player was not explicitly confirmed.`);continue}
+      if(!Number.isInteger(r.class_year)||r.class_year<2021||r.class_year>2100){
+        errors.push(`${name}: class year is required for a new player.`);continue
+      }
+      let id=playerIdBase(name),suffix=2;
+      while(reserved.has(id)){id=`${playerIdBase(name)}_${suffix++}`}
+      reserved.add(id);
+      playerIds.set(k,id);
+      newPlayers.push({player_id:id,name,class_year:r.class_year,retired:0});
+      continue;
+    }
+    errors.push(`${name}: player identity resolution is incomplete.`);
+  }
+  return {errors,newPlayers,playerIds};
 }
 function serverValidate(payload, teamIds, playerIds){
   const errors=[], warnings=[];
@@ -146,14 +194,22 @@ export async function onRequestPost(context) {
   const awayTeamId=reg.teamsByName.get(norm(payload.series?.away_team));
   const homeTeamId=reg.teamsByName.get(norm(payload.series?.home_team));
   const names=collectPlayerNames(payload);
-  const unknown=names.filter(name=>!reg.playersByName.has(norm(name)));
-  if(unknown.length){
-    return json({ok:false,error:"Unknown players must be added to the player registry before publishing.",unknown_players:unknown.sort()},422);
+  const resolved=resolvePlayerIds(payload,reg,names);
+  if(resolved.errors.length){
+    return json({ok:false,error:"Player identity validation failed.",errors:resolved.errors},422);
   }
-  const playerIds=new Map(names.map(name=>[norm(name),reg.playersByName.get(norm(name)).player_id]));
+  const playerIds=resolved.playerIds;
   const validation=serverValidate(payload,{away:awayTeamId,home:homeTeamId},playerIds);
   if(validation.errors.length){
     return json({ok:false,error:"Server validation failed.",errors:validation.errors,warnings:validation.warnings},422);
+  }
+  const participantIds=new Map();
+  for(const part of payload.participants||[]){
+    const id=playerIds.get(norm(part.name));
+    if(participantIds.has(id) && participantIds.get(id)!==norm(part.name)){
+      return json({ok:false,error:"Two uploaded names resolve to the same player.",errors:[`${participantIds.get(id)} and ${part.name} resolve to ${id}. Correct the source name or resolution before publishing.`]},422);
+    }
+    participantIds.set(id,norm(part.name));
   }
 
   const existing=await DB.prepare("SELECT series_id,published_at,commissioner_email FROM series WHERE series_id=?").bind(payload.series_id).first();
@@ -169,6 +225,11 @@ export async function onRequestPost(context) {
 
   const pId=name=>playerIds.get(norm(name));
   const statements=[];
+  for(const np of resolved.newPlayers){
+    statements.push(DB.prepare(`
+      INSERT INTO players(player_id,name,class_year,retired) VALUES(?,?,?,0)
+    `).bind(np.player_id,np.name,np.class_year));
+  }
   if(existing){
     statements.push(DB.prepare("DELETE FROM series WHERE series_id=?").bind(payload.series_id));
   }
@@ -241,6 +302,7 @@ export async function onRequestPost(context) {
       series_id:payload.series_id,
       actor_email:actor,
       server_warnings:validation.warnings,
+      new_players:resolved.newPlayers,
       rows:{
         games:(payload.games||[]).length,
         participants:(payload.participants||[]).length,

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=29">
+<link rel="stylesheet" href="/assets/styles.css?v=30">
 <style>
 .admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
 
@@ -33,6 +33,19 @@
  .correction-row .corr-reason{grid-column:1/-1}
 }
 
+
+.player-review{display:grid;gap:10px}
+.player-review-row{border:1px solid var(--border);background:#0c1728;border-radius:12px;padding:12px}
+.player-review-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.player-review-name{font-weight:900}
+.player-review-badge{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;border-radius:999px;padding:4px 8px;background:#16243b;color:#e6c66e;white-space:nowrap}
+.player-review-controls{display:grid;grid-template-columns:minmax(240px,1.6fr) 145px minmax(175px,1fr);gap:8px;margin-top:10px;align-items:center}
+.player-review-controls select,.player-review-controls input{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}
+.player-confirm{display:flex;gap:7px;align-items:center;font-size:12px;color:#e9c96f;font-weight:800}
+.player-match-note{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.45}
+.registry-summary{font-size:12px;color:var(--muted);margin-top:8px}
+@media(max-width:800px){.player-review-controls{grid-template-columns:1fr}.player-review-top{display:block}.player-review-badge{display:inline-block;margin-top:6px}}
+
 .publish-success{color:#6ed49a!important}
 .publish-error{color:#eb7884!important}
 .publish-warn{color:#e2b34a!important}
@@ -41,7 +54,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v29</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v30</div>
 <h1>Series Upload & Review</h1>
 <p class="admin-intro">Upload the four iScore series exports, enter the three game results directly here, add any Games Played overrides, then validate everything before publishing. This prototype does not write to the live league database yet.</p>
 
@@ -68,7 +81,15 @@
 </section>
 
 <section class="admin-panel">
-<h2>3. Game Results & Pitcher Decisions</h2>
+<h2>3. Player Identity Review</h2>
+<p class="step-note">Existing players are matched automatically. Every unrecognized name is flagged. If it is a genuine new player, confirm the player and enter that new player's class year. If it looks like a typo or name variant, map it to the correct existing player. Existing players never require a class year here.</p>
+<div id="playerReviewEmpty" class="empty-state">Parse the four iScore files to check player identities.</div>
+<div id="playerReview" class="player-review hidden"></div>
+<div id="registrySummary" class="registry-summary"></div>
+</section>
+
+<section class="admin-panel">
+<h2>4. Game Results & Pitcher Decisions</h2>
 <p class="step-note">Scores and pitcher decisions are entered here instead of in a fifth CSV. Pitcher dropdowns are populated from the uploaded series participants.</p>
 <div class="game-table">
 <div class="game-head"><div>Game</div><div>Away</div><div>Home</div><div>Winning Pitcher</div><div>Losing Pitcher</div><div>Save</div></div>
@@ -79,7 +100,7 @@
 </section>
 
 <section class="admin-panel">
-<h2>4. Games Played Overrides</h2>
+<h2>5. Games Played Overrides</h2>
 <p class="step-note">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to 3 GP. Add an override only if that player actually appeared in 1 or 2 games. Zero-stat roster entries are ignored.</p>
 <div id="gpEmpty" class="empty-state">No overrides. All active series participants will receive 3 GP.</div>
 <div class="gp-controls" id="gpControls"></div>
@@ -87,7 +108,7 @@
 </section>
 
 <section class="admin-panel">
-<h2>5. Pitching Appearances & Starts</h2>
+<h2>6. Pitching Appearances & Starts</h2>
 <p class="step-note">Enter the number of pitching appearances and starts for every pitcher detected in the iScore exports. These cannot be reconstructed reliably from the aggregate series files.</p>
 <div id="pitchingMetaEmpty" class="empty-state">Parse the four iScore files to load detected pitchers.</div>
 <div id="pitchingMeta" class="pitching-meta-grid hidden">
@@ -97,7 +118,7 @@
 </section>
 
 <section class="admin-panel">
-<h2>6. Manual Stat Corrections</h2>
+<h2>7. Manual Stat Corrections</h2>
 <p class="step-note">Use this only when the iScore export is known to be wrong. Corrections are applied to the normalized player row, while the original export remains preserved in <code>source_totals</code> and the correction is saved in the audit payload.</p>
 <div id="correctionEmpty" class="empty-state">No manual corrections.</div>
 <div id="correctionControls" class="correction-controls"></div>
@@ -106,13 +127,13 @@
 </section>
 
 <section class="admin-panel">
-<h2>7. Commissioner Notes</h2>
+<h2>8. Commissioner Notes</h2>
 <p class="step-note">Optional general notes about the series. Warning approvals and manual corrections have their own required explanations.</p>
 <div class="field"><textarea id="notes" placeholder="Example: Game 2 ended on an extra-inning runner."></textarea></div>
 </section>
 
 <section class="admin-panel">
-<h2>8. Validate & Review</h2>
+<h2>9. Validate & Review</h2>
 <div class="admin-actions"><button class="admin-btn primary" id="validateBtn">Validate Series</button></div>
 <div id="review" class="hidden">
 <div class="status-summary">
@@ -139,6 +160,7 @@ const TEAM_OPTIONS=["Ball Busters", "Dirty Dawgs", "Goofy Goobers", "Midnight", 
 const SAMPLE={"homeBat": "\"#\",\"Name\",\"G\",\"PA\",\"AB\",\"R\",\"H\",\"B\",\"1B\",\"2B\",\"3B\",\"HR\",\"RBI\",\"AVG\",\"BB\",\"Kc\",\"Ks\",\"SO\",\"HBP\",\"SB\",\"CS\",\"SCB\",\"SF\",\"SAC\",\"RPA\",\"OBP\",\"OBPE\",\"SLG\",\"OPS\",\"GPA\",\"BABIP\",\"CT%\",\"CT2%\",\"ROE\",\"FC\",\"CI\",\"GDP\",\"GTP\",\"AB/RSP\",\"H/RSP\",\"BA/RSP\",\"QAB1%\",\"QAB2%\",\"QAB3%\"\n\"\",\"Brendan Mato\",1,8,6,3,2,0,2,0,0,0,1,0.333,2,1,3,4,0,0,0,0,0,0,0.500,0.500,0.500,0.333,0.833,0.308,1.000,0.333,0.250,0,0,0,0,0,0,0,0.000,37.5,37.5,12.5\n\"\",\"Tad Bates\",1,8,5,4,3,0,0,1,0,2,7,0.600,3,1,0,1,0,0,0,0,0,0,1.125,0.750,0.750,2.000,2.750,0.838,0.500,0.800,0.500,0,0,0,0,0,1,1,1.000,50.0,50.0,37.5\n\"\",\"Will Carter\",1,8,7,0,3,0,3,0,0,0,0,0.429,1,0,1,1,0,0,0,0,0,0,0.000,0.500,0.500,0.429,0.929,0.332,0.500,0.857,0.750,0,0,0,0,0,3,1,0.333,37.5,37.5,12.5\n\"\",\"Jack Foster\",1,2,2,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,1.000,1.000,0,1,0,0,0,1,0,0.000,0.0,0.0,0.0\n\"\",\"Kyler McCormack\",1,7,5,0,0,0,0,0,0,0,0,0.000,2,1,2,3,0,0,0,0,0,0,0.000,0.286,0.286,0.000,0.286,0.129,0.000,0.400,0.286,0,0,0,0,0,3,0,0.000,0.0,0.0,0.0\n\"\",\"Armand Martinez\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"Connor Wible\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"John Masjak\",1,6,5,1,1,0,1,0,0,0,0,0.200,1,0,4,4,0,0,0,0,0,0,0.167,0.333,0.333,0.200,0.533,0.200,1.000,0.200,0.167,0,0,0,0,0,3,1,0.333,16.7,16.7,16.7\n\"\",\"TOTALS\",1,39,30,8,9,0,6,1,0,2,8,0.300,9,3,10,13,0,0,0,0,0,0,0.359,0.462,0.462,0.533,0.995,0.341,0.467,0.567,0.436,0,1,0,0,0,11,3,0.273,28.2,28.2,15.4", "homePit": "\"#\",\"Name\",\"G\",\"W\",\"L\",\"SV\",\"IP\",\"BF\",\"Ball\",\"Str\",\"PIT\",\"R\",\"RA\",\"ER\",\"ERA\",\"ERA9\",\"FIP\",\"K\",\"Kc\",\"Ks\",\"H\",\"BB\",\"IBB\",\"K/BB\",\"K/GI\",\"BB/GI\",\"H/GI\",\"HB\",\"BK\",\"WP\",\"HR\",\"WHIP\",\"OBP\",\"BAA\",\"BABIP\",\"GO\",\"AO\",\"FPS\",\"FPB\",\"FPS%\"\n\"\",\"Brendan Mato\",1,0,0,0,4.00,18,26,27,53,4,1.00,4,20.00,9.00,1.850,10,3,7,1,5,0,2.00,50.00,25.00,5.00,0,0,0,0,1.500,0.333,0.077,0.333,2,0,7,11,0.389\n\"\",\"Tad Bates\",1,0,0,0,5.00,23,25,35,60,1,0.20,1,4.00,1.80,1.300,12,4,8,3,5,0,2.40,48.00,20.00,12.00,0,0,0,0,1.600,0.348,0.167,0.500,2,1,15,8,0.652\n\"\",\"TOTALS\",1,0,0,0,9.00,41,51,62,113,5,0.56,5,11.11,5.00,1.544,22,7,15,4,10,0,2.20,48.89,22.22,8.89,0,0,0,0,1.556,0.341,0.129,0.444,4,1,22,19,0.537", "awayBat": "\"#\",\"Name\",\"G\",\"PA\",\"AB\",\"R\",\"H\",\"B\",\"1B\",\"2B\",\"3B\",\"HR\",\"RBI\",\"AVG\",\"BB\",\"Kc\",\"Ks\",\"SO\",\"HBP\",\"SB\",\"CS\",\"SCB\",\"SF\",\"SAC\",\"RPA\",\"OBP\",\"OBPE\",\"SLG\",\"OPS\",\"GPA\",\"BABIP\",\"CT%\",\"CT2%\",\"ROE\",\"FC\",\"CI\",\"GDP\",\"GTP\",\"AB/RSP\",\"H/RSP\",\"BA/RSP\",\"QAB1%\",\"QAB2%\",\"QAB3%\"\n\"\",\"Will Stevens\",1,8,7,2,2,0,1,1,0,0,1,0.286,1,0,3,3,0,0,0,0,0,0,0.375,0.375,0.375,0.429,0.804,0.276,0.500,0.571,0.500,0,1,0,0,0,2,0,0.000,25.0,25.0,12.5\n\"\",\"JP Cardenas\",1,7,5,0,1,0,0,1,0,0,3,0.200,2,0,4,4,0,0,0,0,0,0,0.429,0.429,0.429,0.400,0.829,0.293,1.000,0.200,0.143,0,0,0,0,0,2,1,0.500,14.3,14.3,14.3\n\"\",\"Alex Tsvetkov\",1,8,7,0,0,0,0,0,0,0,0,0.000,1,4,2,6,0,0,0,0,0,0,0.000,0.125,0.125,0.000,0.125,0.056,0.000,0.143,0.125,0,0,0,0,0,3,0,0.000,0.0,0.0,0.0\n\"\",\"Jack Powers\",1,7,4,0,0,0,0,0,0,0,0,0.000,3,1,3,4,0,0,0,0,0,0,0.000,0.429,0.429,0.000,0.429,0.193,0.000,0.000,0.000,0,0,0,0,0,1,0,0.000,0.0,0.0,0.0\n\"\",\"Nate Ernst\",1,6,4,1,0,0,0,0,0,0,0,0.000,2,2,2,4,0,0,0,0,0,0,0.167,0.333,0.333,0.000,0.333,0.150,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"Michael Pilger\",1,5,4,2,1,0,1,0,0,0,1,0.250,1,0,1,1,0,0,0,0,0,0,0.600,0.400,0.400,0.250,0.650,0.243,0.333,0.750,0.600,0,1,0,0,0,0,0,0.000,40.0,40.0,20.0\n\"\",\"Quinn Brown\",1,0,0,0,0,0,0,0,0,0,0,0.000,0,0,0,0,0,0,0,0,0,0,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0,0,0,0,0,0,0,0.000,0.0,0.0,0.0\n\"\",\"TOTALS\",1,41,31,5,4,0,2,2,0,0,5,0.129,10,7,15,22,0,0,0,0,0,0,0.244,0.341,0.341,0.194,0.535,0.202,0.444,0.290,0.220,0,2,0,0,0,8,1,0.125,12.2,12.2,7.3", "awayPit": "\"#\",\"Name\",\"G\",\"W\",\"L\",\"SV\",\"IP\",\"BF\",\"Ball\",\"Str\",\"PIT\",\"R\",\"RA\",\"ER\",\"ERA\",\"ERA9\",\"FIP\",\"K\",\"Kc\",\"Ks\",\"H\",\"BB\",\"IBB\",\"K/BB\",\"K/GI\",\"BB/GI\",\"H/GI\",\"HB\",\"BK\",\"WP\",\"HR\",\"WHIP\",\"OBP\",\"BAA\",\"BABIP\",\"GO\",\"AO\",\"FPS\",\"FPB\",\"FPS%\"\n\"\",\"Will Stevens\",1,0,0,0,4.00,23,24,34,58,6,1.50,5,25.00,11.25,8.600,8,2,6,7,4,0,2.00,40.00,20.00,35.00,0,0,0,2,2.750,0.478,0.368,0.556,4,0,11,12,0.478\n\"\",\"Nate Ernst\",1,0,0,0,1.00,3,4,6,10,0,0.00,0,0.00,0.00,3.100,0,0,0,0,0,0,0.00,0.00,0.00,0.00,0,0,0,0,0.000,0.000,0.000,0.000,2,1,2,1,0.667\n\"\",\"JP Cardenas\",1,0,0,0,1.00,6,13,10,23,0,0.00,0,0.00,0.00,6.100,3,1,2,0,3,0,1.00,60.00,60.00,0.00,0,0,0,0,3.000,0.500,0.000,0.000,0,0,2,4,0.333\n\"\",\"Michael Pilger\",1,0,0,0,1.00,7,9,13,22,1,1.00,1,20.00,9.00,5.100,2,0,2,2,2,0,1.00,40.00,40.00,40.00,0,0,0,0,4.000,0.571,0.400,0.667,1,0,4,3,0.571\n\"\",\"TOTALS\",1,0,0,0,7.00,39,50,63,113,7,1.00,6,17.14,7.71,6.957,13,3,10,9,9,0,1.44,37.14,25.71,25.71,0,0,0,2,2.571,0.462,0.300,0.467,7,1,19,20,0.487"};
 const fileData={homeBat:null,homePit:null,awayBat:null,awayPit:null};
 let parsed=null;
+let playerResolutionState={loading:false,results:[],error:null};
 
 function csvParse(text){
   const rows=[]; let row=[], cell="", q=false;
@@ -176,6 +198,101 @@ function fillTeams(){
   });
 }
 fillTeams();
+
+const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+function detectedPlayerNames(){
+  if(!parsed)return [];
+  return [...new Set(parsed.participants.map(p=>p.name).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+}
+function reviewRows(){return [...document.querySelectorAll(".player-review-row")]}
+function readPlayerResolutions(){
+  const out=[];
+  for(const row of reviewRows()){
+    const uploaded_name=row.dataset.name;
+    const status=row.dataset.status;
+    const action=row.querySelector(".resolutionAction")?.value||"";
+    const selected=row.querySelector(".resolutionAction")?.selectedOptions?.[0];
+    if(action.startsWith("existing:")){
+      out.push({
+        uploaded_name,action:"existing",player_id:action.slice(9),
+        canonical_name:selected?.dataset?.canonicalName||null,match_type:"commissioner_match"
+      });
+    }else if(action==="new"){
+      const class_year=row.querySelector(".newClassYear")?.value;
+      out.push({
+        uploaded_name,action:"new",
+        class_year:class_year?Number(class_year):null,
+        confirmed:!!row.querySelector(".confirmNewPlayer")?.checked,
+        match_type:status
+      });
+    }else out.push({uploaded_name,action:"",match_type:status});
+  }
+  for(const r of (playerResolutionState.results||[])){
+    if(r.status==="exact"||r.status==="alias"){
+      out.push({
+        uploaded_name:r.uploaded_name,action:"existing",player_id:r.player_id,
+        canonical_name:r.canonical_name,match_type:r.status
+      });
+    }
+  }
+  return out;
+}
+function syncNewPlayerControls(row){
+  const isNew=(row.querySelector(".resolutionAction")?.value||"")==="new";
+  const classInput=row.querySelector(".newClassYear");
+  const confirmWrap=row.querySelector(".player-confirm");
+  if(classInput)classInput.disabled=!isNew;
+  if(confirmWrap)confirmWrap.classList.toggle("hidden",!isNew);
+}
+function renderPlayerReview(){
+  const empty=document.getElementById("playerReviewEmpty"),wrap=document.getElementById("playerReview"),summary=document.getElementById("registrySummary");
+  if(!parsed){empty.textContent="Parse the four iScore files to check player identities.";empty.classList.remove("hidden");wrap.classList.add("hidden");summary.textContent="";return}
+  if(playerResolutionState.loading){empty.textContent="Checking names against the D1 player registry...";empty.classList.remove("hidden");wrap.classList.add("hidden");summary.textContent="";return}
+  if(playerResolutionState.error){empty.textContent="Player registry check failed: "+playerResolutionState.error;empty.classList.remove("hidden");wrap.classList.add("hidden");summary.textContent="";return}
+  const results=playerResolutionState.results||[];
+  const flagged=results.filter(r=>r.status==="similar"||r.status==="new");
+  summary.textContent=`${results.length} active names checked · ${results.length-flagged.length} matched automatically · ${flagged.length} flagged for review.`;
+  if(!flagged.length){
+    empty.textContent=results.length?"✓ All uploaded player names match the existing registry.":"No active player names detected.";
+    empty.classList.remove("hidden");wrap.classList.add("hidden");return
+  }
+  empty.classList.add("hidden");wrap.classList.remove("hidden");
+  wrap.innerHTML=flagged.map(r=>{
+    const candidates=r.candidates||[];
+    const options=['<option value="">Choose resolution...</option>',
+      ...candidates.map(c=>`<option value="existing:${escapeHtml(c.player_id)}" data-canonical-name="${escapeHtml(c.name)}">Use existing: ${escapeHtml(c.name)}${c.class_year?` · Class ${c.class_year}`:""}</option>`),
+      `<option value="new">${r.status==="similar"?"Create as separate new player":"Confirm as new player"}</option>`
+    ].join("");
+    const note=r.status==="similar"
+      ? `Possible match${candidates.length===1?"":"es"}: ${candidates.map(c=>`${escapeHtml(c.name)} (${Math.round(Number(c.score||0)*100)}%)`).join(", ")}.`
+      : "No plausible existing match was found. This name is still flagged and requires explicit confirmation.";
+    return `<div class="player-review-row" data-name="${escapeHtml(r.uploaded_name)}" data-status="${r.status}">
+      <div class="player-review-top"><div><div class="player-review-name">${escapeHtml(r.uploaded_name)}</div><div class="player-match-note">${note}</div></div><span class="player-review-badge">${r.status==="similar"?"Possible Match":"New Player"}</span></div>
+      <div class="player-review-controls">
+        <select class="resolutionAction">${options}</select>
+        <input class="newClassYear" type="number" min="2021" max="2100" step="1" placeholder="New player class" disabled>
+        <label class="player-confirm hidden"><input class="confirmNewPlayer" type="checkbox"> Confirm new player</label>
+      </div>
+    </div>`;
+  }).join("");
+  reviewRows().forEach(row=>row.querySelector(".resolutionAction").addEventListener("change",()=>syncNewPlayerControls(row)));
+}
+async function resolvePlayers(){
+  if(!parsed)return;
+  playerResolutionState={loading:true,results:[],error:null};renderPlayerReview();
+  try{
+    const res=await fetch("/api/admin/resolve-players",{
+      method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({names:detectedPlayerNames()})
+    });
+    const body=await res.json();
+    if(!res.ok||!body.ok)throw new Error(body.error||`HTTP ${res.status}`);
+    playerResolutionState={loading:false,results:body.results||[],error:null};
+  }catch(err){
+    playerResolutionState={loading:false,results:[],error:String(err?.message||err)};
+  }
+  renderPlayerReview();
+}
 
 function setFileState(id,text,ok=true){
   const e=document.getElementById("state-"+id); e.textContent=text; e.className="file-state "+(ok?"ok":"bad");
@@ -219,6 +336,7 @@ function parseLoaded(){
   ];
   parsed={HB,HP,AB,AP,participants,homeNames,awayNames};
   populatePlayerSelects(); refreshGpRows(); renderPitchingMeta(); refreshCorrectionRows();
+  resolvePlayers();
   setFileState("homeBat","✓ Parsed "+rowsWithoutTotals(HB).length+" batting rows");
   setFileState("homePit","✓ Parsed "+rowsWithoutTotals(HP).length+" pitching rows");
   setFileState("awayBat","✓ Parsed "+rowsWithoutTotals(AB).length+" batting rows");
@@ -549,6 +667,21 @@ function renderReview(checks,payload){
 document.getElementById("validateBtn").onclick=()=>{
   if(!parsed && !parseLoaded())return;
   const checks=[];
+  if(playerResolutionState.loading)check(checks,"error","Player registry check is still running","Wait for the player identity review to finish.");
+  if(playerResolutionState.error)check(checks,"error","Player registry check failed",playerResolutionState.error);
+  const playerResolutions=readPlayerResolutions();
+  const resolutionByName=new Map(playerResolutions.map(r=>[r.uploaded_name,r]));
+  for(const name of detectedPlayerNames()){
+    const r=resolutionByName.get(name);
+    if(!r){check(checks,"error",`Player identity unresolved: ${name}`,"Run the registry check again.");continue}
+    if(r.action===""){
+      check(checks,"error",`Resolve player identity: ${name}`,"Choose an existing player or confirm this as a new player.");
+    }else if(r.action==="new"){
+      if(!r.confirmed)check(checks,"error",`Confirm new player: ${name}`,"The commissioner must explicitly confirm every new player.");
+      if(!Number.isInteger(r.class_year)||r.class_year<2021||r.class_year>2100)check(checks,"error",`Enter class year for new player: ${name}`,"Class year is mandatory only for a newly created player.");
+      if(r.confirmed&&Number.isInteger(r.class_year)&&r.class_year>=2021&&r.class_year<=2100)check(checks,"info",`New player approved: ${name}`,`A new D1 player ID will be created with class year ${r.class_year}.`);
+    }
+  }
   const away=document.getElementById("awayTeam").value, home=document.getElementById("homeTeam").value;
   const season=Number(document.getElementById("season").value);
   const date=document.getElementById("seriesDate").value||null;
@@ -658,11 +791,12 @@ document.getElementById("validateBtn").onclick=()=>{
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v29",
+    source:"ndwiffle_admin_v30",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     games,
     gp_overrides:overrides,
+    player_resolutions:playerResolutions,
     pitching_usage:pitchers.map(p=>({
       player:p.name,team:p.team,side:p.side,
       appearances:pitchingUsage[p.name]?.appearances??null,
