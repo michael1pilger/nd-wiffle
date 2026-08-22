@@ -1,4 +1,4 @@
-# ND Wiffle League Website v36
+# ND Wiffle League Website v37
 
 v26 connects the public 2026 league pages to D1.
 
@@ -137,3 +137,21 @@ The current static historical database is treated as the authoritative 2021–20
   - batting: total bases, RBI, BB, fewer K, name
   - pitching: K, outs, fewer ER, fewer H, fewer BB, name
 - The top-five leader data is also saved in `payload.instagram_leaders` for audit/history.
+
+## v37: League Leaders + new Grid
+- Adds public `/leaders/` powered directly by the live 2026 D1 league API.
+- Batting leader categories: AVG, OPS, H, HR, RBI, BB, fantasy points.
+- Pitching leader categories: ERA, WHIP, K, W, saves, fantasy points.
+- Adds All Players / Qualified Only toggle.
+  - batting qualification: 50 PA
+  - pitching qualification: 18 IP
+- Adds team filtering across all 10 active 2026 teams once they have published participants.
+- Fantasy points use the same formulas as the commissioner Instagram Top 5 workflow:
+  - batting = TB + RBI + BB - K
+  - pitching = outs - 2×ER + K - H - BB
+- Adds a combined full 2026 leaderboard table for quick league-wide comparison.
+- Adds Leaders to public navigation.
+- Replaces the default Immaculate Grid with:
+  - Rows: .400+ BA in a Season / Played for 2+ Franchises / 15+ Career Pitching K
+  - Columns: Storm / .350+ Career BA / 40+ Career RBI
+- All 9 new grid intersections remain prevalidated with at least 3 valid answers.
