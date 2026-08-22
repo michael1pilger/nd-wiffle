@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=37">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=38">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -37,15 +37,15 @@
 .results-meta{margin-top:5px;color:var(--muted);font-size:12px}
 @media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
 <div class="container"><div id="resultsList" class="results-list"><div class="result-empty">Loading published results…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=37","midnight":"/assets/logos/midnight.png?v=37","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=37",
- "ball-busters":"/assets/logos/ball-busters.png?v=37","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=37","twin-titans":"/assets/logos/twin-titans.png?v=37",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=37","silverbacks":"/assets/logos/silverbacks.png?v=37","underdawgs":"/assets/logos/underdawgs.png?v=37","zyns":"/assets/logos/zyns.png?v=37"
+ "storm":"/assets/logos/storm.png?v=38","midnight":"/assets/logos/midnight.png?v=38","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=38",
+ "ball-busters":"/assets/logos/ball-busters.png?v=38","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=38","twin-titans":"/assets/logos/twin-titans.png?v=38",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=38","silverbacks":"/assets/logos/silverbacks.png?v=38","underdawgs":"/assets/logos/underdawgs.png?v=38","zyns":"/assets/logos/zyns.png?v=38"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
@@ -63,6 +63,7 @@ function battingTable(rows){
 function pitchingTable(rows){
  return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Pitcher</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>K</th><th>ER</th><th>BB</th><th>ERA</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.W}</td><td>${r.L}</td><td>${r.S}</td><td>${r.IP}</td><td>${r.K}</td><td>${r.ER}</td><td>${r.BB}</td><td>${r.ERA}</td></tr>`).join("")}</tbody></table></div>`
 }
+function publicRows(rows){return (rows||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi")}
 function render(series){
  const list=document.getElementById("resultsList");
  document.getElementById("resultsMeta").textContent=`${series.length} published ${series.length===1?"series":"series"}`;
@@ -72,10 +73,10 @@ function render(series){
    const awayWon=s.away_wins>s.home_wins,homeWon=s.home_wins>s.away_wins;
    const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
    const result=awayWon||homeWon?`${winner} wins ${Math.max(s.away_wins,s.home_wins)}–${Math.min(s.away_wins,s.home_wins)}`:"Series tied";
-   const bat=topBatter(s.batting||[]),pit=topPitcher(s.pitching||[]);
+   const bat=topBatter(publicRows(s.batting)),pit=topPitcher(publicRows(s.pitching));
    const games=(s.games||[]).map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(s.away_team)} ${g.away_score} · ${esc(s.home_team)} ${g.home_score}</div><div class="decision">WP: ${esc(g.winning_pitcher)} · LP: ${esc(g.losing_pitcher)}${g.save_pitcher?` · SV: ${esc(g.save_pitcher)}`:""}</div></div>`).join("");
    const teamBoxes=[["away",s.away_team_id,s.away_team],["home",s.home_team_id,s.home_team]].map(([side,id,name])=>{
-     const batRows=(s.batting||[]).filter(r=>r.side===side),pitRows=(s.pitching||[]).filter(r=>r.side===side);
+     const batRows=publicRows(s.batting).filter(r=>r.side===side),pitRows=publicRows(s.pitching).filter(r=>r.side===side);
      return `${teamHeader(id,name)}<div class="boxscore-title">Batting</div>${battingTable(batRows)}<div class="boxscore-title">Pitching</div>${pitchingTable(pitRows)}`;
    }).join("");
    const open=requested===s.series_id || (!requested&&idx===0);

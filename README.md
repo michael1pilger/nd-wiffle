@@ -1,4 +1,4 @@
-# ND Wiffle League Website v37
+# ND Wiffle League Website v38
 
 v26 connects the public 2026 league pages to D1.
 
@@ -155,3 +155,19 @@ The current static historical database is treated as the authoritative 2021–20
   - Rows: .400+ BA in a Season / Played for 2+ Franchises / 15+ Career Pitching K
   - Columns: Storm / .350+ Career BA / 40+ Career RBI
 - All 9 new grid intersections remain prevalidated with at least 3 valid answers.
+
+## v38: Playoff Picture + public player privacy
+- Adds `/playoffs/` as a live "if the regular season ended today" playoff projection.
+- Pulls current seeds directly from the 2026 D1 standings.
+- Top 7 qualify and the No. 1 seed receives the first-round bye.
+- First-round projection displays 2 vs 7, 3 vs 6, and 4 vs 5.
+- Semifinal and World Series slots are shown as future advancement slots rather than inventing winners.
+- Current seed list shows all 10 teams and clearly marks teams outside the projected playoff field.
+- Adds Playoffs to public navigation.
+- Max Partovi remains in the underlying database/history but is excluded from public player-facing website surfaces:
+  - Players directory
+  - Stats tables
+  - League Leaders
+  - Results box scores/top-performer summaries
+  - Homepage recent-series top performers
+  - live team roster tables
