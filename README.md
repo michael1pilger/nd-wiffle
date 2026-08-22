@@ -1,4 +1,4 @@
-# ND Wiffle League Website v35
+# ND Wiffle League Website v36
 
 v26 connects the public 2026 league pages to D1.
 
@@ -115,3 +115,25 @@ The current static historical database is treated as the authoritative 2021–20
   - protected-player and compensatory-pick draft system
   - three-game series structure
   - six major ND Wiffle rule differences
+
+## v36: Zyns return + Instagram series leaders
+- Zyns are active for the 2026 season, creating a 10-team league.
+- Adds `migrations/0004_activate_zyns_2026.sql` for existing D1 databases.
+- 2026 schedule now contains 40 total series.
+- Every team still plays exactly 8 series / 24 games.
+- Every team has exactly 4 home series and 4 away series.
+- The five matchups not played in 2026 are:
+  - Ball Busters vs Goofy Goobers
+  - Dirty Dawgs vs Stiff Wifflers
+  - Midnight vs Underdawgs
+  - Silverbacks vs Zyns
+  - Storm vs Twin Titans
+- Standings and homepage 2026 team counts now include Zyns.
+- `/admin/` validation now shows an `Instagram Top 5 Performers` panel after every series.
+- Batting points = total bases + RBI + BB - K.
+- Pitching points = outs recorded - (2 × ER) + K - H - BB.
+- Rankings use corrected normalized stats, so approved manual corrections are reflected before the commissioner copies the leaders for Instagram.
+- Deterministic tie-breaks:
+  - batting: total bases, RBI, BB, fewer K, name
+  - pitching: K, outs, fewer ER, fewer H, fewer BB, name
+- The top-five leader data is also saved in `payload.instagram_leaders` for audit/history.

@@ -8,7 +8,7 @@ INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('stiff-wiff
 INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('storm','Storm',1);
 INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('twin-titans','Twin Titans',1);
 INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('underdawgs','Underdawgs',1);
-INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('zyns','Zyns',0);
+INSERT OR IGNORE INTO teams(team_id,display_name,active_2026) VALUES('zyns','Zyns',1);
 INSERT OR IGNORE INTO team_aliases(alias,team_id) VALUES('Stiffies','stiff-wifflers');
 INSERT OR IGNORE INTO team_aliases(alias,team_id) VALUES('Stiff Wifflers','stiff-wifflers');
 INSERT OR IGNORE INTO team_aliases(alias,team_id) VALUES('Goobers','goofy-goobers');

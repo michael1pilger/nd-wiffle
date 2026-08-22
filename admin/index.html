@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Series Admin | ND Wiffle</title>
-<link rel="stylesheet" href="/assets/styles.css?v=35">
+<link rel="stylesheet" href="/assets/styles.css?v=36">
 <style>
 .admin-shell{padding:46px 0 70px}.admin-kicker{color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.admin-shell h1{font-size:42px;margin:6px 0 10px}.admin-intro{max-width:900px;color:var(--muted);line-height:1.65}.admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:20px;margin-top:18px}.admin-panel h2{margin:0 0 14px;font-size:23px}.step-note{color:var(--muted);font-size:13px;line-height:1.55;margin:-6px 0 15px}.upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.upload-slot{border:1px dashed #405473;border-radius:12px;padding:14px;background:#0d1829}.upload-slot label,.field label{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#c9d4e3;margin-bottom:8px}.upload-slot input{width:100%;color:var(--muted)}.file-state{font-size:12px;color:var(--muted);margin-top:7px}.file-state.ok{color:#6ed49a}.file-state.bad{color:#eb7884}.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.admin-btn{border:1px solid var(--border);background:var(--panel2);color:white;border-radius:10px;padding:11px 15px;font-weight:850;cursor:pointer}.admin-btn.primary{background:var(--gold);color:#121212;border-color:var(--gold)}.admin-btn:disabled{opacity:.45;cursor:not-allowed}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field input,.field select,.field textarea,.game-row input,.game-row select,.gp-row select{width:100%;background:#0b1525;color:white;border:1px solid var(--border);border-radius:9px;padding:10px}.field textarea{min-height:90px;resize:vertical}.game-table{display:grid;gap:8px}.game-head,.game-row{display:grid;grid-template-columns:70px 100px 100px minmax(150px,1fr) minmax(150px,1fr) minmax(150px,1fr);gap:8px;align-items:center}.game-head{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}.game-label{font-weight:900;color:var(--gold)}.gp-controls{display:grid;gap:8px}.gp-row{display:grid;grid-template-columns:minmax(220px,1fr) 130px 44px;gap:8px}.gp-remove{border:1px solid var(--border);background:#17243b;color:white;border-radius:8px;cursor:pointer}.empty-state{border:1px dashed var(--border);border-radius:10px;padding:12px;color:var(--muted);font-size:13px}.status-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.status-card{border:1px solid var(--border);border-radius:12px;padding:12px;background:#0d1829}.status-card span{display:block;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase}.status-card strong{display:block;font-size:24px;margin-top:4px}.checks{display:grid;gap:8px}.check{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#0c1728}.check .icon{font-weight:950;width:20px}.check.pass .icon{color:#54c58a}.check.warn .icon{color:#e2b34a}.check.error .icon{color:#e56774}.check.info .icon{color:#76a7e8}.check strong{display:block}.check small{display:block;color:var(--muted);margin-top:2px;line-height:1.45}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.preview-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#0c1728}.preview-card h3{margin:0 0 10px}.preview-table{width:100%;font-size:13px}.preview-table th,.preview-table td{padding:7px 5px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right}.preview-table th:first-child,.preview-table td:first-child{text-align:left}.payload{width:100%;min-height:240px;background:#08111f;color:#d9e2ef;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.45;resize:vertical}.publish-note{border-left:3px solid var(--gold);padding:10px 12px;background:rgba(215,173,72,.06);color:#cbd5e2;line-height:1.55}.hidden{display:none!important}.muted{color:var(--muted)}.detected{font-size:12px;color:#74d49d;margin-top:6px}@media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}.game-head{display:none}.game-row{grid-template-columns:1fr 1fr}.game-label{grid-column:1/-1}.preview-grid{grid-template-columns:1fr}}@media(max-width:620px){.upload-grid,.form-grid,.status-summary{grid-template-columns:1fr}.game-row{grid-template-columns:1fr}.gp-row{grid-template-columns:1fr 100px 44px}.admin-shell h1{font-size:34px}}
 
@@ -46,6 +46,20 @@
 .registry-summary{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:800px){.player-review-controls{grid-template-columns:1fr}.player-review-top{display:block}.player-review-badge{display:inline-block;margin-top:6px}}
 
+
+.social-leaders{margin-top:16px;border:1px solid var(--border);border-radius:13px;background:#0c1728;padding:14px}
+.social-leaders-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:10px}
+.social-leaders-head h3{margin:0}.social-leaders-note{font-size:11px;color:var(--muted);line-height:1.45;text-align:right}
+.social-leader-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.social-leader-card{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#091424;padding:11px}
+.social-leader-card h4{margin:0 0 8px;color:var(--gold);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.social-rank-row{display:grid;grid-template-columns:28px minmax(0,1fr) 55px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid rgba(255,255,255,.06)}
+.social-rank-row:first-of-type{border-top:0}
+.social-rank{font-size:18px;font-weight:950;color:var(--muted)}
+.social-player{min-width:0}.social-player strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.social-player span{display:block;color:var(--muted);font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.social-score{text-align:right;font-size:20px;font-weight:950}.social-score small{display:block;font-size:8px;color:var(--muted);font-weight:800;text-transform:uppercase}
+@media(max-width:760px){.social-leader-grid{grid-template-columns:1fr}.social-leaders-head{display:block}.social-leaders-note{text-align:left;margin-top:5px}}
+
 .publish-success{color:#6ed49a!important}
 .publish-error{color:#eb7884!important}
 .publish-warn{color:#e2b34a!important}
@@ -54,7 +68,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v35</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v36</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a></p>
 <p class="admin-intro">Upload the four iScore series exports, enter the three game results directly here, add any Games Played overrides, then validate everything before publishing. This prototype does not write to the live league database yet.</p>
 
@@ -146,6 +160,16 @@
 <div class="preview-grid" style="margin-top:16px">
 <div class="preview-card"><h3>Series / Standings Preview</h3><div id="seriesPreview"></div></div>
 <div class="preview-card"><h3>Player Import Preview</h3><div id="playerPreview"></div></div>
+</div>
+<div class="social-leaders">
+  <div class="social-leaders-head">
+    <h3>Instagram Top 5 Performers</h3>
+    <div class="social-leaders-note">Automatically calculated from the corrected normalized series stats. Use these rankings for the post-series Instagram leaders graphic.</div>
+  </div>
+  <div class="social-leader-grid">
+    <div class="social-leader-card"><h4>Top 5 Batters</h4><div id="topBatters"></div></div>
+    <div class="social-leader-card"><h4>Top 5 Pitchers</h4><div id="topPitchers"></div></div>
+  </div>
 </div>
 <h3 style="margin-top:18px">Normalized Publish Payload</h3>
 <textarea class="payload" id="payload" readonly></textarea>
@@ -664,6 +688,39 @@ function renderReview(checks,payload){
   document.getElementById("review").classList.remove("hidden");
   syncPublishState();
 }
+
+function battingSocialScore(r){
+  const totalBases=n(r["1B"])+2*n(r["2B"])+3*n(r["3B"])+4*n(r.HR);
+  return totalBases+n(r.RBI)+n(r.BB)-n(r.SO);
+}
+function pitchingSocialScore(r){
+  return n(r.outs_recorded)-2*n(r.ER)+n(r.K)-n(r.H)-n(r.BB);
+}
+function socialLeaders(batting,pitching){
+  const bat=[...(batting||[])].map(r=>({...r,social_score:battingSocialScore(r)}))
+    .sort((a,b)=>b.social_score-a.social_score ||
+      (n(b["1B"])+2*n(b["2B"])+3*n(b["3B"])+4*n(b.HR))-(n(a["1B"])+2*n(a["2B"])+3*n(a["3B"])+4*n(a.HR)) ||
+      n(b.RBI)-n(a.RBI) || n(b.BB)-n(a.BB) || n(a.SO)-n(b.SO) || a.player.localeCompare(b.player))
+    .slice(0,5);
+  const pit=[...(pitching||[])].map(r=>({...r,social_score:pitchingSocialScore(r)}))
+    .sort((a,b)=>b.social_score-a.social_score || n(b.K)-n(a.K) || n(b.outs_recorded)-n(a.outs_recorded) ||
+      n(a.ER)-n(b.ER) || n(a.H)-n(b.H) || n(a.BB)-n(b.BB) || a.player.localeCompare(b.player))
+    .slice(0,5);
+  return {batting:bat,pitching:pit};
+}
+function socialBatLine(r){
+  return `${r.H} H · ${r.HR} HR · ${r.RBI} RBI · ${r.BB} BB · ${r.SO} K`;
+}
+function socialPitLine(r){
+  const ip=`${Math.floor(n(r.outs_recorded)/3)}${n(r.outs_recorded)%3?`.`+(n(r.outs_recorded)%3):""}`;
+  return `${ip} IP · ${r.K} K · ${r.ER} ER · ${r.H} H · ${r.BB} BB`;
+}
+function renderSocialLeaders(leaders){
+  const row=(r,i,line)=>`<div class="social-rank-row"><div class="social-rank">${i+1}</div><div class="social-player"><strong>${escapeHtml(r.player)}</strong><span>${escapeHtml(r.team)} · ${line(r)}</span></div><div class="social-score">${r.social_score}<small>pts</small></div></div>`;
+  document.getElementById("topBatters").innerHTML=(leaders.batting||[]).map((r,i)=>row(r,i,socialBatLine)).join("")||'<div class="muted">No batting rows.</div>';
+  document.getElementById("topPitchers").innerHTML=(leaders.pitching||[]).map((r,i)=>row(r,i,socialPitLine)).join("")||'<div class="muted">No pitching rows.</div>';
+}
+
 document.getElementById("validateBtn").onclick=()=>{
   if(!parsed && !parseLoaded())return;
   const checks=[];
@@ -787,11 +844,13 @@ document.getElementById("validateBtn").onclick=()=>{
     ...normalizedBatting(parsed.HB,home,"home",overrideMap)
   ];
   const pitchingDecisions=summarizePitchingDecisions(games);
+  const instagramLeaders=socialLeaders(batting,pitching);
+  renderSocialLeaders(instagramLeaders);
   const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v35",
+    source:"ndwiffle_admin_v36",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     games,
@@ -808,6 +867,14 @@ document.getElementById("validateBtn").onclick=()=>{
     batting,
     pitching,
     pitching_decisions:pitchingDecisions,
+    instagram_leaders:{
+      scoring:{
+        batting:"TB + RBI + BB - K",
+        pitching:"Outs - (2 x ER) + K - H - BB"
+      },
+      batting:instagramLeaders.batting,
+      pitching:instagramLeaders.pitching
+    },
     validation:{
       warning_count:checks.filter(c=>c.type==="warn").length,
       error_count:checks.filter(c=>c.type==="error").length,
