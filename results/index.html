@@ -1,12 +1,12 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=38">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=39">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
 .result-summary{display:grid;grid-template-columns:140px minmax(0,1fr) 170px 28px;gap:18px;align-items:center;padding:17px 18px;cursor:pointer}
 .result-summary:hover{background:rgba(255,255,255,.018)}
 .result-date{font-size:11px;color:var(--muted);font-weight:850;text-transform:uppercase}
-.result-matchup{display:flex;align-items:center;gap:12px;min-width:0}
+.result-matchup{display:flex;align-items:center;gap:12px;min-width:0}.result-matchup-link{color:inherit;text-decoration:none;border-radius:8px}.result-matchup-link:hover{color:var(--gold)}
 .result-team{display:flex;align-items:center;gap:7px;font-weight:900;min-width:0}
 .result-team img{width:28px;height:28px;object-fit:contain}
 .result-team span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -43,9 +43,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=38","midnight":"/assets/logos/midnight.png?v=38","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=38",
- "ball-busters":"/assets/logos/ball-busters.png?v=38","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=38","twin-titans":"/assets/logos/twin-titans.png?v=38",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=38","silverbacks":"/assets/logos/silverbacks.png?v=38","underdawgs":"/assets/logos/underdawgs.png?v=38","zyns":"/assets/logos/zyns.png?v=38"
+ "storm":"/assets/logos/storm.png?v=39","midnight":"/assets/logos/midnight.png?v=39","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=39",
+ "ball-busters":"/assets/logos/ball-busters.png?v=39","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=39","twin-titans":"/assets/logos/twin-titans.png?v=39",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=39","silverbacks":"/assets/logos/silverbacks.png?v=39","underdawgs":"/assets/logos/underdawgs.png?v=39","zyns":"/assets/logos/zyns.png?v=39"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
@@ -83,7 +83,7 @@ function render(series){
    return `<section class="result-series ${open?"open":""}" id="${esc(s.series_id)}">
     <div class="result-summary" data-series="${esc(s.series_id)}" role="button" tabindex="0" aria-expanded="${open}">
       <div class="result-date">${fmtDate(s.series_date)}</div>
-      <div class="result-matchup"><div class="result-team">${logo(s.away_team_id,s.away_team)}<span>${esc(s.away_team)}</span></div><span class="result-vs">at</span><div class="result-team">${logo(s.home_team_id,s.home_team)}<span>${esc(s.home_team)}</span></div></div>
+      <a class="result-matchup result-matchup-link" href="/matchup/?away=${encodeURIComponent(s.away_team_id)}&home=${encodeURIComponent(s.home_team_id)}&series=${encodeURIComponent(s.series_id)}" aria-label="Open matchup details for ${esc(s.away_team)} at ${esc(s.home_team)}"><div class="result-team">${logo(s.away_team_id,s.away_team)}<span>${esc(s.away_team)}</span></div><span class="result-vs">at</span><div class="result-team">${logo(s.home_team_id,s.home_team)}<span>${esc(s.home_team)}</span></div></a>
       <div class="result-outcome">${esc(result)}</div><div class="result-chevron">⌄</div>
     </div>
     <div class="result-detail"><div class="result-score-strip">${games}</div>
@@ -93,6 +93,7 @@ function render(series){
       </div>${teamBoxes}
     </div></section>`;
  }).join("");
+ document.querySelectorAll(".result-matchup-link").forEach(a=>a.addEventListener("click",e=>e.stopPropagation()));
  document.querySelectorAll(".result-summary").forEach(el=>{
    const toggle=()=>{
      const parent=el.closest(".result-series");parent.classList.toggle("open");

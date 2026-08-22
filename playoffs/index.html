@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Playoff Picture | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=38">
+<title>2026 Playoff Picture | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=39">
 <style>
 .playoff-note{color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:18px;max-width:900px}
 .picture-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
@@ -31,13 +31,13 @@
 <div id="pictureRoot"><div class="picture-empty">Loading current playoff picture…</div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 playoff picture.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=38","midnight":"/assets/logos/midnight.png?v=38","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=38","ball-busters":"/assets/logos/ball-busters.png?v=38","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=38","twin-titans":"/assets/logos/twin-titans.png?v=38","goofy-goobers":"/assets/logos/goofy-goobers.png?v=38","silverbacks":"/assets/logos/silverbacks.png?v=38","underdawgs":"/assets/logos/underdawgs.png?v=38","zyns":"/assets/logos/zyns.png?v=38"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=39","midnight":"/assets/logos/midnight.png?v=39","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=39","ball-busters":"/assets/logos/ball-busters.png?v=39","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=39","twin-titans":"/assets/logos/twin-titans.png?v=39","goofy-goobers":"/assets/logos/goofy-goobers.png?v=39","silverbacks":"/assets/logos/silverbacks.png?v=39","underdawgs":"/assets/logos/underdawgs.png?v=39","zyns":"/assets/logos/zyns.png?v=39"};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function teamLine(t){
  const record=`${t.W}-${t.L}`;
  return `<div class="seed-team"><div class="seed">${t.rank}</div>${LOGOS[t.team_id]?`<img src="${LOGOS[t.team_id]}" alt="">`:"<span></span>"}<div class="seed-name">${esc(t.team)}</div><div class="seed-record">${record}</div></div>`;
 }
-function matchup(a,b,label){return `<div class="match"><div class="match-label">${label}</div>${teamLine(a)}${teamLine(b)}</div>`}
+function matchup(a,b,label){return `<a class="match" style="display:block;color:inherit;text-decoration:none" href="/matchup/?away=${encodeURIComponent(a.team_id)}&home=${encodeURIComponent(b.team_id)}"><div class="match-label">${label} · Matchup Preview</div>${teamLine(a)}${teamLine(b)}</a>`}
 function placeholder(label,text){return `<div class="match"><div class="match-label">${label}</div><div class="placeholder">${text}</div></div>`}
 function render(rows,count){
  const root=document.getElementById("pictureRoot"),meta=document.getElementById("pictureMeta");

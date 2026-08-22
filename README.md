@@ -1,4 +1,4 @@
-# ND Wiffle League Website v38
+# ND Wiffle League Website v39
 
 v26 connects the public 2026 league pages to D1.
 
@@ -171,3 +171,20 @@ The current static historical database is treated as the authoritative 2021–20
   - Results box scores/top-performer summaries
   - Homepage recent-series top performers
   - live team roster tables
+
+## v39: reusable matchup screen
+- Adds `/matchup/` as a contextual screen, not a navigation tab.
+- Schedule cards are now clickable and open the selected matchup.
+- Homepage Recent Series links open the same matchup screen.
+- Matchup names in the Results archive open the matchup screen while the rest of the result card still expands normally.
+- Projected first-round matchups on the Playoff Picture can also open matchup previews.
+- Matchup screen includes:
+  - current standings rank
+  - current W-L record and winning percentage
+  - run differential
+  - top 3 hitters for each team
+  - top 3 pitchers for each team
+  - recent three-series form
+  - final three-game result when that matchup has already been played
+  - link to the full box score for completed series
+- Max Partovi remains filtered from matchup player-leader displays.
