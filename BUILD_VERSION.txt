@@ -1,2 +1,2 @@
-ND Wiffle build v42
-Latest 76-pick draft board, updated reserved slots, prefilled #52 Adam Skrzypczyck, 69-player pool.
+ND Wiffle build v43
+Team-branded On the Clock, sortable full Best Available board, new Grid.

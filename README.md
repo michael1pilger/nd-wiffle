@@ -1,4 +1,4 @@
-# ND Wiffle League Website v42
+# ND Wiffle League Website v43
 
 v26 connects the public 2026 league pages to D1.
 
@@ -236,3 +236,23 @@ The current static historical database is treated as the authoritative 2021–20
 - Replaces the prospect pool with the latest 69-player draft board.
 - Adam Skrzypczyck is not in the available pool because his #52 Silverbacks selection is already locked.
 - Adds `migrations/0007_refresh_2026_draft_board.sql` for D1 databases that already installed earlier draft-board migrations.
+
+## v43: draft-room usability + new Grid
+- Public and commissioner draft pages now show the on-the-clock team logo.
+- Only the on-the-clock hero/card receives the current team's color treatment; the rest of the draft interface remains neutral.
+- Best Available is now a full interactive sortable table.
+- Draft-board columns:
+  - Overall (projected pick / overall rank)
+  - Player
+  - Projected Series Played
+  - Batter Rating
+  - Pitcher Rating
+- Default sorting is Overall ascending.
+- Clicking a column toggles ascending/descending; first click on Series/Batter/Pitcher sorts highest first.
+- Search filters the board immediately.
+- Public Best Available shows available players only; commissioner view includes availability/drafted/reserved status.
+- The commissioner player selector now labels prospects by Overall rank.
+- New default Grid:
+  - Rows: 20+ Career Wins / Zyns / 1.50 or Lower ERA in a Season
+  - Columns: Class of '25 / 50+ Career Hits / .450+ Career OBP
+- Grid answer counts: 3, 4, 4 / 12, 5, 6 / 4, 5, 9.
