@@ -1,2 +1,2 @@
-ND Wiffle build v39
-Reusable matchup detail screen linked from schedule, recent results, results archive, and playoff picture.
+ND Wiffle build v42
+Latest 76-pick draft board, updated reserved slots, prefilled #52 Adam Skrzypczyck, 69-player pool.

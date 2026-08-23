@@ -20,10 +20,10 @@ export async function onRequestGet(context){
         CASE tr.role WHEN 'captain' THEN 0 WHEN 'protected' THEN 1 ELSE 2 END,
         p.name
     `).bind(season).all();
-    return json({ok:true,build:"v39",season,rosters:rows.results||[]});
+    return json({ok:true,build:"v42",season,rosters:rows.results||[]});
   }catch(err){
     const msg=String(err?.message||err);
-    if(msg.includes("no such table"))return json({ok:true,build:"v39",season,rosters:[],schema_ready:false});
+    if(msg.includes("no such table"))return json({ok:true,build:"v42",season,rosters:[],schema_ready:false});
     return json({ok:false,error:"Public roster query failed.",detail:msg},500);
   }
 }

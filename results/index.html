@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=39">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=42">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -37,15 +37,15 @@
 .results-meta{margin-top:5px;color:var(--muted);font-size:12px}
 @media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/draft/">Draft</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
 <div class="container"><div id="resultsList" class="results-list"><div class="result-empty">Loading published results…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=39","midnight":"/assets/logos/midnight.png?v=39","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=39",
- "ball-busters":"/assets/logos/ball-busters.png?v=39","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=39","twin-titans":"/assets/logos/twin-titans.png?v=39",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=39","silverbacks":"/assets/logos/silverbacks.png?v=39","underdawgs":"/assets/logos/underdawgs.png?v=39","zyns":"/assets/logos/zyns.png?v=39"
+ "storm":"/assets/logos/storm.png?v=42","midnight":"/assets/logos/midnight.png?v=42","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=42",
+ "ball-busters":"/assets/logos/ball-busters.png?v=42","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=42","twin-titans":"/assets/logos/twin-titans.png?v=42",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=42","silverbacks":"/assets/logos/silverbacks.png?v=42","underdawgs":"/assets/logos/underdawgs.png?v=42","zyns":"/assets/logos/zyns.png?v=42"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}

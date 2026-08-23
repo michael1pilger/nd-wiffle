@@ -1,4 +1,4 @@
-# ND Wiffle League Website v39
+# ND Wiffle League Website v42
 
 v26 connects the public 2026 league pages to D1.
 
@@ -188,3 +188,51 @@ The current static historical database is treated as the authoritative 2021–20
   - final three-game result when that matchup has already been played
   - link to the full box score for completed series
 - Max Partovi remains filtered from matchup player-leader displays.
+
+## v40: Live Draft
+- Adds `migrations/0005_draft_2026.sql`.
+- Adds protected `/admin/draft/` and public `/draft/`.
+- Zyns are explicitly non-drafting.
+- Seeds 68 numbered slots, eight reserved selections, and the current 64-player board.
+- Pick 61 Stiff Wifflers is treated as the forfeited slot marked `X` on the supplied board.
+- Making a pick updates D1 immediately and automatically assigns the player to the drafting team's 2026 roster.
+- Existing registry players are reused; a class year is required only if a brand-new player must be created.
+- Supports adding more prospects later, syncing reserved selections already in the registry, and undoing the most recent normal pick.
+- Public board shows On the Clock, full order, reserved/forfeited slots, Best Available, and team draft classes.
+
+## v41: updated 2026 draft board
+- Corrects Pick #61: Stiff Wifflers is a normal draft pick, not forfeited.
+- Updates the numbered draft order from 68 to 76 picks.
+- Zyns remain excluded from the draft because their roster is predetermined.
+- Silverbacks now have numbered selections at #52 and #75 in addition to reserved players.
+- Updated reserved selections:
+  - after #20: Ryan Soenen → Silverbacks
+  - after #22: Will Carter V → Stiff Wifflers
+  - after #25: Ben Hicks → Silverbacks
+  - after #26: Jason Marrs → Silverbacks
+  - after #34: Jose Aranda → Silverbacks
+  - after #50: Camden Kirchgessner → Silverbacks
+  - after #58: Jack Romkema → Silverbacks
+  - after #66: Kirby Bach → Silverbacks
+- Replaces the draft pool with the current 70-player board and its updated projection metadata.
+- Adds `migrations/0006_refresh_2026_draft_board.sql` for databases that already installed v40's draft migration.
+- Commissioners can still add additional prospects later from `/admin/draft/`.
+
+## v42: latest 2026 draft-board refresh
+- Keeps the 76 numbered draft picks.
+- Zyns remain excluded from the draft.
+- Pick #61 remains a normal Stiff Wifflers pick.
+- Pick #52 is now a pre-filled numbered Silverbacks selection: Adam Skrzypczyck.
+- Current reserved selections:
+  - after #20: Ryan Soenen → Silverbacks
+  - after #22: Will Carter V → Stiff Wifflers
+  - after #25: Ben Hicks → Silverbacks
+  - after #26: Jason Marrs → Silverbacks
+  - after #34: Camden Kirchgessner → Silverbacks
+  - after #42: Jose Aranda → Silverbacks
+  - after #50: Oscar Uy → Silverbacks
+  - after #58: Kirby Bach → Silverbacks
+- Removes Jack Romkema from the reserved list.
+- Replaces the prospect pool with the latest 69-player draft board.
+- Adam Skrzypczyck is not in the available pool because his #52 Silverbacks selection is already locked.
+- Adds `migrations/0007_refresh_2026_draft_board.sql` for D1 databases that already installed earlier draft-board migrations.

@@ -10,7 +10,7 @@ export async function onRequestGet(context) {
     ]);
     return Response.json({
       ok:true,
-      build:"v39",
+      build:"v42",
       actor_email:context.data.actorEmail,
       database:{
         players:Number(players.results?.[0]?.count || 0),
