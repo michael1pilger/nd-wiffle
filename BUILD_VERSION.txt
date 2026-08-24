@@ -1,2 +1,2 @@
-ND Wiffle build v45
-Draft Board / Players Available tabs on public and admin draft pages.
+ND Wiffle build v46
+Ensures team_rosters schema exists for draft roster assignments.

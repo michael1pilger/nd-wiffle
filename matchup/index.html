@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=45">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=46">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -24,7 +24,7 @@
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=45","midnight":"/assets/logos/midnight.png?v=45","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=45","ball-busters":"/assets/logos/ball-busters.png?v=45","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=45","twin-titans":"/assets/logos/twin-titans.png?v=45","goofy-goobers":"/assets/logos/goofy-goobers.png?v=45","silverbacks":"/assets/logos/silverbacks.png?v=45","underdawgs":"/assets/logos/underdawgs.png?v=45","zyns":"/assets/logos/zyns.png?v=45"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=46","midnight":"/assets/logos/midnight.png?v=46","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=46","ball-busters":"/assets/logos/ball-busters.png?v=46","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=46","twin-titans":"/assets/logos/twin-titans.png?v=46","goofy-goobers":"/assets/logos/goofy-goobers.png?v=46","silverbacks":"/assets/logos/silverbacks.png?v=46","underdawgs":"/assets/logos/underdawgs.png?v=46","zyns":"/assets/logos/zyns.png?v=46"};
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const num=v=>Number(v||0),visibleName=n=>String(n||"").trim().toLowerCase()!=="max partovi";

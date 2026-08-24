@@ -1,4 +1,4 @@
-# ND Wiffle League Website v45
+# ND Wiffle League Website v46
 
 v26 connects the public 2026 league pages to D1.
 
@@ -279,3 +279,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Players Available contains the searchable/sortable prospect table.
 - Admin Players Available also contains Add Prospect.
 - No D1 migration is required.
+
+## v46: team_rosters dependency fix
+- Adds `migrations/0008_ensure_team_rosters.sql`.
+- This safely creates the `team_rosters` table and index if they are missing.
+- Draft admin now explicitly checks for `team_rosters` before allowing draft writes.
+- If the table is missing, the admin API now tells commissioners exactly which migration to run instead of failing with `no such table: team_rosters`.
