@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=43">
+<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=45">
 <style>
 .leaders-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin:0 0 18px}
 .leaders-controls label{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;margin-bottom:4px}
@@ -29,7 +29,7 @@
 @media(max-width:900px){.leaders-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.leader-row{grid-template-columns:26px 26px minmax(0,1fr) 70px}.leader-value{font-size:18px}.full-table-head{display:block}.full-table-head span{display:block;margin-top:5px}.tablewrap{overflow:auto}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/" class="active">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/" class="active">Leaders</a><a href="/draft/">Draft</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>League Leaders</h1><p class="muted">Live 2026 batting and pitching leaders from commissioner-published series.</p></div>
 <div class="container">
 <div class="leaders-controls">
@@ -45,7 +45,7 @@
 <div class="full-table-card"><div class="full-table-head"><h2>2026 Leaderboard</h2><span id="tableStatus">All published player totals</span></div><div class="tablewrap"><table class="leaders-table"><thead id="fullHead"></thead><tbody id="fullBody"></tbody></table></div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 league leaders.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=43","midnight":"/assets/logos/midnight.png?v=43","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=43","ball-busters":"/assets/logos/ball-busters.png?v=43","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=43","twin-titans":"/assets/logos/twin-titans.png?v=43","goofy-goobers":"/assets/logos/goofy-goobers.png?v=43","silverbacks":"/assets/logos/silverbacks.png?v=43","underdawgs":"/assets/logos/underdawgs.png?v=43","zyns":"/assets/logos/zyns.png?v=43"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=45","midnight":"/assets/logos/midnight.png?v=45","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=45","ball-busters":"/assets/logos/ball-busters.png?v=45","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=45","twin-titans":"/assets/logos/twin-titans.png?v=45","goofy-goobers":"/assets/logos/goofy-goobers.png?v=45","silverbacks":"/assets/logos/silverbacks.png?v=45","underdawgs":"/assets/logos/underdawgs.png?v=45","zyns":"/assets/logos/zyns.png?v=45"};
 const BAT_METRICS=[
  {id:"BA",label:"AVG",desc:"Batting Average",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
  {id:"OPS",label:"OPS",desc:"OPS",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},

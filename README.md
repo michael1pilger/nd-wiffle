@@ -1,4 +1,4 @@
-# ND Wiffle League Website v43
+# ND Wiffle League Website v45
 
 v26 connects the public 2026 league pages to D1.
 
@@ -256,3 +256,26 @@ The current static historical database is treated as the authoritative 2021–20
   - Rows: 20+ Career Wins / Zyns / 1.50 or Lower ERA in a Season
   - Columns: Class of '25 / 50+ Career Hits / .450+ Career OBP
 - Grid answer counts: 3, 4, 4 / 12, 5, 6 / 4, 5, 9.
+
+## v44: draft fixes
+- Moves Best Available above the full draft order so it is immediately visible instead of appearing after the long 84-slot board.
+- Leaders navigation now includes Draft, and public navigation is normalized so Draft does not disappear when changing pages.
+- Admin `Class Year if New` defaults to 2030 and resets to 2030 after each pick.
+- New-prospect class year also defaults to 2030.
+- Draft API no longer relies on the previous `ON CONFLICT ... DO UPDATE` roster write. It preflights the roster row and uses an explicit INSERT or UPDATE inside the D1 batch.
+- New players also fall back to class year 2030 server-side if the commissioner leaves the class field untouched.
+- Draft failures now include the underlying D1 error in the visible admin message instead of only saying `Draft update failed`.
+- New default Grid:
+  - Rows: Stiffies / Dirty Dawgs / 2.00 or Lower Career ERA
+  - Columns: 5+ Career IP / 15+ Career Pitching K / .300+ Career BA
+  - Answer counts: 9, 7, 3 / 5, 3, 3 / 13, 13, 5.
+
+## v45: draft-page tabs
+- Public `/draft/` now has two views under the Draft page:
+  - Draft Board
+  - Players Available
+- Commissioner `/admin/draft/` uses the same two-tab structure.
+- Draft Board contains the live pick order and draft classes.
+- Players Available contains the searchable/sortable prospect table.
+- Admin Players Available also contains Add Prospect.
+- No D1 migration is required.

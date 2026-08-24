@@ -1,2 +1,2 @@
-ND Wiffle build v43
-Team-branded On the Clock, sortable full Best Available board, new Grid.
+ND Wiffle build v45
+Draft Board / Players Available tabs on public and admin draft pages.
