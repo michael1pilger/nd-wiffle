@@ -1,2 +1,2 @@
-ND Wiffle build v47
-Latest 72-pick order + 12 reserved selections + latest 68-player draft board.
+ND Wiffle build v48
+79 numbered picks, 14 reserved selections, 77-player prospect board, round separators, team-logo pick states.

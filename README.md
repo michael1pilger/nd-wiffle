@@ -1,4 +1,4 @@
-# ND Wiffle League Website v46
+# ND Wiffle League Website v48
 
 v26 connects the public 2026 league pages to D1.
 
@@ -285,3 +285,15 @@ The current static historical database is treated as the authoritative 2021–20
 - This safely creates the `team_rosters` table and index if they are missing.
 - Draft admin now explicitly checks for `team_rosters` before allowing draft writes.
 - If the table is missing, the admin API now tells commissioners exactly which migration to run instead of failing with `no such table: team_rosters`.
+
+## v48: latest draft board + round/pick visuals
+- 79 numbered picks.
+- 14 unnumbered locked/reserved selections.
+- Pick #70 Silverbacks is pre-filled with Kirby Bach.
+- 77-player current prospect board.
+- Stephen Sclafani is locked to Underdawgs and is automatically removed from Best Available.
+- Explicit Round 1–11 separators follow the commissioner's round markers.
+- Every pick row shows a subdued team logo before selection.
+- Completed/locked picks light up with team colors and a full-color logo.
+- The current on-the-clock row has its own highlight.
+- `migrations/0010_latest_2026_draft_board.sql` also creates `team_rosters` if needed.
