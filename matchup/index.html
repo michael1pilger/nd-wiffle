@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=57">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -38,9 +38,9 @@
 <main><div class="container pagehead"><a class="match-back" href="javascript:history.back()">← Back</a><div class="eyebrow">2026 Matchup</div><h1>Matchup Preview</h1><p class="muted">Current records, team form, and player leaders for this matchup.</p></div>
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
-<script src="/assets/data.js?v=53"></script><script src="/assets/bvp.js?v=53"></script>
+<script src="/assets/data.js?v=57"></script><script src="/assets/bvp.js?v=57"></script>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=53","midnight":"/assets/logos/midnight.png?v=53","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=53","ball-busters":"/assets/logos/ball-busters.png?v=53","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=53","twin-titans":"/assets/logos/twin-titans.png?v=53","goofy-goobers":"/assets/logos/goofy-goobers.png?v=53","silverbacks":"/assets/logos/silverbacks.png?v=53","underdawgs":"/assets/logos/underdawgs.png?v=53","zyns":"/assets/logos/zyns.png?v=53"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=57","midnight":"/assets/logos/midnight.png?v=57","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=57","ball-busters":"/assets/logos/ball-busters.png?v=57","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=57","twin-titans":"/assets/logos/twin-titans.png?v=57","goofy-goobers":"/assets/logos/goofy-goobers.png?v=57","silverbacks":"/assets/logos/silverbacks.png?v=57","underdawgs":"/assets/logos/underdawgs.png?v=57","zyns":"/assets/logos/zyns.png?v=57"};
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const num=v=>Number(v||0),visibleName=n=>String(n||"").trim().toLowerCase()!=="max partovi";

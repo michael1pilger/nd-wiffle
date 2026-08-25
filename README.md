@@ -1,4 +1,4 @@
-# ND Wiffle League Website v53
+# ND Wiffle League Website v57
 
 v26 connects the public 2026 league pages to D1.
 
@@ -348,3 +348,39 @@ The current static historical database is treated as the authoritative 2021–20
 - Matchups are ranked by historical sample plus impact indicators such as HR/3B/2B, walks, strikeouts, and extreme batting results.
 - The existing v52 career-stat fallback remains in place.
 - Adds `migrations/0014_postdraft_rosters_and_classes.sql` so a database that has not yet received v50/v52 can be brought current with one migration instead of running 0012 and 0013 separately.
+
+## v54: clean D1 post-draft migration
+- Adds `migrations/0015_postdraft_rosters_and_classes_clean.sql`.
+- Use 0015 instead of 0014 if neither 0012 nor 0013 has been run.
+- 0015 removes PRAGMA/comment-only setup and begins with `SELECT 1;` so Cloudflare D1 receives an explicit query immediately.
+- The roster and class-year changes are otherwise the same as 0014.
+
+## v55: full stats + data exports
+- Stats page adds Standard / Full Stats toggle.
+- Every season stat row includes team identity with a mini logo and subtle team-color row treatment.
+- 2026 team identity comes from the live D1 roster assignment.
+- Historical single-season team identity comes from the preserved season dataset.
+- Career tables use the current 2026 team when available, otherwise the most recent historical team.
+- Adds protected `/admin/exports/`.
+- Adds D1 CSV exports for batting by series, pitching by series, games, series metadata, and rosters.
+- Adds 2026 cumulative batting and pitching downloads.
+- Adds preserved 2021–2025 season batting/pitching downloads.
+- Adds a browser-generated complete league ZIP containing historical and current D1 exports.
+
+## v56: Admin dashboard
+- `/admin/` is now the commissioner homepage rather than the series-upload form.
+- The existing series upload/publish workflow moved to `/admin/series/`.
+- Admin homepage cards link to Series Entry, Roster Manager, Stat & Data Exports, and Draft Manager.
+- All admin pages now share a visible Admin Home / Series Entry / Rosters / Draft / Export Data navigation bar.
+- The dashboard shows a live D1 health indicator and published-series count.
+- No D1 migration is required for this navigation change.
+
+## v57: stat logos, class repair, refreshed Grid
+- Repairs team-logo resolution on Stats by resolving both team IDs and historical team names.
+- Adds current-roster fallback team assignments so 2026/career rows can show team identity even before D1 roster metadata reaches a stat row.
+- Maps historical `Dr` rows to the Twin Titans lineage/logo.
+- Adds `migrations/0016_class_year_repairs.sql`, an idempotent class-year-only repair migration.
+- Admin Roster Manager also uses the commissioner-supplied class values as a display fallback when D1 still has a blank class.
+- Refreshes the default Grid to a new prevalidated board:
+  - Rows: Dirty Dawgs / Gold Glove / 5+ Career Wins
+  - Columns: Silverbacks / 25+ Career Pitching K / 5+ Career HR

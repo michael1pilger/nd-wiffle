@@ -1,4 +1,10 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=57"><style>
+.view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
+.stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
+.stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
+.sortable tbody tr{--team-rgb:90,98,110}.sortable tbody tr.team-tint{background:linear-gradient(90deg,rgba(var(--team-rgb),.075),transparent 35%)}
+.full-stats-hint{display:none}.full-stats-hint.show{display:block}
+</style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
 
@@ -12,6 +18,7 @@
  <div class="stats-controls">
   <button class="btn gold" id="batBtn" onclick="setMode('bat')">Batting</button>
   <button class="btn" id="pitBtn" onclick="setMode('pit')">Pitching</button>
+  <div class="view-toggle"><button class="btn gold" id="standardBtn" onclick="setView('standard')">Standard</button><button class="btn" id="fullBtn" onclick="setView('full')">Full Stats</button></div>
   <select id="scopeSel" onchange="render()">
    <option value="career">Career</option>
    <option value="2026">2026</option>
@@ -33,13 +40,14 @@
   <div id="statsCount" class="stats-count"></div>
  </div>
  <div class="qualifier-hint">Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.</div>
+ <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
  <div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=53"></script>
+<script src="/assets/data.js?v=57"></script>
 <script>
-let mode="bat",sortKey=null,sortDir=-1;
+let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
 
 const canonicalBattingFallback=[
@@ -59,6 +67,54 @@ function mergeCanonical(base,fallback){
 const historicalCareerBat=mergeCanonical(ND_DATA.batting||[],canonicalBattingFallback);
 const historicalCareerPit=mergeCanonical(ND_DATA.pitching||[],canonicalPitchingFallback);
 const playerMetaById=Object.fromEntries((ND_DATA.players||[]).map(p=>[p.Player_ID,p]));
+const TEAM_BY_ID={
+ "storm":{name:"Storm",rgb:"96,0,160"},"midnight":{name:"Midnight",rgb:"90,98,110"},
+ "stiff-wifflers":{name:"Stiff Wifflers",rgb:"24,49,83"},"ball-busters":{name:"Ball Busters",rgb:"144,32,32"},
+ "dirty-dawgs":{name:"Dirty Dawgs",rgb:"96,0,24"},"twin-titans":{name:"Twin Titans",rgb:"64,80,112"},
+ "goofy-goobers":{name:"Goofy Goobers",rgb:"208,80,32"},"silverbacks":{name:"Silverbacks",rgb:"192,160,80"},
+ "underdawgs":{name:"Underdawgs",rgb:"64,48,96"},"zyns":{name:"Zyns",rgb:"144,224,224"}
+};
+const TEAM_NAME_TO_ID={
+ "Storm":"storm","Midnight":"midnight","Stiff Wifflers":"stiff-wifflers","Stiffies":"stiff-wifflers",
+ "Ball Busters":"ball-busters","Dirty Dawgs":"dirty-dawgs","Twin Titans":"twin-titans","Dr":"twin-titans",
+ "Drunken Sluggers":"twin-titans","Saudi Arabian Yard Goats":"twin-titans",
+ "Goofy Goobers":"goofy-goobers","Goobers":"goofy-goobers","Silverbacks":"silverbacks","Beavers":"silverbacks",
+ "Underdawgs":"underdawgs","Zyns":"zyns","Seven Deadly Zyns":"zyns"
+};
+const CURRENT_ROSTER_TEAM_BY_NAME={};
+[
+ ["storm",["Michael Pilger","Will Stevens","Gerard Sharkey","Landon Edwards","Xavier Hirsch","Jimmy Suter","Collin Barker","Vasco Esquivel","Anthony Bellone","Freddy Rudolph","Johnny Carey","John Savage","Liam Lyon"]],
+ ["stiff-wifflers",["Brendan Mato","Sam Spolyar","Tommy Wollscheid","Brady Cahill","Quinn Brown","Nick Swiderski","Jaden Lukose","Will Carter V","Alex Tsvetkov","Jack Conners","Patrick Gareau"]],
+ ["midnight",["Jacob Clark","Joey Thomalla","Jimmy Szpak","Diego Alonso","Logan Bettinger","Freddy Zeckser","Bennett Alvarado","Zach Zywiec","Anthony Lucatuorto","Aiden O'Reilly","Ben Jollay","Charlie Doherty","Andrew Le"]],
+ ["goofy-goobers",["Jacob Olejnik","Ian Phelps","Chase Niemeyer","Dean Zervos","Nik Husarik","Danny Kennedy","Rainier Gilliss","Charlie Chevalier","Michael Budd","Kevin Harnish","Chuck Menard"]],
+ ["dirty-dawgs",["Jimmy Redfern","Johnny Toole","Andrew Frey","Kevin Curran","Joe O'Melveny","Connor Savage","Jacob Bailey","Liam Kaseburg","Christopher Marvel","Liam Hill","Donny Edwards","Sebastian Borjas"]],
+ ["ball-busters",["Evan Reid","JT Kaiser","Alex Rivera","JP Cardenas","Tim Baldwin","Nick Hulgrave","Jeb Blanco","James Baird","Teddy Skendzel","Jack Powers","Noah Adkins","Nathan Skendzel","Noah Cerniglia"]],
+ ["twin-titans",["Luke Gormsen","Eddie McGettigan","Will Cohn","Ben Meyer","Silas Carder","Matt Schuenemann","Jacob Bechtel","Patrick Collins","Michael Camilleri","Max Busk","Patrick Jackson","Justin Murray"]],
+ ["silverbacks",["Tad Bates","Ryan Soenen","Ben Hicks","Jason Marrs","Camden Kirchgessner","Jason Aranda","Oscar Uy","Adam Skrzypczyck","Kirby Bach","Ryan McCain"]],
+ ["underdawgs",["Jerry Vielhauer","Isaac Oswald","Bobby Wolff","Joe Dachnowicz","Ryan Hyer","Jack Dunn","Stephen Scalfani","Robby Diamond","George Devlin","Ryan Walsh","Rob Marshall","Dan Smith"]]
+].forEach(([team,names])=>names.forEach(n=>CURRENT_ROSTER_TEAM_BY_NAME[n.toLowerCase()]=team));
+
+function teamInfo(r){
+ let id=r.Team_ID||r.team_id||null,name=r.Team||r.team_name||"";
+ if(!id&&name)id=TEAM_NAME_TO_ID[name]||null;
+ if(!id && ["2026","career"].includes(scopeSel.value))id=CURRENT_ROSTER_TEAM_BY_NAME[String(r.Name||"").toLowerCase()]||null;
+ if(!name&&id)name=TEAM_BY_ID[id]?.name||"";
+ if(!id&&!name&&r.Player_ID){
+   const seasons=(mode==="bat"?ND_DATA.battingSeasons:ND_DATA.pitchingSeasons)||[];
+   const recent=seasons.filter(x=>x.Player_ID===r.Player_ID).sort((a,b)=>Number(b.Season)-Number(a.Season))[0];
+   name=recent?.Team||"";id=TEAM_NAME_TO_ID[name]||null;
+ }
+ return {id,name,ui:id?TEAM_BY_ID[id]:null};
+}
+function teamCell(r){
+ const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
+ const label=name||ui?.name||id;
+ const rgb=ui?.rgb||"90,98,110";
+ const logo=id?`/assets/logos/${id}.png?v=57`:"";
+ return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
+}
+function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
+
 
 function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:0}
 function historicalIpToOuts(v){
@@ -79,7 +135,7 @@ function mergeCareerBat(){
  const map=new Map(historicalCareerBat.map(r=>[r.Player_ID,{...r}]));
  for(const l of liveBat){
    const h=map.get(l.Player_ID)||{Player_ID:l.Player_ID,Name:l.Name,Retired:l.Retired,Class_Year:l.Class_Year};
-   const out={...h};
+   const out={...h,Team:l.Team||h.Team,Team_ID:l.Team_ID||h.Team_ID};
    const fields=[["PAs","PAs"],["ABs","ABs"],["Runs","Runs"],["Hits","Hits"],["Singles","Singles"],["Doubles","Doubles"],["Triples","Triples"],["HRs","HRs"],["RBI","RBI"],["BB","BB"],["Ks","Ks"],["HBP","HBP"],["GP","GP"]];
    for(const [k] of fields)out[k]=num(h[k])+num(l[k]);
    const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB),hbp=num(out.HBP);
@@ -94,7 +150,7 @@ function mergeCareerPit(){
  const map=new Map(historicalCareerPit.map(r=>[r.Player_ID,{...r,_outs:historicalIpToOuts(r.IP)}]));
  for(const l of livePit){
    const h=map.get(l.Player_ID)||{Player_ID:l.Player_ID,Name:l.Name,Retired:l.Retired,Class_Year:l.Class_Year,_outs:0};
-   const out={...h};
+   const out={...h,Team:l.Team||h.Team,Team_ID:l.Team_ID||h.Team_ID};
    for(const k of ["Apps","Starts","W","L","S","BF","Walks","Hits","Ks","ER"])out[k]=num(h[k])+num(l[k]);
    out._outs=num(h._outs)+num(l.Outs);
    out.IP=outsToIp(out._outs);
@@ -112,6 +168,7 @@ function isRetiredRow(r){
 function nameDisplay(r){
  return `${r.Name||""}${isRetiredRow(r)?'<span class="stats-retired-icon" title="Retired">R</span>':""}`;
 }
+function setView(x){viewMode=x;standardBtn.className=x==="standard"?"btn gold":"btn";fullBtn.className=x==="full"?"btn gold":"btn";fullHint.classList.toggle("show",x==="full");sortKey=null;render()}
 function setMode(x){
  mode=x;sortKey=null;sortDir=-1;
  batBtn.className=x==="bat"?"btn gold":"btn";
@@ -133,9 +190,12 @@ function sourceRows(){
  return rows.filter(publicVisibleStatRow);
 }
 function columns(){
+ if(viewMode==="standard")return mode==="bat"
+  ?["Name","Team","PAs","Hits","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
+  :["Name","Team","Apps","W","L","IP","Ks","ERA","WHIP"];
  return mode==="bat"
-  ?["Name","PAs","Hits","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
-  :["Name","Apps","W","L","IP","Ks","ERA","WHIP"];
+  ?["Name","Team","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS"]
+  :["Name","Team","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP","ERA","WHIP"];
 }
 function displayVal(c,v){
  if(c==="ERA"){const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):(v??"")}
@@ -144,6 +204,14 @@ function displayVal(c,v){
 function label(c){
  if(c==="Ks")return mode==="bat"?"Batting K":"Pitching K";
  if(c==="PAs")return "PA";
+ if(c==="Class_Year")return "Class";
+ if(c==="Runs")return "R";
+ if(c==="Hits")return "H";
+ if(c==="Singles")return "1B";
+ if(c==="Doubles")return "2B";
+ if(c==="Triples")return "3B";
+ if(c==="HRs")return "HR";
+ if(c==="Walks")return "BB";
  return c;
 }
 function qualifies(r){return mode==="bat"?num(r.PAs)>=50:num(r.IP)>=18}
@@ -154,12 +222,13 @@ function sortRows(rows){
  }
  return [...rows].sort((a,b)=>{
    if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
+   if(sortKey==="Team")return sortDir*teamInfo(a).name.localeCompare(teamInfo(b).name);
    return sortDir*(num(a[sortKey])-num(b[sortKey]));
  });
 }
 function sortBy(k){
  if(sortKey===k)sortDir*=-1;
- else{sortKey=k;sortDir=(k==="Name"?1:-1)}
+ else{sortKey=k;sortDir=(["Name","Team"].includes(k)?1:-1)}
  render();
 }
 function render(){
@@ -173,7 +242,7 @@ function render(){
  const cols=columns();
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>
   <th class="stats-rank-col">#</th>${cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")}
- </tr></thead><tbody>${rows.map((r,i)=>`<tr><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+ </tr></thead><tbody>${rows.map((r,i)=>`<tr class="team-tint" style="--team-rgb:${rowRgb(r)}"><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):c==="Team"?teamCell(r):c==="Class_Year"?(r[c]?`'${String(r[c]).slice(-2)}`:"—"):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 async function loadLive(){
  try{

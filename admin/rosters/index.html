@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Roster Manager | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53">
+<title>Roster Manager | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=57">
 <style>
 .roster-shell{padding:34px 0 55px}.roster-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:15px 0}
 .roster-btn{border:1px solid var(--border);background:#132138;color:#fff;border-radius:9px;padding:10px 13px;font-weight:850;cursor:pointer}.roster-btn.primary{background:var(--gold);border-color:var(--gold);color:#111}
@@ -13,7 +13,7 @@
 .roster-name{font-weight:900}.roster-name small{display:block;color:var(--muted);font-weight:500;margin-top:2px}.roster-counts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.roster-chip{font-size:11px;border:1px solid var(--border);border-radius:999px;padding:5px 8px;color:var(--muted)}
 @media(max-width:760px){.new-player-grid,.roster-filter{grid-template-columns:1fr}.roster-head{display:none}.roster-row{grid-template-columns:1fr 1fr}.roster-name{grid-column:1/-1}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Series Upload</a><a class="active" href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a class="active" href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="roster-shell"><div class="container"><div class="eyebrow">Commissioner Tools · BUILD v35</div><h1>2026 Roster Manager</h1>
 <p class="muted">Assign signed-up players to 2026 teams. Unassigned players stay in the registry but do not appear on a 2026 roster. New rookies can be created here before they ever appear in an iScore upload.</p>
 <div class="new-player-box"><h2 style="margin-top:0">Add New Player</h2><div class="new-player-grid">
@@ -29,6 +29,8 @@
 </div></main>
 <script>
 let DATA={players:[],teams:[],rosters:[]};
+const CLASS_YEAR_OVERRIDES={"Freddy Rudolph":2027,"Tad Bates":2028,"Ryan Soenen":2028,"Ben Hicks":2028,"Jason Marrs":2028,"Camden Kirchgessner":2028,"Jason Aranda":2028,"Oscar Uy":2028,"Adam Skrzypczyck":2028,"Kirby Bach":2028,"Jacob Clark":2027,"Joey Thomalla":2027,"Jimmy Szpak":2029,"Freddy Zeckser":2028,"Bennett Alvarado":2027,"Brendan Mato":2029,"Nick Swiderski":2027,"Patrick Gareau":2028,"Jerry Vielhauer":2027,"Isaac Oswald":2029,"Bobby Wolff":2029,"Joe Dachnowicz":2027,"Ryan Hyer":2027,"Stephen Scalfani":2027,"Robby Diamond":2027,"George Devlin":2029,"Ryan Walsh":2027,"Rob Marshall":2027,"Dan Smith":2027,"Luke Gormsen":2028,"Jacob Bechtel":2024,"Michael Camilleri":2028,"Max Busk":2030,"Jacob Olejnik":2029,"Chuck Menard":2030,"Evan Reid":2027,"JT Kaiser":2027,"JP Cardenas":2029,"Jimmy Redfern":2027,"Johnny Toole":2028,"Joe O'Melveny":2028,"Jacob Bailey":2030};
+function displayClass(p){return p.class_year||CLASS_YEAR_OVERRIDES[p.name]||"—"}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const byAssignment=()=>new Map((DATA.rosters||[]).map(r=>[r.player_id,r]));
 function setStatus(msg,type=""){const el=document.getElementById("status");el.textContent=msg;el.className="roster-status "+type}
@@ -45,7 +47,7 @@ function render(){
  });
  document.getElementById("rosterRows").innerHTML=rows.map(p=>{
    const x=a.get(p.player_id)||{};
-   return `<div class="roster-row" data-player="${p.player_id}"><div class="roster-name">${esc(p.name)}${Number(p.retired)===1?'<small>Retired</small>':""}</div><div>${p.class_year||"—"}</div><div><select class="teamSel">${teamOptions(x.team_id||"")}</select></div><div><select class="roleSel"><option value="player" ${(x.role||"player")==="player"?"selected":""}>Player</option><option value="captain" ${x.role==="captain"?"selected":""}>Captain</option><option value="protected" ${x.role==="protected"?"selected":""}>Protected</option></select></div></div>`;
+   return `<div class="roster-row" data-player="${p.player_id}"><div class="roster-name">${esc(p.name)}${Number(p.retired)===1?'<small>Retired</small>':""}</div><div>${displayClass(p)}</div><div><select class="teamSel">${teamOptions(x.team_id||"")}</select></div><div><select class="roleSel"><option value="player" ${(x.role||"player")==="player"?"selected":""}>Player</option><option value="captain" ${x.role==="captain"?"selected":""}>Captain</option><option value="protected" ${x.role==="protected"?"selected":""}>Protected</option></select></div></div>`;
  }).join("");
  const counts=new Map(DATA.teams.map(t=>[t.team_id,0]));for(const x of a.values())counts.set(x.team_id,(counts.get(x.team_id)||0)+1);
  document.getElementById("rosterCounts").innerHTML=DATA.teams.map(t=>`<span class="roster-chip">${esc(t.display_name)}: ${counts.get(t.team_id)||0}</span>`).join("");

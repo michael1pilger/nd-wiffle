@@ -29,7 +29,7 @@ export async function onRequestGet(context){
 
   try{
     const [
-      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes
+      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes
     ]=await DB.batch([
       DB.prepare(`
         SELECT team_id, display_name
@@ -110,7 +110,13 @@ export async function onRequestGet(context){
         WHERE s.season=?
         ORDER BY p.name,t.display_name
       `).bind(season),
-      DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=?").bind(season)
+      DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=?").bind(season),
+      DB.prepare(`
+        SELECT tr.player_id,tr.team_id,t.display_name AS team_name
+        FROM team_rosters tr
+        JOIN teams t ON t.team_id=tr.team_id
+        WHERE tr.season=?
+      `).bind(season)
     ]);
 
     const teams=teamsRes.results||[];
@@ -140,6 +146,7 @@ export async function onRequestGet(context){
     }));
 
     const decisions=new Map((decisionsRes.results||[]).map(r=>[r.player_id,r]));
+    const rosterTeams=new Map((rosterRes.results||[]).map(r=>[r.player_id,r]));
     const batting=(batRes.results||[]).map(r=>{
       const pa=n(r.pa),ab=n(r.ab),hits=n(r.hits),bb=n(r.bb),hbp=n(r.hbp);
       const tb=n(r.singles)+2*n(r.doubles)+3*n(r.triples)+4*n(r.hr);
@@ -147,7 +154,8 @@ export async function onRequestGet(context){
       const ba=ab?hits/ab:0,obp=obpDen?(hits+bb+hbp)/obpDen:0,slg=ab?tb/ab:0;
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
-        Season:String(season),GP:n(r.gp),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
+        Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
+        GP:n(r.gp),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
         Singles:n(r.singles),Doubles:n(r.doubles),Triples:n(r.triples),HRs:n(r.hr),
         RBI:n(r.rbi),BB:bb,Ks:n(r.so),HBP:hbp,
         BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)
@@ -158,7 +166,8 @@ export async function onRequestGet(context){
       const d=decisions.get(r.player_id)||{};
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
-        Season:String(season),GP:n(r.gp),Apps:n(r.apps),Starts:n(r.starts),
+        Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
+        GP:n(r.gp),Apps:n(r.apps),Starts:n(r.starts),
         W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:outs,IP:ipDisplay(outs),
         BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
         HRs:n(r.hr),HBP:n(r.hbp),WP:n(r.wp),
@@ -168,7 +177,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v53",season,
+      ok:true,build:"v57",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

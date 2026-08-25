@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=57">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -43,9 +43,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=53","midnight":"/assets/logos/midnight.png?v=53","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=53",
- "ball-busters":"/assets/logos/ball-busters.png?v=53","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=53","twin-titans":"/assets/logos/twin-titans.png?v=53",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=53","silverbacks":"/assets/logos/silverbacks.png?v=53","underdawgs":"/assets/logos/underdawgs.png?v=53","zyns":"/assets/logos/zyns.png?v=53"
+ "storm":"/assets/logos/storm.png?v=57","midnight":"/assets/logos/midnight.png?v=57","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=57",
+ "ball-busters":"/assets/logos/ball-busters.png?v=57","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=57","twin-titans":"/assets/logos/twin-titans.png?v=57",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=57","silverbacks":"/assets/logos/silverbacks.png?v=57","underdawgs":"/assets/logos/underdawgs.png?v=57","zyns":"/assets/logos/zyns.png?v=57"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
