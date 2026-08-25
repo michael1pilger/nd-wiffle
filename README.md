@@ -1,4 +1,4 @@
-# ND Wiffle League Website v49
+# ND Wiffle League Website v50
 
 v26 connects the public 2026 league pages to D1.
 
@@ -306,3 +306,16 @@ The current static historical database is treated as the authoritative 2021–20
 - Team-order changes include Ball Busters at #15, Stiffies at #68, Kirby Bach moved to a reserved Silverbacks slot after #77, Underdawgs at #78, and Storm at #79.
 - Adds latest prospects including Paul Sparacello, Vasco Esquivel, and George Devlin.
 - `migrations/0011_final_2026_draft_board.sql` is self-contained and also creates `team_rosters` if needed.
+
+## v50: post-draft season state
+- Replaces the nine drafted-team 2026 rosters with the final post-trade rosters supplied by the commissioner.
+- Preserves any existing Zyns roster because the Zyns were not part of the draft table supplied for this update.
+- Clears class years for 58 final-roster players who were absent from the original pre-draft player registry.
+- Keeps historical class years for established players.
+- Reactivates every player listed on a final 2026 roster.
+- Schedule now displays all 45 possible 10-team pairings.
+- Four listed pairings will ultimately go unplayed under the first-come, first-served format.
+- Twin Titans vs Storm is scheduled for August 25, 2026; time remains TBD.
+- Schedule result matching is now direction-independent, so an eventual uploaded home/away orientation can differ from the preseason pair display.
+- Homepage ticker now points to Twin Titans vs Storm rather than the completed draft.
+- Run `migrations/0012_post_draft_rosters.sql` after deploying v50.

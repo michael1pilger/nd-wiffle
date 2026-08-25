@@ -86,7 +86,7 @@ export async function onRequestPost(context){
         .map(p=>({player_id:p.player_id,name:p.name,class_year:p.class_year,retired:p.retired,score:Number(p.score.toFixed(3))}));
       return {uploaded_name,status:candidates.length?"similar":"new",candidates};
     });
-    return json({ok:true,build:"v49",results});
+    return json({ok:true,build:"v50",results});
   }catch(err){
     return json({ok:false,error:"Player registry lookup failed.",detail:String(err?.message||err)},500);
   }
