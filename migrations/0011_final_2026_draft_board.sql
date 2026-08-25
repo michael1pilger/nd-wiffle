@@ -1,20 +1,19 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS draft_slots (
-  season INTEGER NOT NULL, sequence REAL NOT NULL, pick_number INTEGER, team_id TEXT NOT NULL REFERENCES teams(team_id),
-  slot_type TEXT NOT NULL CHECK (slot_type IN ('pick','reserved','forfeited')), reserved_player_name TEXT,
-  selected_player_id TEXT REFERENCES players(player_id), selected_player_name TEXT, selected_class_year INTEGER,
-  selected_at TEXT, selected_by TEXT, notes TEXT, PRIMARY KEY (season, sequence), UNIQUE (season, pick_number)
+-- v49 final pre-draft board.
+CREATE TABLE IF NOT EXISTS team_rosters (
+  season INTEGER NOT NULL,
+  player_id TEXT NOT NULL REFERENCES players(player_id) ON DELETE CASCADE,
+  team_id TEXT NOT NULL REFERENCES teams(team_id),
+  role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('player','captain','protected')),
+  assigned_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  assigned_by TEXT NOT NULL,
+  PRIMARY KEY (season, player_id)
 );
-CREATE TABLE IF NOT EXISTS draft_pool (
-  season INTEGER NOT NULL, prospect_id INTEGER PRIMARY KEY AUTOINCREMENT, player_id TEXT REFERENCES players(player_id),
-  name TEXT NOT NULL COLLATE NOCASE, class_year INTEGER, projected_pick INTEGER, projected_series_played INTEGER,
-  projected_batter_rank INTEGER, projected_pitcher_rank INTEGER,
-  status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available','drafted','reserved','withdrawn')),
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE (season, name)
-);
-CREATE INDEX IF NOT EXISTS idx_draft_slots_season ON draft_slots(season, sequence);
-CREATE INDEX IF NOT EXISTS idx_draft_pool_season_status ON draft_pool(season, status);
+CREATE INDEX IF NOT EXISTS idx_team_rosters_season_team ON team_rosters(season, team_id);
+
+DELETE FROM draft_slots WHERE season=2026;
+DELETE FROM draft_pool WHERE season=2026;
 INSERT OR IGNORE INTO draft_slots(season,sequence,pick_number,team_id,slot_type) VALUES(2026,1.0,1,'storm','pick');
 INSERT OR IGNORE INTO draft_slots(season,sequence,pick_number,team_id,slot_type) VALUES(2026,2.0,2,'storm','pick');
 INSERT OR IGNORE INTO draft_slots(season,sequence,pick_number,team_id,slot_type) VALUES(2026,3.0,3,'twin-titans','pick');

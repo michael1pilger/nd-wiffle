@@ -1,2 +1,2 @@
-ND Wiffle build v48
-79 numbered picks, 14 reserved selections, 77-player prospect board, round separators, team-logo pick states.
+ND Wiffle build v49
+Final pre-draft board: 79 numbered picks, 15 reserved selections, 79 prospects, 12 rounds.

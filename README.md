@@ -1,4 +1,4 @@
-# ND Wiffle League Website v48
+# ND Wiffle League Website v49
 
 v26 connects the public 2026 league pages to D1.
 
@@ -297,3 +297,12 @@ The current static historical database is treated as the authoritative 2021–20
 - Completed/locked picks light up with team colors and a full-color logo.
 - The current on-the-clock row has its own highlight.
 - `migrations/0010_latest_2026_draft_board.sql` also creates `team_rosters` if needed.
+
+## v49: final pre-draft update
+- 79 numbered picks.
+- 15 reserved/locked selections.
+- 79-player prospect board.
+- 12 round markers.
+- Team-order changes include Ball Busters at #15, Stiffies at #68, Kirby Bach moved to a reserved Silverbacks slot after #77, Underdawgs at #78, and Storm at #79.
+- Adds latest prospects including Paul Sparacello, Vasco Esquivel, and George Devlin.
+- `migrations/0011_final_2026_draft_board.sql` is self-contained and also creates `team_rosters` if needed.
