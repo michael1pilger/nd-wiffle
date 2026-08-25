@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=51">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -18,37 +18,155 @@
 .match-empty{border:1px dashed var(--border);border-radius:14px;padding:20px;color:var(--muted)}
 @media(max-width:800px){.snapshot-grid,.compare-grid{grid-template-columns:1fr}.match-teams{grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr)}.match-team img{width:68px;height:68px}.match-team h1{font-size:19px}.leader-section{grid-template-columns:1fr}}
 @media(max-width:520px){.snapshot-stats{grid-template-columns:repeat(2,1fr)}.series-games{grid-template-columns:1fr}}
+
+.history-note{margin:8px 0 0;color:var(--muted);font-size:10px;line-height:1.45}
+.leader-box h3 small{display:block;color:var(--muted);font-size:8px;font-weight:700;text-transform:none;letter-spacing:0;margin-top:2px}
+
+.bvp-section{margin:16px 0}
+.bvp-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:10px}
+.bvp-head h2{margin:0;font-size:19px}
+.bvp-head p{margin:3px 0 0;color:var(--muted);font-size:10px}
+.bvp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bvp-card{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:13px}
+.bvp-direction{font-size:9px;color:var(--gold);font-weight:950;text-transform:uppercase;letter-spacing:.06em}
+.bvp-title{margin-top:5px;font-size:14px;font-weight:950;line-height:1.35}
+.bvp-line{margin-top:7px;color:#fff;font-size:12px;font-weight:850}
+.bvp-meta{margin-top:5px;color:var(--muted);font-size:9px}
+@media(max-width:700px){.bvp-grid{grid-template-columns:1fr}.bvp-head{display:block}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><a class="match-back" href="javascript:history.back()">← Back</a><div class="eyebrow">2026 Matchup</div><h1>Matchup Preview</h1><p class="muted">Current records, team form, and player leaders for this matchup.</p></div>
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
+<script src="/assets/data.js?v=53"></script><script src="/assets/bvp.js?v=53"></script>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=51","midnight":"/assets/logos/midnight.png?v=51","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=51","ball-busters":"/assets/logos/ball-busters.png?v=51","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=51","twin-titans":"/assets/logos/twin-titans.png?v=51","goofy-goobers":"/assets/logos/goofy-goobers.png?v=51","silverbacks":"/assets/logos/silverbacks.png?v=51","underdawgs":"/assets/logos/underdawgs.png?v=51","zyns":"/assets/logos/zyns.png?v=51"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=53","midnight":"/assets/logos/midnight.png?v=53","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=53","ball-busters":"/assets/logos/ball-busters.png?v=53","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=53","twin-titans":"/assets/logos/twin-titans.png?v=53","goofy-goobers":"/assets/logos/goofy-goobers.png?v=53","silverbacks":"/assets/logos/silverbacks.png?v=53","underdawgs":"/assets/logos/underdawgs.png?v=53","zyns":"/assets/logos/zyns.png?v=53"};
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const num=v=>Number(v||0),visibleName=n=>String(n||"").trim().toLowerCase()!=="max partovi";
 function fmtPct(v){return Number(v||0).toFixed(3).replace(/^0/,"")}
 function fmtDate(v){if(!v||v==="TBD")return "Date TBD";const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
-function playerTeams(data){const m=new Map();for(const p of data.participants||[]){if(!visibleName(p.name))continue;(m.get(p.team_id)??m.set(p.team_id,new Set()).get(p.team_id)).add(p.player_id)}return m}
-function teamPlayers(rows,set){return (rows||[]).filter(r=>visibleName(r.Name)&&set?.has(r.Player_ID))}
+function rosterMap(rosters){
+ const m=new Map();
+ for(const p of rosters||[]){
+  if(!visibleName(p.name))continue;
+  if(!m.has(p.team_id))m.set(p.team_id,[]);
+  m.get(p.team_id).push(p);
+ }
+ return m;
+}
+function currentTeamPlayers(rows,rosterRows){
+ const ids=new Set((rosterRows||[]).map(x=>x.player_id));
+ return (rows||[]).filter(r=>visibleName(r.Name)&&ids.has(r.Player_ID));
+}
 function topBat(rows){return [...rows].sort((a,b)=>num(b.OPS)-num(a.OPS)||num(b.PAs)-num(a.PAs)||num(b.HRs)-num(a.HRs)).slice(0,3)}
 function topPit(rows){return [...rows].filter(r=>num(r.Outs)>0).sort((a,b)=>num(a.ERA)-num(b.ERA)||num(b.Ks)-num(a.Ks)||num(b.Outs)-num(a.Outs)).slice(0,3)}
-function leaderRows(rows,type){return rows.map((r,i)=>`<div class="leader-row"><div class="rank">${i+1}</div><div><strong>${esc(r.Name)}</strong><small>${type==="bat"?`${r.PAs} PA · ${r.HRs} HR · ${r.RBI} RBI`:`${r.IP} IP · ${r.Ks} K · ${r.W}-${r.L}`}</small></div><div class="leader-val">${type==="bat"?`${Number(r.OPS).toFixed(3).replace(/^0/,"")} OPS`:`${r.ERA} ERA`}</div></div>`).join("")||'<div class="muted">No published stats yet.</div>'}
+function careerPlayerIds(rosterRows){
+ const names=new Set((rosterRows||[]).map(x=>String(x.name||"").trim().toLowerCase()));
+ return new Set((window.ND_DATA?.players||[]).filter(p=>names.has(String(p.Name||"").trim().toLowerCase())).map(p=>p.Player_ID));
+}
+function careerBatters(rosterRows){
+ const ids=careerPlayerIds(rosterRows);
+ return (window.ND_DATA?.batting||[]).filter(r=>visibleName(r.Name)&&ids.has(r.Player_ID)&&num(r.PAs)>0);
+}
+function careerPitchers(rosterRows){
+ const ids=careerPlayerIds(rosterRows);
+ return (window.ND_DATA?.pitching||[]).filter(r=>visibleName(r.Name)&&ids.has(r.Player_ID)&&num(r.IP)>0);
+}
+function topCareerBat(rows){return [...rows].sort((a,b)=>num(b.OPS)-num(a.OPS)||num(b.PAs)-num(a.PAs)||num(b.HRs)-num(a.HRs)).slice(0,3)}
+function topCareerPit(rows){return [...rows].sort((a,b)=>num(a.ERA)-num(b.ERA)||num(b.Ks)-num(a.Ks)||num(b.IP)-num(a.IP)).slice(0,3)}
+function leaderRows(rows,type,career=false){
+ return rows.map((r,i)=>`<div class="leader-row"><div class="rank">${i+1}</div><div><strong>${esc(r.Name)}</strong><small>${type==="bat"?`${r.PAs} PA · ${r.HRs} HR · ${r.RBI} RBI`:`${r.IP} IP · ${r.Ks} K · ${r.W}-${r.L}`}</small></div><div class="leader-val">${type==="bat"?`${Number(r.OPS).toFixed(3).replace(/^0/,"")} OPS`:`${Number(r.ERA).toFixed(2)} ERA`}</div></div>`).join("")||`<div class="muted">${career?"No historical stats available.":"No published 2026 stats yet."}</div>`;
+}
+
+function canonName(v){
+ let s=String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[’‘]/g,"'").trim().toLowerCase();
+ const aliases={
+  "william stevens":"will stevens",
+  "joseph dachnowicz":"joe dachnowicz",
+  "stephen sclafani":"stephen scalfani",
+  "maximilian busk":"max busk"
+ };
+ return aliases[s]||s;
+}
+function bvpImpact(x){
+ const pa=num(x.ab)+num(x.bb),ba=num(x.ab)?num(x.h)/num(x.ab):0;
+ return pa+5*num(x.hr)+3*num(x.tr)+2*num(x.dbl)+0.7*num(x.bb)+0.8*num(x.k)+Math.min(6,Math.abs(ba-.300)*num(x.ab)*1.4);
+}
+function bvpReadable(x){
+ const parts=[`${x.h}-for-${x.ab}`];
+ if(num(x.hr))parts.push(`${x.hr>1?x.hr+" ":""}HR`);
+ if(num(x.tr))parts.push(`${x.tr>1?x.tr+" ":""}3B`);
+ if(num(x.dbl))parts.push(`${x.dbl>1?x.dbl+" ":""}2B`);
+ if(num(x.bb))parts.push(`${x.bb>1?x.bb+" ":""}BB`);
+ if(num(x.k))parts.push(`${x.k>1?x.k+" ":""}K`);
+ return parts.join(" · ");
+}
+function bvpCandidates(battingRoster,pitchingRoster){
+ const batNames=new Map((battingRoster||[]).map(x=>[canonName(x.name),x.name]));
+ const pitNames=new Map((pitchingRoster||[]).map(x=>[canonName(x.name),x.name]));
+ return (window.ND_BVP||[]).map(x=>{
+   const b=batNames.get(canonName(x.batter)),p=pitNames.get(canonName(x.pitcher));
+   return b&&p?{...x,batterDisplay:b,pitcherDisplay:p,score:bvpImpact(x)}:null;
+ }).filter(Boolean).sort((a,b)=>b.score-a.score);
+}
+function selectTwoBvp(cands){
+ // Prefer two distinct hitters AND two distinct pitchers.
+ let best=null;
+ for(let i=0;i<cands.length;i++){
+  for(let j=i+1;j<cands.length;j++){
+   const a=cands[i],b=cands[j];
+   if(canonName(a.batterDisplay)===canonName(b.batterDisplay))continue;
+   if(canonName(a.pitcherDisplay)===canonName(b.pitcherDisplay))continue;
+   const score=a.score+b.score;
+   if(!best||score>best.score)best={score,pairs:[a,b]};
+  }
+ }
+ if(best)return best.pairs;
+ // If the data only contains one opposing pitcher, keep two different hitters.
+ const out=[];
+ const hitters=new Set();
+ for(const x of cands){
+  const b=canonName(x.batterDisplay);
+  if(hitters.has(b))continue;
+  hitters.add(b);out.push(x);
+  if(out.length===2)break;
+ }
+ return out;
+}
+function bvpCard(x,batTeam,pitTeam){
+ return `<article class="bvp-card"><div class="bvp-direction">${esc(batTeam)} hitter vs ${esc(pitTeam)} pitcher</div><div class="bvp-title">${esc(x.batterDisplay)} vs ${esc(x.pitcherDisplay)}</div><div class="bvp-line">${esc(bvpReadable(x))}</div><div class="bvp-meta">Historical batter-v-pitcher matchup · ${num(x.ab)+num(x.bb)} recorded AB/BB opportunities</div></article>`;
+}
+function bvpSection(away,home,awayRoster,homeRoster){
+ const awayPairs=selectTwoBvp(bvpCandidates(awayRoster,homeRoster));
+ const homePairs=selectTwoBvp(bvpCandidates(homeRoster,awayRoster));
+ const cards=[
+  ...awayPairs.map(x=>bvpCard(x,away.team,home.team)),
+  ...homePairs.map(x=>bvpCard(x,home.team,away.team))
+ ];
+ if(!cards.length)return "";
+ return `<section class="bvp-section"><div class="bvp-head"><div><div class="eyebrow">Historical BvP</div><h2>Matchups to Watch</h2><p>Four active-roster matchups selected for historical volume and impact, with two hitters from each team when the data supports it.</p></div></div><div class="bvp-grid">${cards.slice(0,4).join("")}</div></section>`;
+}
 function groupSeries(games){const map=new Map();for(const g of games||[]){let x=map.get(g.series_id);if(!x){x={id:g.series_id,date:g.series_date,away:g.away_team_id,home:g.home_team_id,awayName:g.away_team,homeName:g.home_team,games:[]};map.set(g.series_id,x)}x.games.push(g)}return [...map.values()]}
 function recentForm(series,teamId){return series.filter(s=>s.away===teamId||s.home===teamId).sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(s=>{let w=0,l=0;for(const g of s.games){const teamAway=s.away===teamId,us=teamAway?num(g.away_score):num(g.home_score),them=teamAway?num(g.home_score):num(g.away_score);us>them?w++:l++}return {opp:s.away===teamId?s.homeName:s.awayName,w,l,won:w>l}})}
 function formHtml(rows){return `<div class="form-list">${rows.length?rows.map(x=>`<span class="form-pill ${x.won?"win":"loss"}">${x.won?"W":"L"} ${x.w}-${x.l} vs ${esc(x.opp)}</span>`).join(""):'<span class="muted">No completed series yet.</span>'}</div>`}
 function snapshot(t){return `<div class="snapshot-card"><h2>${esc(t.team)}</h2><div class="snapshot-stats"><div class="snapshot-stat"><small>Rank</small><strong>#${t.rank}</strong></div><div class="snapshot-stat"><small>Record</small><strong>${t.W}-${t.L}</strong></div><div class="snapshot-stat"><small>PCT</small><strong>${fmtPct(t.PCT)}</strong></div><div class="snapshot-stat"><small>Run Diff</small><strong>${t.DIFF>0?"+":""}${t.DIFF}</strong></div></div></div>`}
 function teamHero(t){return `<div class="match-team">${LOGOS[t.team_id]?`<img src="${LOGOS[t.team_id]}" alt="">`:""}<h1>${esc(t.team)}</h1><div class="match-record">#${t.rank} · ${t.W}-${t.L} · ${fmtPct(t.PCT)}</div></div>`}
-function completedResult(results){return (results.series||[]).find(s=>seriesId?s.series_id===seriesId:(s.away_team_id===awayId&&s.home_team_id===homeId))}
-function render(data,results){
+function completedResult(results){return (results.series||[]).find(s=>seriesId?s.series_id===seriesId:(new Set([s.away_team_id,s.home_team_id]).has(awayId)&&new Set([s.away_team_id,s.home_team_id]).has(homeId)))}
+function render(data,results,rosters){
  const standings=data.standings||[],away=standings.find(x=>x.team_id===awayId),home=standings.find(x=>x.team_id===homeId);
  if(!away||!home){document.getElementById("matchRoot").innerHTML='<div class="match-empty">This matchup could not be found.</div>';return}
  document.title=`${away.team} at ${home.team} | ND Wiffle`;
- const teams=playerTeams(data),awaySet=teams.get(awayId),homeSet=teams.get(homeId);
- const awayBat=topBat(teamPlayers(data.batting,awaySet)),homeBat=topBat(teamPlayers(data.batting,homeSet));
- const awayPit=topPit(teamPlayers(data.pitching,awaySet)),homePit=topPit(teamPlayers(data.pitching,homeSet));
+ const rosterByTeam=rosterMap(rosters.rosters||[]),awayRoster=rosterByTeam.get(awayId)||[],homeRoster=rosterByTeam.get(homeId)||[];
+ const away2026Bat=topBat(currentTeamPlayers(data.batting,awayRoster)),home2026Bat=topBat(currentTeamPlayers(data.batting,homeRoster));
+ const away2026Pit=topPit(currentTeamPlayers(data.pitching,awayRoster)),home2026Pit=topPit(currentTeamPlayers(data.pitching,homeRoster));
  const series=groupSeries(data.games),awayForm=recentForm(series,awayId),homeForm=recentForm(series,homeId);
+ const headToHead=series.some(x=>new Set([x.away,x.home]).has(awayId)&&new Set([x.away,x.home]).has(homeId));
+ const awayCareerBat=!away2026Bat.length,homeCareerBat=!home2026Bat.length,awayCareerPit=!away2026Pit.length,homeCareerPit=!home2026Pit.length;
+ const awayBat=away2026Bat.length?away2026Bat:topCareerBat(careerBatters(awayRoster));
+ const homeBat=home2026Bat.length?home2026Bat:topCareerBat(careerBatters(homeRoster));
+ const awayPit=away2026Pit.length?away2026Pit:topCareerPit(careerPitchers(awayRoster));
+ const homePit=home2026Pit.length?home2026Pit:topCareerPit(careerPitchers(homeRoster));
  const finished=completedResult(results),status=finished?"Final":scheduledDate&&scheduledDate!=="TBD"?fmtDate(scheduledDate):"Matchup Preview";
  let finalHtml="";
  if(finished){
@@ -57,15 +175,17 @@ function render(data,results){
    finalHtml=`<section class="series-result"><h2>${esc(winner)} won the series ${Math.max(finished.away_wins,finished.home_wins)}–${Math.min(finished.away_wins,finished.home_wins)}</h2><div class="muted">${fmtDate(finished.series_date)}</div><div class="series-games">${games}</div><a class="result-link" href="/results/?series=${encodeURIComponent(finished.series_id)}">View full box score →</a></section>`;
  }
  document.getElementById("matchRoot").innerHTML=`<section class="match-hero"><div class="match-status">${esc(status)}</div><div class="match-teams">${teamHero(away)}<div class="match-at">at</div>${teamHero(home)}</div></section>${finalHtml}
+ ${bvpSection(away,home,awayRoster,homeRoster)}
  <div class="snapshot-grid">${snapshot(away)}${snapshot(home)}</div>
  <div class="compare-grid">
-  <section class="compare-card"><h2>${esc(away.team)}</h2><div class="leader-section"><div class="leader-box"><h3>Top Hitters</h3>${leaderRows(awayBat,"bat")}</div><div class="leader-box"><h3>Top Pitchers</h3>${leaderRows(awayPit,"pit")}</div></div><h3 style="font-size:11px;text-transform:uppercase;color:var(--gold);margin:13px 0 7px">Recent Form</h3>${formHtml(awayForm)}</section>
-  <section class="compare-card"><h2>${esc(home.team)}</h2><div class="leader-section"><div class="leader-box"><h3>Top Hitters</h3>${leaderRows(homeBat,"bat")}</div><div class="leader-box"><h3>Top Pitchers</h3>${leaderRows(homePit,"pit")}</div></div><h3 style="font-size:11px;text-transform:uppercase;color:var(--gold);margin:13px 0 7px">Recent Form</h3>${formHtml(homeForm)}</section>
+  <section class="compare-card"><h2>${esc(away.team)}</h2><div class="leader-section"><div class="leader-box"><h3>${awayCareerBat?"Career Top Hitters":"2026 Top Hitters"}${awayCareerBat?"<small>Historical career stats for active roster</small>":""}</h3>${leaderRows(awayBat,"bat",awayCareerBat)}</div><div class="leader-box"><h3>${awayCareerPit?"Career Top Pitchers":"2026 Top Pitchers"}${awayCareerPit?"<small>Historical career stats for active roster</small>":""}</h3>${leaderRows(awayPit,"pit",awayCareerPit)}</div></div>${!headToHead?'<div class="history-note">No prior 2026 head-to-head series. Historical career production is used where current-season stats are not yet available.</div>':""}<h3 style="font-size:11px;text-transform:uppercase;color:var(--gold);margin:13px 0 7px">Recent Form</h3>${formHtml(awayForm)}</section>
+  <section class="compare-card"><h2>${esc(home.team)}</h2><div class="leader-section"><div class="leader-box"><h3>${homeCareerBat?"Career Top Hitters":"2026 Top Hitters"}${homeCareerBat?"<small>Historical career stats for active roster</small>":""}</h3>${leaderRows(homeBat,"bat",homeCareerBat)}</div><div class="leader-box"><h3>${homeCareerPit?"Career Top Pitchers":"2026 Top Pitchers"}${homeCareerPit?"<small>Historical career stats for active roster</small>":""}</h3>${leaderRows(homePit,"pit",homeCareerPit)}</div></div>${!headToHead?'<div class="history-note">No prior 2026 head-to-head series. Historical career production is used where current-season stats are not yet available.</div>':""}<h3 style="font-size:11px;text-transform:uppercase;color:var(--gold);margin:13px 0 7px">Recent Form</h3>${formHtml(homeForm)}</section>
  </div>`;
 }
 if(!awayId||!homeId){document.getElementById("matchRoot").innerHTML='<div class="match-empty">No matchup was selected.</div>'}
 else Promise.all([
  fetch("/api/public/league?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"League data unavailable");return j}),
- fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Results unavailable");return j})
-]).then(([data,results])=>render(data,results)).catch(err=>{console.error(err);document.getElementById("matchRoot").innerHTML='<div class="match-empty">Matchup details are temporarily unavailable.</div>'});
+ fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Results unavailable");return j}),
+ fetch("/api/public/rosters?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Rosters unavailable");return j})
+]).then(([data,results,rosters])=>render(data,results,rosters)).catch(err=>{console.error(err);document.getElementById("matchRoot").innerHTML='<div class="match-empty">Matchup details are temporarily unavailable.</div>'});
 </script></body></html>

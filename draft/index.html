@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Draft | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=51"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Draft | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=53"><style>
 .draft-hero{--clock-rgb:90,98,110;border:1px solid rgba(var(--clock-rgb),.72);border-radius:16px;background:linear-gradient(135deg,rgba(var(--clock-rgb),.20),rgba(var(--clock-rgb),.055));padding:18px;margin-bottom:16px}
 .clock-lockup{display:flex;align-items:center;gap:14px}.clock-logo{width:66px;height:66px;object-fit:contain;filter:drop-shadow(0 7px 13px rgba(0,0,0,.25))}
 .draft-clock-label{color:rgb(var(--clock-rgb));font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.06em}.draft-clock{font-size:30px;font-weight:950;margin-top:3px}.draft-clock small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
@@ -24,11 +24,11 @@
 </div></main><footer><div class="container">ND Wiffle · 2026 Draft.</div></footer><script>
 let DATA={slots:[],pool:[]},sortKey="overall",sortDir=1;
 const TEAM_UI={
- "storm":{rgb:"96,0,160",logo:"/assets/logos/storm.png?v=51"},"goofy-goobers":{rgb:"208,80,32",logo:"/assets/logos/goofy-goobers.png?v=51"},
- "twin-titans":{rgb:"64,80,112",logo:"/assets/logos/twin-titans.png?v=51"},"ball-busters":{rgb:"144,32,32",logo:"/assets/logos/ball-busters.png?v=51"},
- "stiff-wifflers":{rgb:"24,49,83",logo:"/assets/logos/stiff-wifflers.png?v=51"},"midnight":{rgb:"90,98,110",logo:"/assets/logos/midnight.png?v=51"},
- "dirty-dawgs":{rgb:"96,0,24",logo:"/assets/logos/dirty-dawgs.png?v=51"},"underdawgs":{rgb:"64,48,96",logo:"/assets/logos/underdawgs.png?v=51"},
- "silverbacks":{rgb:"192,160,80",logo:"/assets/logos/silverbacks.png?v=51"}
+ "storm":{rgb:"96,0,160",logo:"/assets/logos/storm.png?v=53"},"goofy-goobers":{rgb:"208,80,32",logo:"/assets/logos/goofy-goobers.png?v=53"},
+ "twin-titans":{rgb:"64,80,112",logo:"/assets/logos/twin-titans.png?v=53"},"ball-busters":{rgb:"144,32,32",logo:"/assets/logos/ball-busters.png?v=53"},
+ "stiff-wifflers":{rgb:"24,49,83",logo:"/assets/logos/stiff-wifflers.png?v=53"},"midnight":{rgb:"90,98,110",logo:"/assets/logos/midnight.png?v=53"},
+ "dirty-dawgs":{rgb:"96,0,24",logo:"/assets/logos/dirty-dawgs.png?v=53"},"underdawgs":{rgb:"64,48,96",logo:"/assets/logos/underdawgs.png?v=53"},
+ "silverbacks":{rgb:"192,160,80",logo:"/assets/logos/silverbacks.png?v=53"}
 };
 const ROUND_STARTS={"1.0": 1, "5.0": 2, "14.0": 3, "23.0": 4, "30.0": 5, "37.0": 6, "45.0": 7, "51.3": 8, "56.0": 9, "63.0": 10, "71.0": 11, "79.0": 12};
 function roundBreak(s){const r=ROUND_STARTS[Number(s.sequence).toFixed(1)];return r?`<div class="round-break">Round ${r}</div>`:""}

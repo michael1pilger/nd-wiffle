@@ -1,4 +1,4 @@
-# ND Wiffle League Website v51
+# ND Wiffle League Website v53
 
 v26 connects the public 2026 league pages to D1.
 
@@ -330,3 +330,21 @@ The current static historical database is treated as the authoritative 2021–20
 - Homepage ticker is updated to 5:00 PM.
 - Removes the homepage Draft & Protected Players card because the draft is complete.
 - No new D1 migration is required beyond the v50 post-draft roster migration (`0012_post_draft_rosters.sql`).
+
+## v52: class years + historical matchup previews
+- Adds `migrations/0013_class_year_clarifications.sql`.
+- Applies the commissioner-supplied class-year corrections.
+- All active Silverbacks except Ryan McCain are Class of 2028.
+- Matchup previews use 2026 stats when available.
+- If an active roster has not produced current-season batting/pitching data yet, the preview falls back to historical career stats for active players.
+- Matchups with no prior 2026 head-to-head series explicitly label the historical fallback.
+- This gives early-season previews meaningful established-player matchups instead of empty leader panels.
+
+## v53: Batter-v-Pitcher matchup previews
+- Adds the uploaded historical BvP matrix as `assets/bvp.js`.
+- Matchup previews now include exactly up to four `Matchups to Watch` cards.
+- Selection targets two hitters from each team against opposing pitchers.
+- The selector prioritizes two distinct hitters and two distinct pitchers per direction when the historical matrix supports that combination.
+- Matchups are ranked by historical sample plus impact indicators such as HR/3B/2B, walks, strikeouts, and extreme batting results.
+- The existing v52 career-stat fallback remains in place.
+- Adds `migrations/0014_postdraft_rosters_and_classes.sql` so a database that has not yet received v50/v52 can be brought current with one migration instead of running 0012 and 0013 separately.
