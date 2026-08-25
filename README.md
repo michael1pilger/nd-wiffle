@@ -1,4 +1,4 @@
-# ND Wiffle League Website v50
+# ND Wiffle League Website v51
 
 v26 connects the public 2026 league pages to D1.
 
@@ -319,3 +319,14 @@ The current static historical database is treated as the authoritative 2021–20
 - Schedule result matching is now direction-independent, so an eventual uploaded home/away orientation can differ from the preseason pair display.
 - Homepage ticker now points to Twin Titans vs Storm rather than the completed draft.
 - Run `migrations/0012_post_draft_rosters.sql` after deploying v50.
+
+## v51: post-draft public cleanup
+- Removes the public Draft navigation tab across the website.
+- Removes explicit 2026 pre-draft sections from all team detail pages.
+- Places each team's 2026 Active Roster directly below Captain History.
+- Zyns active roster is intentionally blank.
+- Zyns 2026 captain is Bennett Ruskusky.
+- Twin Titans vs Storm on August 25 is set to 5:00 PM.
+- Homepage ticker is updated to 5:00 PM.
+- Removes the homepage Draft & Protected Players card because the draft is complete.
+- No new D1 migration is required beyond the v50 post-draft roster migration (`0012_post_draft_rosters.sql`).

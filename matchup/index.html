@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=50">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=51">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -19,12 +19,12 @@
 @media(max-width:800px){.snapshot-grid,.compare-grid{grid-template-columns:1fr}.match-teams{grid-template-columns:minmax(0,1fr) 38px minmax(0,1fr)}.match-team img{width:68px;height:68px}.match-team h1{font-size:19px}.leader-section{grid-template-columns:1fr}}
 @media(max-width:520px){.snapshot-stats{grid-template-columns:repeat(2,1fr)}.series-games{grid-template-columns:1fr}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/draft/">Draft</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><a class="match-back" href="javascript:history.back()">← Back</a><div class="eyebrow">2026 Matchup</div><h1>Matchup Preview</h1><p class="muted">Current records, team form, and player leaders for this matchup.</p></div>
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=50","midnight":"/assets/logos/midnight.png?v=50","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=50","ball-busters":"/assets/logos/ball-busters.png?v=50","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=50","twin-titans":"/assets/logos/twin-titans.png?v=50","goofy-goobers":"/assets/logos/goofy-goobers.png?v=50","silverbacks":"/assets/logos/silverbacks.png?v=50","underdawgs":"/assets/logos/underdawgs.png?v=50","zyns":"/assets/logos/zyns.png?v=50"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=51","midnight":"/assets/logos/midnight.png?v=51","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=51","ball-busters":"/assets/logos/ball-busters.png?v=51","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=51","twin-titans":"/assets/logos/twin-titans.png?v=51","goofy-goobers":"/assets/logos/goofy-goobers.png?v=51","silverbacks":"/assets/logos/silverbacks.png?v=51","underdawgs":"/assets/logos/underdawgs.png?v=51","zyns":"/assets/logos/zyns.png?v=51"};
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const num=v=>Number(v||0),visibleName=n=>String(n||"").trim().toLowerCase()!=="max partovi";

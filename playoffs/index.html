@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Playoff Picture | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=50">
+<title>2026 Playoff Picture | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=51">
 <style>
 .playoff-note{color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:18px;max-width:900px}
 .picture-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
@@ -23,7 +23,7 @@
 .seed-list-row.out{opacity:.55}.seed-list-row .cut{color:var(--muted);font-size:10px}.picture-empty{border:1px dashed var(--border);border-radius:13px;padding:20px;color:var(--muted)}
 @media(max-width:700px){.seed-list{grid-template-columns:1fr}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a class="active" href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/draft/">Draft</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a class="active" href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Playoff Picture</h1><p class="muted">If the regular season ended today.</p></div>
 <div class="container">
 <p class="playoff-note">The top 7 teams qualify for the ND Wiffle playoffs and the No. 1 seed receives a first-round bye. This page is a live projection only: seeds are pulled directly from the current standings and will change automatically whenever a new series is published.</p>
@@ -31,7 +31,7 @@
 <div id="pictureRoot"><div class="picture-empty">Loading current playoff picture…</div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 playoff picture.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=50","midnight":"/assets/logos/midnight.png?v=50","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=50","ball-busters":"/assets/logos/ball-busters.png?v=50","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=50","twin-titans":"/assets/logos/twin-titans.png?v=50","goofy-goobers":"/assets/logos/goofy-goobers.png?v=50","silverbacks":"/assets/logos/silverbacks.png?v=50","underdawgs":"/assets/logos/underdawgs.png?v=50","zyns":"/assets/logos/zyns.png?v=50"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=51","midnight":"/assets/logos/midnight.png?v=51","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=51","ball-busters":"/assets/logos/ball-busters.png?v=51","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=51","twin-titans":"/assets/logos/twin-titans.png?v=51","goofy-goobers":"/assets/logos/goofy-goobers.png?v=51","silverbacks":"/assets/logos/silverbacks.png?v=51","underdawgs":"/assets/logos/underdawgs.png?v=51","zyns":"/assets/logos/zyns.png?v=51"};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function teamLine(t){
  const record=`${t.W}-${t.L}`;
