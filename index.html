@@ -1,7 +1,7 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=60">
 <style>
-.home-results{margin-top:28px}
-.home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:12px}
+.home-results{margin-top:28px;padding-top:2px}
+.home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:14px}
 .home-results-head h2{margin:3px 0 0;font-size:27px}
 .home-results-link{font-size:13px;font-weight:850;color:var(--gold);text-decoration:none;white-space:nowrap}
 .home-results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -20,20 +20,28 @@
 .series-game{border-radius:8px;background:#0b1525;padding:7px 5px;text-align:center}
 .series-game small{display:block;font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:3px}
 .series-game strong{font-size:13px}
-.series-empty{border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted);background:rgba(255,255,255,.015)}
-.series-loading{border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted)}
+.series-empty{border:1px solid var(--border);border-radius:16px;padding:26px 22px;color:var(--muted);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:124px}.series-empty strong{display:block;color:#fff;font-size:16px;margin-bottom:6px}.series-empty .series-empty-sub{max-width:620px;line-height:1.45}
+.series-loading{border:1px dashed var(--border);border-radius:16px;padding:20px;color:var(--muted);background:rgba(255,255,255,.015)}
 @media(max-width:900px){.home-results-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.home-results-head{display:block}.home-results-link{display:inline-block;margin-top:8px}.home-results-grid{grid-template-columns:1fr}}
 
 .today-series-banner{align-items:stretch}
 .today-series-head{display:flex;align-items:end;justify-content:space-between;gap:16px}
 .today-series-link{color:var(--gold);text-decoration:none;font-size:11px;font-weight:900;white-space:nowrap}
-.today-series-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
-.today-series-card{border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.025);padding:12px}
-.today-series-match{font-size:15px;font-weight:950}
-.today-series-meta{margin-top:5px;color:var(--muted);font-size:11px}
-.today-series-empty{color:var(--muted);font-size:12px;margin-top:12px}
-@media(max-width:700px){.today-series-list{grid-template-columns:1fr}.today-series-head{display:block}.today-series-link{display:inline-block;margin-top:8px}}
+.today-series-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.today-series-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));padding:14px 15px;text-decoration:none;color:inherit;transition:transform .16s ease,border-color .16s ease,background .16s ease;display:block}
+.today-series-card:hover{transform:translateY(-1px);border-color:rgba(212,175,55,.45);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025))}
+.today-series-logos{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.today-series-team{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.today-series-team.away{justify-content:flex-start}
+.today-series-team.home{justify-content:flex-end;text-align:right}
+.today-series-team img{width:30px;height:30px;object-fit:contain;flex:0 0 30px}
+.today-series-team.home img{order:2}
+.today-series-team-name{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-series-vs{flex:0 0 auto;font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;padding:0 4px}
+.today-series-meta{margin-top:9px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:9px}
+.today-series-empty{color:var(--muted);font-size:12px;margin-top:12px;padding:4px 0}
+@media(max-width:700px){.today-series-list{grid-template-columns:1fr}.today-series-head{display:block}.today-series-link{display:inline-block;margin-top:8px}.today-series-logos{gap:8px}.today-series-team-name{font-size:13px}.today-series-team img{width:26px;height:26px;flex-basis:26px}}
 </style>
 
 <style>
@@ -91,14 +99,14 @@
   <span><small>FOLLOW THE LEAGUE</small><strong>@nd_wiffleball</strong></span>
   <span class="instagram-arrow">↗</span>
 </a></div>
-<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=59" alt="ND Wiffleball game on South Quad"></div>
+<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=60" alt="ND Wiffleball game on South Quad"></div>
 </div><div class="season-banner today-series-banner">
   <div style="width:100%">
     <div class="eyebrow">2026 Schedule</div>
     <div class="today-series-head"><div><div style="font-size:22px;font-weight:800;margin-top:6px">Series Scheduled Today</div><div class="muted" id="todaySeriesSub" style="margin-top:6px">Loading today’s schedule…</div></div><a href="/schedule/" class="today-series-link">View Schedule →</a></div>
     <div id="todaySeriesList" class="today-series-list"></div>
   </div>
-</div><div class="season-number">2026</div></div>
+</div></div>
 
 <div class="home-results" aria-live="polite">
   <div class="home-results-head">
@@ -128,11 +136,11 @@
 <section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 10 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script>
 const HOME_TEAM_LOGOS={
-  "storm":"/assets/logos/storm.png?v=59","midnight":"/assets/logos/midnight.png?v=59",
-  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=59","ball-busters":"/assets/logos/ball-busters.png?v=59",
-  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=59","twin-titans":"/assets/logos/twin-titans.png?v=59",
-  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=59","silverbacks":"/assets/logos/silverbacks.png?v=59",
-  "underdawgs":"/assets/logos/underdawgs.png?v=59","zyns":"/assets/logos/zyns.png?v=59"
+  "storm":"/assets/logos/storm.png?v=60","midnight":"/assets/logos/midnight.png?v=60",
+  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=60","ball-busters":"/assets/logos/ball-busters.png?v=60",
+  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=60","twin-titans":"/assets/logos/twin-titans.png?v=60",
+  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=60","silverbacks":"/assets/logos/silverbacks.png?v=60",
+  "underdawgs":"/assets/logos/underdawgs.png?v=60","zyns":"/assets/logos/zyns.png?v=60"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(value){
@@ -162,7 +170,7 @@ function renderHomeSeries(series){
   const target=document.getElementById("homeSeriesResults");
   if(!series.length){
     target.className="series-empty";
-    target.innerHTML="<strong>No 2026 results yet.</strong><br>Published series will appear here automatically after commissioners submit them.";
+    target.innerHTML=`<strong>No recent series yet</strong><div class="series-empty-sub">Published series will appear here automatically after commissioners submit them. Once results are entered, this section will show final scores, game-by-game results, and top performers.</div>`;
     return;
   }
   target.className="home-results-grid";
@@ -233,7 +241,8 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
       return;
    }
    sub.textContent=`${rows.length} ${rows.length===1?"series is":"series are"} scheduled for ${fmtDate(today)}.`;
-   list.innerHTML=rows.map(x=>`<a class="today-series-card" href="/matchup/?away=${encodeURIComponent(x.team_a_id)}&home=${encodeURIComponent(x.team_b_id)}&date=${encodeURIComponent(x.series_date)}" style="text-decoration:none;color:inherit"><div class="today-series-match">${x.team_a} vs ${x.team_b}</div><div class="today-series-meta">${fmtTime(x.series_time)}${x.location?` · ${x.location}`:""}</div></a>`).join("");
+   const logo=id=>HOME_TEAM_LOGOS[id]||"";
+   list.innerHTML=rows.map(x=>`<a class="today-series-card" href="/matchup/?away=${encodeURIComponent(x.team_a_id)}&home=${encodeURIComponent(x.team_b_id)}&date=${encodeURIComponent(x.series_date)}"><div class="today-series-logos"><div class="today-series-team away">${logo(x.team_a_id)?`<img src="${logo(x.team_a_id)}" alt="">`:""}<span class="today-series-team-name">${x.team_a}</span></div><div class="today-series-vs">vs</div><div class="today-series-team home"><span class="today-series-team-name">${x.team_b}</span>${logo(x.team_b_id)?`<img src="${logo(x.team_b_id)}" alt="">`:""}</div></div><div class="today-series-meta">${fmtTime(x.series_time)}${x.location?` · ${x.location}`:""}</div></a>`).join("");
  }).catch(()=>{
    const sub=document.getElementById("todaySeriesSub");if(sub)sub.textContent="Today’s schedule is temporarily unavailable.";
  });

@@ -403,3 +403,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Today's panel reads D1 dynamically and lists all series scheduled for the user's current local date.
 - On August 25, 2026 it will display Storm vs Twin Titans and Stiff Wifflers vs Underdawgs.
 - No new D1 migration is required beyond v58's `0017_scheduled_series.sql`.
+
+## v60
+- Homepage formatting cleanup.
+- Added both team logos to the Series Scheduled Today cards.
+- Removed stray standalone 2026 text under the schedule banner.
+- Cleaned up the Recent Series panel and empty state.

@@ -1,2 +1,2 @@
-ND Wiffle build v59
-Scheduled series prioritized on Schedule; homepage Series Scheduled Today panel.
+ND Wiffle build v60
+Homepage cleanup: logos on scheduled-today cards, cleaner recent-series panel.
