@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Export | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=56">
+<style>
+.export-shell{padding:34px 0 55px}.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
+.export-card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:15px}.export-card h2{margin:0 0 6px;font-size:17px}.export-card p{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
+.export-actions{display:flex;gap:8px;flex-wrap:wrap}.export-btn{border:1px solid var(--border);background:#15243a;color:#fff;border-radius:8px;padding:9px 11px;font-weight:900;cursor:pointer;text-decoration:none;font-size:11px}.export-btn.primary{background:var(--gold);border-color:var(--gold);color:#111}
+.export-status{margin-top:14px;color:var(--muted);font-size:11px}.export-note{border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:14px;color:var(--muted);font-size:11px;line-height:1.55}
+@media(max-width:760px){.export-grid{grid-template-columns:1fr}}
+</style></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a class="active" href="/admin/exports/">Export Data</a></div></div></div>
+<main class="export-shell"><div class="container"><div class="eyebrow">Commissioner Tools</div><h1>Export League Data</h1>
+<p class="muted">Download the underlying league data as ordinary CSV files. D1 exports reproduce the normalized data actually published to the website; historical exports reproduce the preserved 2021–2025 season datasets.</p>
+<div class="export-grid">
+<section class="export-card"><h2>2026 Source-of-Truth Exports</h2><p>One row per player per published series. These are the best backup files because no season aggregation has been applied.</p><div class="export-actions">
+<a class="export-btn primary" href="/api/admin/export?type=batting_series&season=2026">Batting by Series</a>
+<a class="export-btn primary" href="/api/admin/export?type=pitching_series&season=2026">Pitching by Series</a></div></section>
+<section class="export-card"><h2>2026 League Operations</h2><p>Game results, series metadata, and the current roster snapshot.</p><div class="export-actions">
+<a class="export-btn" href="/api/admin/export?type=games&season=2026">Games</a>
+<a class="export-btn" href="/api/admin/export?type=series&season=2026">Series</a>
+<a class="export-btn" href="/api/admin/export?type=rosters&season=2026">Rosters</a></div></section>
+<section class="export-card"><h2>Season Aggregate CSVs</h2><p>Recreate cumulative-style batting and pitching tables for 2026 from the live D1 totals.</p><div class="export-actions">
+<button class="export-btn" id="batAgg">2026 Batting Cumulative</button>
+<button class="export-btn" id="pitAgg">2026 Pitching Cumulative</button></div></section>
+<section class="export-card"><h2>Historical Season Data</h2><p>Export the preserved full season-by-season batting and pitching records from 2021–2025.</p><div class="export-actions">
+<button class="export-btn" id="histBat">2021–25 Batting by Season</button>
+<button class="export-btn" id="histPit">2021–25 Pitching by Season</button></div></section>
+<section class="export-card"><h2>Complete League Backup</h2><p>Creates one ZIP containing historical season data plus current 2026 D1 batting, pitching, games, series, rosters, and cumulative tables.</p><div class="export-actions"><button class="export-btn primary" id="allZip">Download Complete Data ZIP</button></div></section>
+</div>
+<div id="status" class="export-status"></div>
+<div class="export-note">The ZIP is generated in your browser and does not modify D1. Keep the series-level batting and pitching exports as the archival source of truth; cumulative files can always be regenerated from them.</div>
+</div></main>
+<script src="/assets/data.js?v=56"></script>
+<script>
+const escCsv=v=>{if(v==null)return "";const s=String(v);return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
+function rowsCsv(rows,cols){return cols.join(",")+"\n"+rows.map(r=>cols.map(c=>escCsv(r[c])).join(",")).join("\n")+"\n"}
+function dl(name,text,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+const histBatCols=["Season","Team","Name","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS","GP"];
+const histPitCols=["Season","Team","Name","Apps","Starts","W","L","S","IP","BF","Walks","Hits","Ks","ER","ERA","WHIP","HRs","HBP","WP"];
+function histRows(kind){return (kind==="bat"?ND_DATA.battingSeasons:ND_DATA.pitchingSeasons).filter(r=>Number(r.Season)>=2021&&Number(r.Season)<=2025)}
+function downloadHist(kind){const rows=histRows(kind),cols=kind==="bat"?histBatCols:histPitCols;dl(`2021-2025_${kind==="bat"?"Batting":"Pitching"}_By_Season.csv`,rowsCsv(rows,cols))}
+async function liveLeague(){const r=await fetch("/api/public/league?season=2026",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Live league data unavailable");return j}
+const batCols=["Season","Team","Name","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS"];
+const pitCols=["Season","Team","Name","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP","ERA","WHIP"];
+async function downloadAgg(kind){const j=await liveLeague(),rows=kind==="bat"?j.batting:j.pitching,cols=kind==="bat"?batCols:pitCols;dl(`2026_${kind==="bat"?"Batting":"Pitching"}_Cumulative.csv`,rowsCsv(rows,cols))}
+async function fetchText(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error(`Export failed: ${url}`);return r.text()}
+
+/* Minimal uncompressed ZIP writer */
+function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
+function u16(n){return [n&255,(n>>>8)&255]} function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
+function makeZip(files){
+ const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
+ for(const f of files){
+  const name=enc.encode(f.name),data=enc.encode(f.text),crc=crc32(data);
+  const local=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...name,...data]);
+  locals.push(local);
+  const central=new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...name]);
+  centrals.push(central);offset+=local.length;
+ }
+ const centralSize=centrals.reduce((n,x)=>n+x.length,0),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(centralSize),...u32(offset),...u16(0)]);
+ return new Blob([...locals,...centrals,end],{type:"application/zip"});
+}
+async function completeZip(){
+ status.textContent="Building complete backup…";
+ const live=await liveLeague();
+ const [batSeries,pitSeries,games,series,rosters]=await Promise.all([
+  fetchText("/api/admin/export?type=batting_series&season=2026"),fetchText("/api/admin/export?type=pitching_series&season=2026"),
+  fetchText("/api/admin/export?type=games&season=2026"),fetchText("/api/admin/export?type=series&season=2026"),fetchText("/api/admin/export?type=rosters&season=2026")
+ ]);
+ const files=[
+  {name:"Historical/2021-2025_Batting_By_Season.csv",text:rowsCsv(histRows("bat"),histBatCols)},
+  {name:"Historical/2021-2025_Pitching_By_Season.csv",text:rowsCsv(histRows("pit"),histPitCols)},
+  {name:"2026/2026_Batting_By_Series.csv",text:batSeries},{name:"2026/2026_Pitching_By_Series.csv",text:pitSeries},
+  {name:"2026/2026_Games.csv",text:games},{name:"2026/2026_Series.csv",text:series},{name:"2026/2026_Rosters.csv",text:rosters},
+  {name:"2026/2026_Batting_Cumulative.csv",text:rowsCsv(live.batting,batCols)},
+  {name:"2026/2026_Pitching_Cumulative.csv",text:rowsCsv(live.pitching,pitCols)}
+ ];
+ const blob=makeZip(files),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ND_Wiffle_Complete_Data_Backup.zip";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+ status.textContent="Complete data ZIP created.";
+}
+histBat.onclick=()=>downloadHist("bat");histPit.onclick=()=>downloadHist("pit");
+batAgg.onclick=()=>downloadAgg("bat").catch(e=>status.textContent=e.message);pitAgg.onclick=()=>downloadAgg("pit").catch(e=>status.textContent=e.message);
+allZip.onclick=()=>completeZip().catch(e=>status.textContent=e.message);
+</script></body></html>
