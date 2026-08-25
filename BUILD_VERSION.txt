@@ -1,2 +1,2 @@
-ND Wiffle build v57
-Stat logo repair, class-year repair migration/admin fallback, refreshed Grid.
+ND Wiffle build v58
+D1-backed Series Scheduler.

@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Schedule | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=57">
+<title>2026 Schedule | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=58">
 <style>
 .schedule-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
 .schedule-controls select,.schedule-controls button{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-weight:800}
@@ -36,7 +36,7 @@
 @media(max-width:520px){.live-team img{width:29px;height:29px;flex-basis:29px}.live-matchup{grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr)}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
-<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">Each team plays eight 3-game series for a 24-game regular season. When a commissioner publishes a completed series, this page automatically changes it from Upcoming to Final and displays all three scores.</p></div>
+<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">The page lists all 45 possible 2026 matchups. Commissioner-scheduled dates and times update automatically, and completed series switch to Final with all three scores.</p></div>
 <div class="container">
 <div class="schedule-controls">
 <button type="button" class="active" data-filter="all">All</button>
@@ -53,11 +53,11 @@
 <script>
 const STATIC_SCHEDULE=[{"away_id":"twin-titans","away":"Twin Titans","home_id":"storm","home":"Storm","date":"2026-08-25","time":"5:00 PM"},{"away_id":"storm","away":"Storm","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"}];
 const LOGOS={
- "storm":"/assets/logos/storm.png?v=57","midnight":"/assets/logos/midnight.png?v=57","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=57",
- "ball-busters":"/assets/logos/ball-busters.png?v=57","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=57","twin-titans":"/assets/logos/twin-titans.png?v=57",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=57","silverbacks":"/assets/logos/silverbacks.png?v=57","underdawgs":"/assets/logos/underdawgs.png?v=57","zyns":"/assets/logos/zyns.png?v=57"
+ "storm":"/assets/logos/storm.png?v=58","midnight":"/assets/logos/midnight.png?v=58","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=58",
+ "ball-busters":"/assets/logos/ball-busters.png?v=58","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=58","twin-titans":"/assets/logos/twin-titans.png?v=58",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=58","silverbacks":"/assets/logos/silverbacks.png?v=58","underdawgs":"/assets/logos/underdawgs.png?v=58","zyns":"/assets/logos/zyns.png?v=58"
 };
-let resultsByPair=new Map(),activeFilter="all";
+let resultsByPair=new Map(),scheduledByPair=new Map(),activeFilter="all";
 const pairKey=(a,b)=>[a,b].sort().join("__");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){
@@ -65,6 +65,9 @@ function fmtDate(v){
  const d=new Date(`${v}T12:00:00`);
  return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
 }
+function fmtTime(v){if(!v||v==="TBD")return "TBD";if(/^\d{2}:\d{2}$/.test(v)){const [h,m]=v.split(":").map(Number),d=new Date(2000,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})}return v}
+function scheduledItem(item){const x=scheduledByPair.get(pairKey(item.away_id,item.home_id));return x?{...item,date:x.series_date||item.date,time:x.series_time||item.time,location:x.location||""}:item}
+
 function teamHtml(id,name,home=false){
  return `<div class="live-team ${home?"home":""}">${home?`<span>${esc(name)}</span>${LOGOS[id]?`<img src="${LOGOS[id]}" alt="">`:""}`:`${LOGOS[id]?`<img src="${LOGOS[id]}" alt="">`:""}<span>${esc(name)}</span>`}</div>`;
 }
@@ -73,7 +76,8 @@ function buildResultMap(series){
  for(const s of series||[])m.set(pairKey(s.away_team_id,s.home_team_id),s);
  return m;
 }
-function card(item){
+function card(baseItem){
+ const item=scheduledItem(baseItem);
  const result=resultsByPair.get(pairKey(item.away_id,item.home_id));
  const isFinal=!!result && (result.games||[]).length===3;
  const state=isFinal?"final":"upcoming";
@@ -91,7 +95,7 @@ function card(item){
    <div class="live-series-head"><div class="live-series-kicker">3-Game Series</div><div class="live-series-state">${isFinal?"Final":"Upcoming"}</div></div>
    <div class="live-matchup">${teamHtml(item.away_id,item.away)}<div class="live-at">vs</div>${teamHtml(item.home_id,item.home,true)}</div>
    ${middle}
-   <div class="live-series-meta"><span><b>Date</b>${fmtDate(date)}</span><span>${link}</span></div>
+   <div class="live-series-meta"><span><b>Date</b>${fmtDate(date)}${!isFinal&&item.time&&item.time!=="TBD"?` · ${fmtTime(item.time)}`:""}${!isFinal&&item.location?` · ${esc(item.location)}`:""}</span><span>${link}</span></div>
  </a>`;
 }
 function render(){
@@ -118,14 +122,15 @@ function setup(){
  }));
 }
 setup();render();
-fetch("/api/public/results?season=2026",{cache:"no-store"})
- .then(async r=>({ok:r.ok,body:await r.json()}))
- .then(({ok,body})=>{
-   if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");
-   resultsByPair=buildResultMap(body.series||[]);render();
- })
- .catch(err=>{
-   console.error(err);
-   document.getElementById("scheduleError").innerHTML='<div class="schedule-error">Live results are temporarily unavailable. The full 2026 schedule is still shown below.</div>';
- });
+Promise.all([
+ fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,body:await r.json()})),
+ fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,body:await r.json()}))
+]).then(([results,schedule])=>{
+ if(results.ok&&results.body.ok)resultsByPair=buildResultMap(results.body.series||[]);
+ if(schedule.ok&&schedule.body.ok)scheduledByPair=new Map((schedule.body.scheduled||[]).map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));
+ render();
+}).catch(err=>{
+ console.error(err);render();
+ document.getElementById("scheduleError").innerHTML='<div class="schedule-error">Live schedule data is temporarily unavailable. The 45-matchup pool is still shown below.</div>';
+});
 </script></body></html>

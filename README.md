@@ -1,4 +1,4 @@
-# ND Wiffle League Website v57
+# ND Wiffle League Website v58
 
 v26 connects the public 2026 league pages to D1.
 
@@ -384,3 +384,12 @@ The current static historical database is treated as the authoritative 2021–20
 - Refreshes the default Grid to a new prevalidated board:
   - Rows: Dirty Dawgs / Gold Glove / 5+ Career Wins
   - Columns: Silverbacks / 25+ Career Pitching K / 5+ Career HR
+
+## v58: D1-backed Series Scheduler
+- Adds protected `/admin/schedule/`.
+- Commissioners can schedule, reschedule, edit, or remove an upcoming matchup without GitHub.
+- Adds `/api/admin/schedule` and `/api/public/schedule`.
+- Adds `migrations/0017_scheduled_series.sql`.
+- Seeds Twin Titans vs Storm on August 25, 2026 at 5:00 PM on South Quad.
+- Public `/schedule/` keeps the 45-pair round-robin pool but overlays scheduled date/time/location from D1.
+- Homepage Upcoming Events ticker automatically uses the next scheduled D1 series.
