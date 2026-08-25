@@ -1,2 +1,2 @@
-ND Wiffle build v58
-D1-backed Series Scheduler.
+ND Wiffle build v59
+Scheduled series prioritized on Schedule; homepage Series Scheduled Today panel.

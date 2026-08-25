@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=58">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59">
 <style>
 .home-results{margin-top:28px}
 .home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:12px}
@@ -24,6 +24,16 @@
 .series-loading{border:1px dashed var(--border);border-radius:14px;padding:18px;color:var(--muted)}
 @media(max-width:900px){.home-results-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.home-results-head{display:block}.home-results-link{display:inline-block;margin-top:8px}.home-results-grid{grid-template-columns:1fr}}
+
+.today-series-banner{align-items:stretch}
+.today-series-head{display:flex;align-items:end;justify-content:space-between;gap:16px}
+.today-series-link{color:var(--gold);text-decoration:none;font-size:11px;font-weight:900;white-space:nowrap}
+.today-series-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.today-series-card{border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.025);padding:12px}
+.today-series-match{font-size:15px;font-weight:950}
+.today-series-meta{margin-top:5px;color:var(--muted);font-size:11px}
+.today-series-empty{color:var(--muted);font-size:12px;margin-top:12px}
+@media(max-width:700px){.today-series-list{grid-template-columns:1fr}.today-series-head{display:block}.today-series-link{display:inline-block;margin-top:8px}}
 </style>
 
 <style>
@@ -81,8 +91,14 @@
   <span><small>FOLLOW THE LEAGUE</small><strong>@nd_wiffleball</strong></span>
   <span class="instagram-arrow">↗</span>
 </a></div>
-<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=58" alt="ND Wiffleball game on South Quad"></div>
-</div><div class="season-banner"><div><div class="eyebrow">2026 Season</div><div style="font-size:22px;font-weight:800;margin-top:6px">The league enters its 6th year.</div><div class="muted" style="margin-top:6px">10 teams compete for the 2026 title.</div></div><div class="season-number">2026</div></div>
+<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=59" alt="ND Wiffleball game on South Quad"></div>
+</div><div class="season-banner today-series-banner">
+  <div style="width:100%">
+    <div class="eyebrow">2026 Schedule</div>
+    <div class="today-series-head"><div><div style="font-size:22px;font-weight:800;margin-top:6px">Series Scheduled Today</div><div class="muted" id="todaySeriesSub" style="margin-top:6px">Loading today’s schedule…</div></div><a href="/schedule/" class="today-series-link">View Schedule →</a></div>
+    <div id="todaySeriesList" class="today-series-list"></div>
+  </div>
+</div><div class="season-number">2026</div></div>
 
 <div class="home-results" aria-live="polite">
   <div class="home-results-head">
@@ -112,11 +128,11 @@
 <section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 10 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script>
 const HOME_TEAM_LOGOS={
-  "storm":"/assets/logos/storm.png?v=58","midnight":"/assets/logos/midnight.png?v=58",
-  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=58","ball-busters":"/assets/logos/ball-busters.png?v=58",
-  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=58","twin-titans":"/assets/logos/twin-titans.png?v=58",
-  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=58","silverbacks":"/assets/logos/silverbacks.png?v=58",
-  "underdawgs":"/assets/logos/underdawgs.png?v=58","zyns":"/assets/logos/zyns.png?v=58"
+  "storm":"/assets/logos/storm.png?v=59","midnight":"/assets/logos/midnight.png?v=59",
+  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=59","ball-busters":"/assets/logos/ball-busters.png?v=59",
+  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=59","twin-titans":"/assets/logos/twin-titans.png?v=59",
+  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=59","silverbacks":"/assets/logos/silverbacks.png?v=59",
+  "underdawgs":"/assets/logos/underdawgs.png?v=59","zyns":"/assets/logos/zyns.png?v=59"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(value){
@@ -198,5 +214,28 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
   document.getElementById("tickerTime").textContent=fmtTime(x.series_time);
   document.getElementById("tickerLocation").textContent=(x.location||"SOUTH QUAD").toUpperCase();
  }).catch(()=>{});
+})();
+</script><script>
+(function(){
+ const fmtTime=v=>{if(!v)return "Time TBD";const [hh,mm]=v.split(":").map(Number),d=new Date(2000,0,1,hh,mm);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
+ const fmtDate=v=>{const d=new Date(v+"T12:00:00");return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"})};
+ const localDate=()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`};
+ fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json()).then(j=>{
+   if(!j.ok)return;
+   const today=localDate();
+   const rows=(j.scheduled||[]).filter(x=>x.series_date===today)
+      .sort((a,b)=>(a.series_time||"23:59").localeCompare(b.series_time||"23:59"));
+   const list=document.getElementById("todaySeriesList"),sub=document.getElementById("todaySeriesSub");
+   if(!list||!sub)return;
+   if(!rows.length){
+      sub.textContent="No series are currently scheduled today.";
+      list.innerHTML='<div class="today-series-empty">Check the full schedule for upcoming matchups.</div>';
+      return;
+   }
+   sub.textContent=`${rows.length} ${rows.length===1?"series is":"series are"} scheduled for ${fmtDate(today)}.`;
+   list.innerHTML=rows.map(x=>`<a class="today-series-card" href="/matchup/?away=${encodeURIComponent(x.team_a_id)}&home=${encodeURIComponent(x.team_b_id)}&date=${encodeURIComponent(x.series_date)}" style="text-decoration:none;color:inherit"><div class="today-series-match">${x.team_a} vs ${x.team_b}</div><div class="today-series-meta">${fmtTime(x.series_time)}${x.location?` · ${x.location}`:""}</div></a>`).join("");
+ }).catch(()=>{
+   const sub=document.getElementById("todaySeriesSub");if(sub)sub.textContent="Today’s schedule is temporarily unavailable.";
+ });
 })();
 </script></body></html>

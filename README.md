@@ -1,4 +1,4 @@
-# ND Wiffle League Website v58
+# ND Wiffle League Website v59
 
 v26 connects the public 2026 league pages to D1.
 
@@ -393,3 +393,13 @@ The current static historical database is treated as the authoritative 2021–20
 - Seeds Twin Titans vs Storm on August 25, 2026 at 5:00 PM on South Quad.
 - Public `/schedule/` keeps the 45-pair round-robin pool but overlays scheduled date/time/location from D1.
 - Homepage Upcoming Events ticker automatically uses the next scheduled D1 series.
+
+## v59: scheduled-series priority + today's series homepage
+- Public Schedule now places scheduled upcoming series first and sorts them by date/time.
+- Completed series follow scheduled upcoming series.
+- Unscheduled/TBD matchups remain below in their original pool order.
+- Schedule includes section headings and counts for scheduled/final/TBD.
+- Replaces the homepage "The league enters its 6th year" banner with `Series Scheduled Today`.
+- Today's panel reads D1 dynamically and lists all series scheduled for the user's current local date.
+- On August 25, 2026 it will display Storm vs Twin Titans and Stiff Wifflers vs Underdawgs.
+- No new D1 migration is required beyond v58's `0017_scheduled_series.sql`.
