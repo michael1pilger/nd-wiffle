@@ -1,2 +1,2 @@
-ND Wiffle build v61
-Operational refinements after first two 2026 series.
+ND Wiffle build v62
+Homepage Recent Series structural layout fix and stronger winning-team row emphasis.

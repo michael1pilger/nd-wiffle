@@ -419,3 +419,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Completed series removed from homepage upcoming/today panels.
 - Migration 0018 corrects Stephen Sclafani spelling.
 - Standard stats view now shows H/AB next to AVG.
+
+## v62
+- Fixes malformed homepage container nesting so Recent Series aligns with the rest of the homepage.
+- Removes the stray closing div around Recent Series.
+- Recent Series adapts to 1, 2, or 3-column desktop layouts based on the number of displayed results.
+- Winning team row now has a thick team-color border, richer team-color fill, inset accent stripe, stronger logo saturation, and brighter series-win emphasis.
+- Losing row is slightly subdued for clearer winner/loser hierarchy.
