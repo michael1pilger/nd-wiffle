@@ -17,10 +17,10 @@ export async function onRequestGet(context){
    WHERE ss.season=?
    ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
   `).bind(season).all();
-  return json({ok:true,build:"v60",season,scheduled:rows.results||[]});
+  return json({ok:true,build:"v61",season,scheduled:rows.results||[]});
  }catch(err){
   const msg=String(err?.message||err);
-  if(msg.includes("no such table"))return json({ok:true,build:"v60",season,scheduled:[],schema_ready:false});
+  if(msg.includes("no such table"))return json({ok:true,build:"v61",season,scheduled:[],schema_ready:false});
   return json({ok:false,error:"Public schedule query failed.",detail:msg},500);
  }
 }

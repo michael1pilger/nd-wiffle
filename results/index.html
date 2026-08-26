@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=61">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -36,6 +36,7 @@
 .result-empty{border:1px dashed var(--border);border-radius:14px;padding:20px;color:var(--muted)}
 .results-meta{margin-top:5px;color:var(--muted);font-size:12px}
 @media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
+.result-series{--winner-rgb:90,98,110}.result-series .result-summary{background:linear-gradient(90deg,rgba(var(--winner-rgb),.15),transparent 48%)}.result-series.open{border-color:rgba(var(--winner-rgb),.46)}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
@@ -43,10 +44,12 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=59","midnight":"/assets/logos/midnight.png?v=59","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=59",
- "ball-busters":"/assets/logos/ball-busters.png?v=59","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=59","twin-titans":"/assets/logos/twin-titans.png?v=59",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=59","silverbacks":"/assets/logos/silverbacks.png?v=59","underdawgs":"/assets/logos/underdawgs.png?v=59","zyns":"/assets/logos/zyns.png?v=59"
+ "storm":"/assets/logos/storm.png?v=61","midnight":"/assets/logos/midnight.png?v=61","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=61",
+ "ball-busters":"/assets/logos/ball-busters.png?v=61","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=61","twin-titans":"/assets/logos/twin-titans.png?v=61",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=61","silverbacks":"/assets/logos/silverbacks.png?v=61","underdawgs":"/assets/logos/underdawgs.png?v=61","zyns":"/assets/logos/zyns.png?v=61"
 };
+const RESULT_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
+
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function fmtDate(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"})}
 function logo(id,name){return TEAM_LOGOS[id]?`<img src="${TEAM_LOGOS[id]}" alt="${esc(name)}">`:""}
@@ -79,8 +82,8 @@ function render(series){
      const batRows=publicRows(s.batting).filter(r=>r.side===side),pitRows=publicRows(s.pitching).filter(r=>r.side===side);
      return `${teamHeader(id,name)}<div class="boxscore-title">Batting</div>${battingTable(batRows)}<div class="boxscore-title">Pitching</div>${pitchingTable(pitRows)}`;
    }).join("");
-   const open=requested===s.series_id || (!requested&&idx===0);
-   return `<section class="result-series ${open?"open":""}" id="${esc(s.series_id)}">
+   const open=requested===s.series_id || (!requested&&idx===0),winnerId=awayWon?s.away_team_id:homeWon?s.home_team_id:"",rgb=RESULT_TEAM_RGB[winnerId]||"90,98,110";
+   return `<section class="result-series ${open?"open":""}" style="--winner-rgb:${rgb}" id="${esc(s.series_id)}">
     <div class="result-summary" data-series="${esc(s.series_id)}" role="button" tabindex="0" aria-expanded="${open}">
       <div class="result-date">${fmtDate(s.series_date)}</div>
       <a class="result-matchup result-matchup-link" href="/matchup/?away=${encodeURIComponent(s.away_team_id)}&home=${encodeURIComponent(s.home_team_id)}&series=${encodeURIComponent(s.series_id)}" aria-label="Open matchup details for ${esc(s.away_team)} at ${esc(s.home_team)}"><div class="result-team">${logo(s.away_team_id,s.away_team)}<span>${esc(s.away_team)}</span></div><span class="result-vs">at</span><div class="result-team">${logo(s.home_team_id,s.home_team)}<span>${esc(s.home_team)}</span></div></a>
@@ -88,7 +91,7 @@ function render(series){
     </div>
     <div class="result-detail"><div class="result-score-strip">${games}</div>
       <div class="result-stars">
-        <div class="result-star"><small>Top Batter</small>${bat?`<strong>${esc(bat.name)}</strong><span>${bat.H} H · ${bat.HR} HR · ${bat.RBI} RBI · ${bat.OPS} OPS</span>`:"<span>—</span>"}</div>
+        <div class="result-star"><small>Top Batter</small>${bat?`<strong>${esc(bat.name)}</strong><span>${bat.H}/${bat.AB} · ${bat.HR} HR · ${bat.RBI} RBI · ${bat.OPS} OPS</span>`:"<span>—</span>"}</div>
         <div class="result-star"><small>Top Pitcher</small>${pit?`<strong>${esc(pit.name)}</strong><span>${pit.W}-${pit.L}${pit.S?` · ${pit.S} SV`:""} · ${pit.IP} IP · ${pit.K} K · ${pit.ER} ER</span>`:"<span>—</span>"}</div>
       </div>${teamBoxes}
     </div></section>`;

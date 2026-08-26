@@ -409,3 +409,13 @@ The current static historical database is treated as the authoritative 2021–20
 - Added both team logos to the Series Scheduled Today cards.
 - Removed stray standalone 2026 text under the schedule banner.
 - Cleaned up the Recent Series panel and empty state.
+
+## v61
+- Player Identity Review override to any existing player.
+- Instagram batting format: H/AB, HR, 3B, 2B, RBI, BB, K.
+- Winning-team tint on result boxes.
+- Homepage scores integrated into team rows.
+- Final schedule cards show WP/LP and top batter.
+- Completed series removed from homepage upcoming/today panels.
+- Migration 0018 corrects Stephen Sclafani spelling.
+- Standard stats view now shows H/AB next to AVG.

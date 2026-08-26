@@ -24,7 +24,7 @@ UPDATE players SET class_year=2029 WHERE name='Isaac Oswald' COLLATE NOCASE;
 UPDATE players SET class_year=2029 WHERE name='Bobby Wolff' COLLATE NOCASE;
 UPDATE players SET class_year=2027 WHERE name='Joe Dachnowicz' COLLATE NOCASE;
 UPDATE players SET class_year=2027 WHERE name='Ryan Hyer' COLLATE NOCASE;
-UPDATE players SET class_year=2027 WHERE name='Stephen Scalfani' COLLATE NOCASE;
+UPDATE players SET class_year=2027 WHERE name='Stephen Sclafani' COLLATE NOCASE;
 UPDATE players SET class_year=2027 WHERE name='Robby Diamond' COLLATE NOCASE;
 UPDATE players SET class_year=2029 WHERE name='George Devlin' COLLATE NOCASE;
 UPDATE players SET class_year=2027 WHERE name='Ryan Walsh' COLLATE NOCASE;

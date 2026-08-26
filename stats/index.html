@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=61"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -45,7 +45,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=59"></script>
+<script src="/assets/data.js?v=61"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
@@ -91,7 +91,7 @@ const CURRENT_ROSTER_TEAM_BY_NAME={};
  ["ball-busters",["Evan Reid","JT Kaiser","Alex Rivera","JP Cardenas","Tim Baldwin","Nick Hulgrave","Jeb Blanco","James Baird","Teddy Skendzel","Jack Powers","Noah Adkins","Nathan Skendzel","Noah Cerniglia"]],
  ["twin-titans",["Luke Gormsen","Eddie McGettigan","Will Cohn","Ben Meyer","Silas Carder","Matt Schuenemann","Jacob Bechtel","Patrick Collins","Michael Camilleri","Max Busk","Patrick Jackson","Justin Murray"]],
  ["silverbacks",["Tad Bates","Ryan Soenen","Ben Hicks","Jason Marrs","Camden Kirchgessner","Jason Aranda","Oscar Uy","Adam Skrzypczyck","Kirby Bach","Ryan McCain"]],
- ["underdawgs",["Jerry Vielhauer","Isaac Oswald","Bobby Wolff","Joe Dachnowicz","Ryan Hyer","Jack Dunn","Stephen Scalfani","Robby Diamond","George Devlin","Ryan Walsh","Rob Marshall","Dan Smith"]]
+ ["underdawgs",["Jerry Vielhauer","Isaac Oswald","Bobby Wolff","Joe Dachnowicz","Ryan Hyer","Jack Dunn","Stephen Sclafani","Robby Diamond","George Devlin","Ryan Walsh","Rob Marshall","Dan Smith"]]
 ].forEach(([team,names])=>names.forEach(n=>CURRENT_ROSTER_TEAM_BY_NAME[n.toLowerCase()]=team));
 
 function teamInfo(r){
@@ -110,7 +110,7 @@ function teamCell(r){
  const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
  const label=name||ui?.name||id;
  const rgb=ui?.rgb||"90,98,110";
- const logo=id?`/assets/logos/${id}.png?v=59`:"";
+ const logo=id?`/assets/logos/${id}.png?v=61`:"";
  return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
 }
 function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
@@ -191,7 +191,7 @@ function sourceRows(){
 }
 function columns(){
  if(viewMode==="standard")return mode==="bat"
-  ?["Name","Team","PAs","Hits","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
+  ?["Name","Team","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","Ks"]
   :["Name","Team","Apps","W","L","IP","Ks","ERA","WHIP"];
  return mode==="bat"
   ?["Name","Team","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS"]
@@ -204,6 +204,7 @@ function displayVal(c,v){
 function label(c){
  if(c==="Ks")return mode==="bat"?"Batting K":"Pitching K";
  if(c==="PAs")return "PA";
+ if(c==="H_AB")return "H/AB";
  if(c==="Class_Year")return "Class";
  if(c==="Runs")return "R";
  if(c==="Hits")return "H";
@@ -223,6 +224,7 @@ function sortRows(rows){
  return [...rows].sort((a,b)=>{
    if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
    if(sortKey==="Team")return sortDir*teamInfo(a).name.localeCompare(teamInfo(b).name);
+   if(sortKey==="H_AB")return sortDir*(num(a.BA)-num(b.BA));
    return sortDir*(num(a[sortKey])-num(b[sortKey]));
  });
 }
@@ -242,7 +244,7 @@ function render(){
  const cols=columns();
  table.innerHTML=`<div class="tablewrap"><table class="sortable"><thead><tr>
   <th class="stats-rank-col">#</th>${cols.map(c=>`<th onclick="sortBy('${c}')">${label(c)}${sortKey===c?`<span class="sortmark">${sortDir===1?"▲":"▼"}</span>`:""}</th>`).join("")}
- </tr></thead><tbody>${rows.map((r,i)=>`<tr class="team-tint" style="--team-rgb:${rowRgb(r)}"><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):c==="Team"?teamCell(r):c==="Class_Year"?(r[c]?`'${String(r[c]).slice(-2)}`:"—"):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+ </tr></thead><tbody>${rows.map((r,i)=>`<tr class="team-tint" style="--team-rgb:${rowRgb(r)}"><td class="stats-rank-col">${i+1}</td>${cols.map(c=>`<td>${c==="Name"?nameDisplay(r):c==="Team"?teamCell(r):c==="H_AB"?`${r.Hits??0}/${r.ABs??0}`:c==="Class_Year"?(r[c]?`'${String(r[c]).slice(-2)}`:"—"):displayVal(c,r[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
 async function loadLive(){
  try{

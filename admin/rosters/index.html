@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Roster Manager | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59">
+<title>Roster Manager | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=61">
 <style>
 .roster-shell{padding:34px 0 55px}.roster-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:15px 0}
 .roster-btn{border:1px solid var(--border);background:#132138;color:#fff;border-radius:9px;padding:10px 13px;font-weight:850;cursor:pointer}.roster-btn.primary{background:var(--gold);border-color:var(--gold);color:#111}
@@ -29,7 +29,7 @@
 </div></main>
 <script>
 let DATA={players:[],teams:[],rosters:[]};
-const CLASS_YEAR_OVERRIDES={"Freddy Rudolph":2027,"Tad Bates":2028,"Ryan Soenen":2028,"Ben Hicks":2028,"Jason Marrs":2028,"Camden Kirchgessner":2028,"Jason Aranda":2028,"Oscar Uy":2028,"Adam Skrzypczyck":2028,"Kirby Bach":2028,"Jacob Clark":2027,"Joey Thomalla":2027,"Jimmy Szpak":2029,"Freddy Zeckser":2028,"Bennett Alvarado":2027,"Brendan Mato":2029,"Nick Swiderski":2027,"Patrick Gareau":2028,"Jerry Vielhauer":2027,"Isaac Oswald":2029,"Bobby Wolff":2029,"Joe Dachnowicz":2027,"Ryan Hyer":2027,"Stephen Scalfani":2027,"Robby Diamond":2027,"George Devlin":2029,"Ryan Walsh":2027,"Rob Marshall":2027,"Dan Smith":2027,"Luke Gormsen":2028,"Jacob Bechtel":2024,"Michael Camilleri":2028,"Max Busk":2030,"Jacob Olejnik":2029,"Chuck Menard":2030,"Evan Reid":2027,"JT Kaiser":2027,"JP Cardenas":2029,"Jimmy Redfern":2027,"Johnny Toole":2028,"Joe O'Melveny":2028,"Jacob Bailey":2030};
+const CLASS_YEAR_OVERRIDES={"Freddy Rudolph":2027,"Tad Bates":2028,"Ryan Soenen":2028,"Ben Hicks":2028,"Jason Marrs":2028,"Camden Kirchgessner":2028,"Jason Aranda":2028,"Oscar Uy":2028,"Adam Skrzypczyck":2028,"Kirby Bach":2028,"Jacob Clark":2027,"Joey Thomalla":2027,"Jimmy Szpak":2029,"Freddy Zeckser":2028,"Bennett Alvarado":2027,"Brendan Mato":2029,"Nick Swiderski":2027,"Patrick Gareau":2028,"Jerry Vielhauer":2027,"Isaac Oswald":2029,"Bobby Wolff":2029,"Joe Dachnowicz":2027,"Ryan Hyer":2027,"Stephen Sclafani":2027,"Robby Diamond":2027,"George Devlin":2029,"Ryan Walsh":2027,"Rob Marshall":2027,"Dan Smith":2027,"Luke Gormsen":2028,"Jacob Bechtel":2024,"Michael Camilleri":2028,"Max Busk":2030,"Jacob Olejnik":2029,"Chuck Menard":2030,"Evan Reid":2027,"JT Kaiser":2027,"JP Cardenas":2029,"Jimmy Redfern":2027,"Johnny Toole":2028,"Joe O'Melveny":2028,"Jacob Bailey":2030};
 function displayClass(p){return p.class_year||CLASS_YEAR_OVERRIDES[p.name]||"—"}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const byAssignment=()=>new Map((DATA.rosters||[]).map(r=>[r.player_id,r]));

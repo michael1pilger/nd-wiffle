@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=59">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=61">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -33,14 +33,17 @@
 .bvp-line{margin-top:7px;color:#fff;font-size:12px;font-weight:850}
 .bvp-meta{margin-top:5px;color:var(--muted);font-size:9px}
 @media(max-width:700px){.bvp-grid{grid-template-columns:1fr}.bvp-head{display:block}}
+.series-result{--winner-rgb:90,98,110;background:linear-gradient(135deg,rgba(var(--winner-rgb),.17),rgba(var(--winner-rgb),.045));border-color:rgba(var(--winner-rgb),.48)}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><a class="match-back" href="javascript:history.back()">← Back</a><div class="eyebrow">2026 Matchup</div><h1>Matchup Preview</h1><p class="muted">Current records, team form, and player leaders for this matchup.</p></div>
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
-<script src="/assets/data.js?v=59"></script><script src="/assets/bvp.js?v=59"></script>
+<script src="/assets/data.js?v=61"></script><script src="/assets/bvp.js?v=61"></script>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=59","midnight":"/assets/logos/midnight.png?v=59","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=59","ball-busters":"/assets/logos/ball-busters.png?v=59","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=59","twin-titans":"/assets/logos/twin-titans.png?v=59","goofy-goobers":"/assets/logos/goofy-goobers.png?v=59","silverbacks":"/assets/logos/silverbacks.png?v=59","underdawgs":"/assets/logos/underdawgs.png?v=59","zyns":"/assets/logos/zyns.png?v=59"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=61","midnight":"/assets/logos/midnight.png?v=61","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=61","ball-busters":"/assets/logos/ball-busters.png?v=61","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=61","twin-titans":"/assets/logos/twin-titans.png?v=61","goofy-goobers":"/assets/logos/goofy-goobers.png?v=61","silverbacks":"/assets/logos/silverbacks.png?v=61","underdawgs":"/assets/logos/underdawgs.png?v=61","zyns":"/assets/logos/zyns.png?v=61"};
+const MATCH_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
+
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const num=v=>Number(v||0),visibleName=n=>String(n||"").trim().toLowerCase()!=="max partovi";
@@ -84,7 +87,7 @@ function canonName(v){
  const aliases={
   "william stevens":"will stevens",
   "joseph dachnowicz":"joe dachnowicz",
-  "stephen sclafani":"stephen scalfani",
+  "stephen scalfani":"stephen sclafani",
   "maximilian busk":"max busk"
  };
  return aliases[s]||s;
@@ -171,8 +174,8 @@ function render(data,results,rosters){
  let finalHtml="";
  if(finished){
    const games=(finished.games||[]).map(g=>`<div class="series-game"><small>Game ${g.game_number}</small><strong>${esc(finished.away_team)} ${g.away_score} · ${esc(finished.home_team)} ${g.home_score}</strong></div>`).join("");
-   const winner=finished.away_wins>finished.home_wins?finished.away_team:finished.home_team;
-   finalHtml=`<section class="series-result"><h2>${esc(winner)} won the series ${Math.max(finished.away_wins,finished.home_wins)}–${Math.min(finished.away_wins,finished.home_wins)}</h2><div class="muted">${fmtDate(finished.series_date)}</div><div class="series-games">${games}</div><a class="result-link" href="/results/?series=${encodeURIComponent(finished.series_id)}">View full box score →</a></section>`;
+   const awayWon=finished.away_wins>finished.home_wins,winner=awayWon?finished.away_team:finished.home_team,winnerId=awayWon?finished.away_team_id:finished.home_team_id,rgb=MATCH_TEAM_RGB[winnerId]||"90,98,110";
+   finalHtml=`<section class="series-result" style="--winner-rgb:${rgb}"><h2>${esc(winner)} won the series ${Math.max(finished.away_wins,finished.home_wins)}–${Math.min(finished.away_wins,finished.home_wins)}</h2><div class="muted">${fmtDate(finished.series_date)}</div><div class="series-games">${games}</div><a class="result-link" href="/results/?series=${encodeURIComponent(finished.series_id)}">View full box score →</a></section>`;
  }
  document.getElementById("matchRoot").innerHTML=`<section class="match-hero"><div class="match-status">${esc(status)}</div><div class="match-teams">${teamHero(away)}<div class="match-at">at</div>${teamHero(home)}</div></section>${finalHtml}
  ${bvpSection(away,home,awayRoster,homeRoster)}
