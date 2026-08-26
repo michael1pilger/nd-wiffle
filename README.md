@@ -426,3 +426,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Recent Series adapts to 1, 2, or 3-column desktop layouts based on the number of displayed results.
 - Winning team row now has a thick team-color border, richer team-color fill, inset accent stripe, stronger logo saturation, and brighter series-win emphasis.
 - Losing row is slightly subdued for clearer winner/loser hierarchy.
+
+## v63: persistent Series Archive + new Grid
+- Adds protected `/admin/series-archive/` as the sixth operational admin tool.
+- Every published series can be reopened later for full batting and pitching fantasy rankings.
+- First five rows are highlighted as the exact Instagram Top 5; all players remain available for audit.
+- Rankings are recomputed from normalized D1 series stats, so they persist indefinitely without a separate migration.
+- New default Grid: Silverbacks / 2.00 or Lower ERA in a Season / Played for 2+ Franchises × 300+ Career PA / .500+ Career OBP / Storm.

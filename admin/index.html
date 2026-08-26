@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=62">
+<title>Admin | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=63">
 <style>
 .admin-home{padding:38px 0 60px}
 .admin-home-head{display:flex;justify-content:space-between;gap:22px;align-items:end;margin-bottom:22px}
@@ -17,11 +17,11 @@
 .admin-health{display:inline-flex;align-items:center;gap:7px}.health-dot{width:8px;height:8px;border-radius:50%;background:#657080}.health-dot.ok{background:#62c98c}.health-dot.err{background:#e56d78}
 @media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-home-head{display:block}.admin-home-status{text-align:left;margin-top:12px}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a><a href="/admin/series-archive/">Series Archive</a></div></div></div>
 
 <main class="admin-home"><div class="container">
 <div class="admin-home-head">
- <div><div class="eyebrow">Commissioner Tools · BUILD v62</div><h1>Admin Dashboard</h1><p class="muted">Manage the 2026 season from one place.</p></div>
+ <div><div class="eyebrow">Commissioner Tools · BUILD v63</div><h1>Admin Dashboard</h1><p class="muted">Manage the 2026 season from one place.</p></div>
  <div class="admin-home-status"><span class="admin-health"><span id="healthDot" class="health-dot"></span><span id="healthText">Checking database…</span></span></div>
 </div>
 
@@ -50,6 +50,13 @@
   <div class="admin-card-link">Export Data →</div>
  </a>
 
+
+ <a class="admin-card" href="/admin/series-archive/">
+  <div class="admin-card-tag">Published History</div><h2>Series Archive</h2>
+  <p>Reopen any published series and recover the permanent batting and pitching fantasy rankings, including the exact Instagram Top 5 stat lines.</p>
+  <div class="admin-card-link">Open Series Archive →</div>
+ </a>
+
  <a class="admin-card" href="/admin/draft/">
   <div class="admin-card-tag">2026 Archive</div><h2>Draft Manager</h2>
   <p>Access the 2026 draft board and commissioner draft controls. The public Draft tab is hidden, but the administrative archive remains available here.</p>
@@ -57,7 +64,7 @@
  </a>
 </div>
 
-<div class="admin-note"><strong>Recommended workflow:</strong> use Series Entry for every completed three-game series, Roster Manager for player/team corrections, and Export Data regularly to keep an offline copy of the D1 database.</div>
+<div class="admin-note"><strong>Recommended workflow:</strong> use Series Entry for every completed three-game series, Series Archive when someone needs the permanent Instagram/fantasy numbers later, Roster Manager for player/team corrections, and Export Data regularly to keep an offline copy of D1.</div>
 </div></main>
 
 <footer><div class="container">ND Wiffle · Commissioner administration.</div></footer>
