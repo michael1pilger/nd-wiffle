@@ -119,8 +119,8 @@ export async function onRequestGet(context){
         GP:n(p.games_played),Apps:n(p.appearances),Starts:n(p.starts),Outs:outs,IP:ipDisplay(outs),
         BF:n(p.bf),R:n(p.runs),ER:er,K:n(p.strikeouts),H:hits,BB:walks,HR:n(p.hr),HBP:n(p.hbp),WP:n(p.wp),
         W:n(d.W),L:n(d.L),S:n(d.S),
-        ERA:innings?((er*3)/innings).toFixed(2):"0.00",
-        WHIP:innings?((walks+hits)/innings).toFixed(2):"0.00"
+        ERA:outs>0?((er*3)/innings).toFixed(2):null,
+        WHIP:outs>0?((walks+hits)/innings).toFixed(2):null
       });
     }
 
@@ -136,7 +136,7 @@ export async function onRequestGet(context){
       };
     });
 
-    return json({ok:true,build:"v63",season,series_count:series.length,series});
+    return json({ok:true,build:"v64",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

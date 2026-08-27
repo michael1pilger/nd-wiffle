@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=63"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -45,7 +45,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=63"></script>
+<script src="/assets/data.js?v=64"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
@@ -110,7 +110,7 @@ function teamCell(r){
  const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
  const label=name||ui?.name||id;
  const rgb=ui?.rgb||"90,98,110";
- const logo=id?`/assets/logos/${id}.png?v=63`:"";
+ const logo=id?`/assets/logos/${id}.png?v=64`:"";
  return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
 }
 function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
@@ -155,8 +155,8 @@ function mergeCareerPit(){
    out._outs=num(h._outs)+num(l.Outs);
    out.IP=outsToIp(out._outs);
    const innings=out._outs/3;
-   out.ERA=innings?((num(out.ER)*3)/innings).toFixed(2):"0.00";
-   out.WHIP=innings?((num(out.Walks)+num(out.Hits))/innings).toFixed(2):"0.00";
+   out.ERA=innings?((num(out.ER)*3)/innings).toFixed(2):null;
+   out.WHIP=innings?((num(out.Walks)+num(out.Hits))/innings).toFixed(2):null;
    map.set(l.Player_ID,out);
  }
  return [...map.values()];
@@ -187,7 +187,14 @@ function sourceRows(){
    const src=mode==="bat"?(ND_DATA.battingSeasons||[]):(ND_DATA.pitchingSeasons||[]);
    rows=src.filter(r=>String(r.Season)===scope);
  }
- return rows.filter(publicVisibleStatRow);
+ rows=rows.filter(publicVisibleStatRow);
+ if(mode==="pit"){
+   rows=rows.map(r=>{
+     const outs=(r.Outs!==undefined&&r.Outs!==null)?num(r.Outs):historicalIpToOuts(r.IP);
+     return num(r.Apps)>0&&outs===0?{...r,ERA:null,WHIP:null}:r;
+   });
+ }
+ return rows;
 }
 function columns(){
  if(viewMode==="standard")return mode==="bat"
@@ -198,7 +205,10 @@ function columns(){
   :["Name","Team","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP","ERA","WHIP"];
 }
 function displayVal(c,v){
- if(c==="ERA"){const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):(v??"")}
+ if(c==="ERA"||c==="WHIP"){
+   if(v===null||v===undefined||v==="")return "—";
+   const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"—";
+ }
  return v??"";
 }
 function label(c){
@@ -225,6 +235,11 @@ function sortRows(rows){
    if(sortKey==="Name")return sortDir*String(a.Name||"").localeCompare(String(b.Name||""));
    if(sortKey==="Team")return sortDir*teamInfo(a).name.localeCompare(teamInfo(b).name);
    if(sortKey==="H_AB")return sortDir*(num(a.BA)-num(b.BA));
+   if(mode==="pit"&&["ERA","WHIP"].includes(sortKey)){
+     const am=a[sortKey]===null||a[sortKey]===undefined||a[sortKey]==="";
+     const bm=b[sortKey]===null||b[sortKey]===undefined||b[sortKey]==="";
+     if(am!==bm)return am?1:-1;
+   }
    return sortDir*(num(a[sortKey])-num(b[sortKey]));
  });
 }

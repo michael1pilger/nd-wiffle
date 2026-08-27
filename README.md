@@ -433,3 +433,11 @@ The current static historical database is treated as the authoritative 2021–20
 - First five rows are highlighted as the exact Instagram Top 5; all players remain available for audit.
 - Rankings are recomputed from normalized D1 series stats, so they persist indefinitely without a separate migration.
 - New default Grid: Silverbacks / 2.00 or Lower ERA in a Season / Played for 2+ Franchises × 300+ Career PA / .500+ Career OBP / Storm.
+
+## v64
+- Migration 0019 corrects Nick Hulgrave ER (1→0) and Noah Cerniglia ER (2→3) on their most recent matching 2026 pitching rows.
+- Unretires Matt Gough and assigns him to Zyns.
+- Creates Matthew Nugent if needed and assigns him to Zyns.
+- Zero-out pitchers now have undefined ERA/WHIP (`—`) instead of 0.00.
+- ERA/WHIP sorting always places undefined zero-out pitchers behind pitchers with defined rates.
+- Zyns team page loads its 2026 active roster from D1.

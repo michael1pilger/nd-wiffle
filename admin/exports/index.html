@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Data Export | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=63">
+<title>Data Export | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64">
 <style>
 .export-shell{padding:34px 0 55px}.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
 .export-card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:15px}.export-card h2{margin:0 0 6px;font-size:17px}.export-card p{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
@@ -29,7 +29,7 @@
 <div id="status" class="export-status"></div>
 <div class="export-note">The ZIP is generated in your browser and does not modify D1. Keep the series-level batting and pitching exports as the archival source of truth; cumulative files can always be regenerated from them.</div>
 </div></main>
-<script src="/assets/data.js?v=63"></script>
+<script src="/assets/data.js?v=64"></script>
 <script>
 const escCsv=v=>{if(v==null)return "";const s=String(v);return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
 function rowsCsv(rows,cols){return cols.join(",")+"\n"+rows.map(r=>cols.map(c=>escCsv(r[c])).join(",")).join("\n")+"\n"}

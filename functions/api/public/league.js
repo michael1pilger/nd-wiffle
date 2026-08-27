@@ -171,13 +171,13 @@ export async function onRequestGet(context){
         W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:outs,IP:ipDisplay(outs),
         BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
         HRs:n(r.hr),HBP:n(r.hbp),WP:n(r.wp),
-        ERA:ip?((er*3)/ip).toFixed(2):"0.00",
-        WHIP:ip?((walks+hits)/ip).toFixed(2):"0.00"
+        ERA:outs>0?((er*3)/ip).toFixed(2):null,
+        WHIP:outs>0?((walks+hits)/ip).toFixed(2):null
       };
     });
 
     return json({
-      ok:true,build:"v63",season,
+      ok:true,build:"v64",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

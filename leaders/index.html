@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=63">
+<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64">
 <style>
 .leaders-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin:0 0 18px}
 .leaders-controls label{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;margin-bottom:4px}
@@ -45,7 +45,7 @@
 <div class="full-table-card"><div class="full-table-head"><h2>2026 Leaderboard</h2><span id="tableStatus">All published player totals</span></div><div class="tablewrap"><table class="leaders-table"><thead id="fullHead"></thead><tbody id="fullBody"></tbody></table></div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 league leaders.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=63","midnight":"/assets/logos/midnight.png?v=63","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=63","ball-busters":"/assets/logos/ball-busters.png?v=63","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=63","twin-titans":"/assets/logos/twin-titans.png?v=63","goofy-goobers":"/assets/logos/goofy-goobers.png?v=63","silverbacks":"/assets/logos/silverbacks.png?v=63","underdawgs":"/assets/logos/underdawgs.png?v=63","zyns":"/assets/logos/zyns.png?v=63"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=64","midnight":"/assets/logos/midnight.png?v=64","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=64","ball-busters":"/assets/logos/ball-busters.png?v=64","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=64","twin-titans":"/assets/logos/twin-titans.png?v=64","goofy-goobers":"/assets/logos/goofy-goobers.png?v=64","silverbacks":"/assets/logos/silverbacks.png?v=64","underdawgs":"/assets/logos/underdawgs.png?v=64","zyns":"/assets/logos/zyns.png?v=64"};
 const BAT_METRICS=[
  {id:"BA",label:"AVG",desc:"Batting Average",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
  {id:"OPS",label:"OPS",desc:"OPS",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
@@ -69,10 +69,13 @@ function teamMap(){const m=new Map();for(const p of DATA.participants||[])if(!m.
 function battingPoints(r){return num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs)+num(r.RBI)+num(r.BB)-num(r.Ks)}
 function pitchingPoints(r){return num(r.Outs)-2*num(r.ER)+num(r.Ks)-num(r.Hits)-num(r.Walks)}
 function enrich(){const tm=teamMap();for(const r of DATA.batting){r.Fantasy=battingPoints(r);r.Team=tm.get(r.Player_ID)||null}for(const r of DATA.pitching){r.Fantasy=pitchingPoints(r);r.Team=tm.get(r.Player_ID)||null}}
-function metricValue(r,id){return num(r[id])}
+function metricValue(r,id){
+ if(["ERA","WHIP"].includes(id)&&(r[id]===null||r[id]===undefined||r[id]===""))return null;
+ return num(r[id]);
+}
 function playerPool(rows,type){const team=document.getElementById("teamFilter").value;return rows.filter(r=>{if(team&&r.Team?.id!==team)return false;if(!qualified)return true;return type==="bat"?num(r.PAs)>=50:num(r.Outs)>=54})}
-function sorted(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return [...rows].sort((a,b)=>{const av=metricValue(a,metric),bv=metricValue(b,metric);if(av!==bv)return meta.higher?bv-av:av-bv;return type==="bat"?num(b.PAs)-num(a.PAs):num(b.Outs)-num(a.Outs)||a.Name.localeCompare(b.Name)})}
-function valFmt(v,meta){return meta.fmt?meta.fmt(v):String(v)}
+function sorted(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return [...rows].sort((a,b)=>{const av=metricValue(a,metric),bv=metricValue(b,metric);if(["ERA","WHIP"].includes(metric)){const am=av===null,bm=bv===null;if(am!==bm)return am?1:-1;}if(av!==bv)return meta.higher?bv-av:av-bv;return type==="bat"?num(b.PAs)-num(a.PAs):num(b.Outs)-num(a.Outs)||a.Name.localeCompare(b.Name)})}
+function valFmt(v,meta){if(v===null||v===undefined||v==="")return "—";return meta.fmt?meta.fmt(v):String(v)}
 function leaderRows(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return sorted(playerPool(rows,type),metric,type).slice(0,10).map((r,i)=>`<div class="leader-row"><div class="leader-rank">${i+1}</div><div>${r.Team&&LOGOS[r.Team.id]?`<img class="leader-logo" src="${LOGOS[r.Team.id]}" alt="">`:""}</div><div class="leader-player"><strong>${esc(r.Name)}</strong><small>${esc(r.Team?.name||"")}${type==="bat"?` · ${r.PAs} PA`:` · ${r.IP} IP`}</small></div><div class="leader-value">${valFmt(metricValue(r,metric),meta)}<small>${meta.label}</small></div></div>`).join("")||'<div class="leaders-empty">No players meet the current filters.</div>'}
 function renderTabs(id,metrics,current,type){document.getElementById(id).innerHTML=metrics.map(m=>`<button class="metric-tab ${m.id===current?"active":""}" type="button" data-metric="${m.id}">${m.label}</button>`).join("");document.querySelectorAll(`#${id} [data-metric]`).forEach(btn=>btn.addEventListener("click",()=>{if(type==="bat")batMetric=btn.dataset.metric;else pitMetric=btn.dataset.metric;render()}))}
 function renderTable(){
