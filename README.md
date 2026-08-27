@@ -458,3 +458,11 @@ The current static historical database is treated as the authoritative 2021–20
 - Adds protected `/admin/fantasy/` for eligibility, manual multiplier overrides, refresh, lock, and finalize controls.
 - Daily leaderboards and lineup breakdowns remain available by date.
 - Adds `migrations/0020_daily_fantasy.sql`.
+
+## v66
+- Fantasy player rows now show team logos and team-color accents.
+- Player rows are clickable/selectable without visible checkboxes.
+- Selected fantasy rows light up in the player's team color.
+- Adds live `0/3 B` and `0/2 P` selection trackers.
+- Migration 0021 moves Anthony Bellone to Zyns for 2026.
+- Standings W/L columns are enlarged to be the largest numeric text on the page.

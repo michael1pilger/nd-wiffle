@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fantasy Slates | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
+<title>Fantasy Slates | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=66">
 <style>
 .fs-shell{padding:34px 0 60px}.fs-head{display:flex;justify-content:space-between;align-items:end;gap:15px}.fs-date{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}
 .fs-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:16px;margin-top:14px}.fs-card h2{margin:0 0 6px}
@@ -9,7 +9,7 @@
 @media(max-width:850px){.fs-grid{grid-template-columns:1fr}.prow{grid-template-columns:minmax(0,1fr) auto auto}.prow input[type=number]{grid-column:auto}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a class="active" href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/series-archive/">Series Archive</a><a href="/admin/rosters/">Rosters</a><a href="/admin/exports/">Export Data</a></div></div></div>
-<main class="fs-shell"><div class="container"><div class="fs-head"><div><div class="eyebrow">Commissioner Tools · BUILD v65</div><h1>Fantasy Slates</h1><p class="muted">Control player eligibility or override an automatically generated multiplier.</p></div><input id="dateSel" class="fs-date" type="date"></div>
+<main class="fs-shell"><div class="container"><div class="fs-head"><div><div class="eyebrow">Commissioner Tools · BUILD v66</div><h1>Fantasy Slates</h1><p class="muted">Control player eligibility or override an automatically generated multiplier.</p></div><input id="dateSel" class="fs-date" type="date"></div>
 <div class="fs-card"><h2>Slate Controls</h2><div id="slateInfo" class="muted"></div><div class="fs-actions"><button class="btnx primary" onclick="setStatus('open')">Open</button><button class="btnx" onclick="setStatus('locked')">Lock</button><button class="btnx" onclick="setStatus('final')">Final</button><button class="btnx" onclick="load()">Refresh Multipliers</button><a class="btnx" href="/fantasy/" target="_blank">Open Public Fantasy</a></div><div id="status" class="status"></div></div>
 <div class="fs-card"><h2>Eligible Players</h2><p class="muted" style="font-size:11px">Auto multipliers target a 2.25x mean. Rookies begin at 3.00x. Current-season performance is used after 15 PA for batters or 3 IP for pitchers; otherwise career production is used.</p><div id="players" class="fs-grid"></div></div>
 </div></main>

@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Daily Fantasy | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
+<title>Daily Fantasy | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=66">
 <style>
 .fantasy-shell{padding:34px 0 60px}.fantasy-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:18px}
 .fantasy-date{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
@@ -15,6 +15,23 @@
 .lb{display:grid;gap:8px;margin-top:12px}.lb-row{border:1px solid var(--border);border-radius:10px;background:#0d1729;padding:10px}.lb-top{display:flex;justify-content:space-between;gap:10px}.lb-rank{font-weight:950;color:var(--gold);margin-right:7px}.lb-name{font-weight:900}.lb-score{font-weight:950}.lb-picks{display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px;color:var(--muted);font-size:10px;line-height:1.6}.lb-row.open .lb-picks{display:block}
 .slate-empty{color:var(--muted);padding:12px 0}.lock-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:8px}
 @media(max-width:800px){.fantasy-grid{grid-template-columns:1fr}.fantasy-head{display:block}.fantasy-date{margin-top:10px}}
+
+.fantasy-select-track{display:flex;gap:10px;align-items:center;margin:10px 0 16px;flex-wrap:wrap}
+.track-pill{border:1px solid var(--border);background:#0d1729;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;color:var(--muted);transition:.16s ease}
+.track-pill.active{color:#fff;border-color:rgba(212,175,55,.5);background:rgba(212,175,55,.11)}
+.track-pill.complete{color:#111;background:var(--gold);border-color:var(--gold)}
+.player-pick{position:relative;overflow:hidden;grid-template-columns:42px minmax(0,1fr) auto;cursor:pointer;user-select:none;transition:transform .14s ease,border-color .14s ease,background .14s ease}
+.player-pick:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.2)}
+.player-pick.selected{border-width:2px;border-color:rgba(var(--team-rgb),.95);background:linear-gradient(90deg,rgba(var(--team-rgb),.27),rgba(var(--team-rgb),.08))}
+.player-pick.selected:before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:rgb(var(--team-rgb))}
+.player-pick.disabled{opacity:.5;cursor:not-allowed}
+.player-pick input{position:absolute;opacity:0;pointer-events:none}
+.player-logo{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+.player-pick.selected .player-logo{filter:drop-shadow(0 0 5px rgba(var(--team-rgb),.55))}
+.player-team{display:flex;align-items:center;gap:6px}
+.team-dot{width:7px;height:7px;border-radius:999px;background:rgb(var(--team-rgb));display:inline-block;flex:0 0 7px}
+.player-pick.selected .mult{color:#fff}
+.pick-hint{font-size:10px;color:var(--muted);margin-top:-2px;margin-bottom:8px}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a class="active" href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div>
 <main class="fantasy-shell"><div class="container">
@@ -22,8 +39,9 @@
 <div class="fantasy-grid">
 <section class="f-card"><h2 id="slateTitle">Daily Slate</h2><div id="slateInfo" class="slate-info"></div>
 <input id="displayName" class="entry-name" maxlength="40" placeholder="Name or Instagram handle">
-<div class="slot-title"><strong>Batters</strong><span id="batCount">0 / 3 selected</span></div><div id="batList" class="player-list"></div>
-<div class="slot-title"><strong>Pitchers</strong><span id="pitCount">0 / 2 selected</span></div><div id="pitList" class="player-list"></div>
+<div class="fantasy-select-track"><span id="bTrack" class="track-pill">0/3 B</span><span id="pTrack" class="track-pill">0/2 P</span></div>
+<div class="slot-title"><strong>Batters</strong><span id="batCount">0 / 3 selected</span></div><div class="pick-hint">Click anywhere on a player row to select or deselect.</div><div id="batList" class="player-list"></div>
+<div class="slot-title"><strong>Pitchers</strong><span id="pitCount">0 / 2 selected</span></div><div class="pick-hint">Click anywhere on a player row to select or deselect.</div><div id="pitList" class="player-list"></div>
 <div class="submit-row"><button id="submitBtn" class="f-btn primary">Submit Lineup</button><span id="lockText" class="muted"></span></div>
 <div id="status" class="f-status"></div><div class="lock-note">You may edit the same name/handle until the slate locks. A player may be selected once as a batter and once as a pitcher. Negative fantasy points remain negative after the multiplier.</div>
 </section>
@@ -36,18 +54,47 @@ const localDate=()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+
 const fmtDate=v=>{const d=new Date(v+"T12:00:00");return d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})};
 const fmtTime=v=>{if(!v)return "TBD";const [h,m]=v.split(":").map(Number),d=new Date(2000,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
 function checked(type){return [...document.querySelectorAll(`input[data-type="${type}"]:checked`)].map(x=>x.value)}
-function enforce(type,max){const picks=checked(type),boxes=[...document.querySelectorAll(`input[data-type="${type}"]`)];boxes.forEach(x=>{if(!x.checked)x.disabled=DATA?.locked||picks.length>=max});document.getElementById(type==="bat"?"batCount":"pitCount").textContent=`${picks.length} / ${max} selected`}
+const TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
+const TEAM_LOGO={"storm":"/assets/logos/storm.png?v=66","midnight":"/assets/logos/midnight.png?v=66","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=66","ball-busters":"/assets/logos/ball-busters.png?v=66","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=66","twin-titans":"/assets/logos/twin-titans.png?v=66","goofy-goobers":"/assets/logos/goofy-goobers.png?v=66","silverbacks":"/assets/logos/silverbacks.png?v=66","underdawgs":"/assets/logos/underdawgs.png?v=66","zyns":"/assets/logos/zyns.png?v=66"};
+function setTrack(id,count,max,label){
+ const el=document.getElementById(id);
+ el.textContent=`${count}/${max} ${label}`;
+ el.classList.toggle("complete",count===max);
+ el.classList.toggle("active",count>0&&count<max);
+}
+function enforce(type,max){
+ const picks=checked(type),rows=[...document.querySelectorAll(`.player-pick[data-type="${type}"]`)];
+ rows.forEach(row=>{
+   const box=row.querySelector("input");
+   const shouldDisable=DATA?.locked||(!box.checked&&picks.length>=max);
+   box.disabled=shouldDisable;
+   row.classList.toggle("disabled",shouldDisable&&!box.checked);
+   row.classList.toggle("selected",box.checked);
+ });
+ document.getElementById(type==="bat"?"batCount":"pitCount").textContent=`${picks.length} / ${max} selected`;
+ setTrack(type==="bat"?"bTrack":"pTrack",picks.length,max,type==="bat"?"B":"P");
+}
 function playerRows(kind){
  const eligible=(DATA?.players||[]).filter(p=>kind==="bat"?p.batting_eligible:p.pitching_eligible);
  if(!eligible.length)return '<div class="slate-empty">No eligible players.</div>';
- return eligible.map(p=>{const mult=kind==="bat"?p.batting_multiplier:p.pitching_multiplier,rookie=kind==="bat"?p.batting_rookie:p.pitching_rookie;return `<label class="player-pick"><input type="checkbox" data-type="${kind}" value="${p.player_id}" ${DATA.locked?"disabled":""}><div class="player-meta"><div class="player-name">${esc(p.name)}</div><div class="player-team">${esc(p.team_name)}${rookie?'<span class="rookie">Rookie baseline</span>':""}</div></div><div class="mult">${Number(mult).toFixed(2)}x</div></label>`}).join("")
+ return eligible.map(p=>{
+   const mult=kind==="bat"?p.batting_multiplier:p.pitching_multiplier;
+   const rookie=kind==="bat"?p.batting_rookie:p.pitching_rookie;
+   const rgb=TEAM_RGB[p.team_id]||"90,98,110",logo=TEAM_LOGO[p.team_id]||"";
+   return `<label class="player-pick" data-type="${kind}" style="--team-rgb:${rgb}"><input type="checkbox" data-type="${kind}" value="${p.player_id}" ${DATA.locked?"disabled":""}>${logo?`<img class="player-logo" src="${logo}" alt="">`:"<span></span>"}<div class="player-meta"><div class="player-name">${esc(p.name)}</div><div class="player-team"><span class="team-dot"></span>${esc(p.team_name)}${rookie?'<span class="rookie">Rookie baseline</span>':""}</div></div><div class="mult">${Number(mult).toFixed(2)}x</div></label>`;
+ }).join("")
 }
 function render(){
  slateTitle.textContent=`Daily Fantasy · ${fmtDate(DATA.date)}`;
  const series=DATA.scheduled||[];slateInfo.innerHTML=series.length?series.map(x=>`<span class="chip">${esc(x.team_a)} vs ${esc(x.team_b)} · ${fmtTime(x.series_time)}</span>`).join(""):'<span class="chip">No scheduled series</span>';
  batList.innerHTML=playerRows("bat");pitList.innerHTML=playerRows("pit");
- document.querySelectorAll('input[data-type="bat"]').forEach(x=>x.addEventListener("change",()=>enforce("bat",3)));
- document.querySelectorAll('input[data-type="pit"]').forEach(x=>x.addEventListener("change",()=>enforce("pit",2)));
+ document.querySelectorAll(".player-pick").forEach(row=>row.addEventListener("click",e=>{
+   e.preventDefault();
+   const box=row.querySelector("input"),type=row.dataset.type,max=type==="bat"?3:2;
+   if(box.disabled&&!box.checked)return;
+   box.checked=!box.checked;
+   enforce(type,max);
+ }));
  enforce("bat",3);enforce("pit",2);
  submitBtn.disabled=DATA.locked||!series.length;lockText.textContent=DATA.locked?"Slate locked":DATA.slate?.lock_time?`Locks ${fmtTime(DATA.slate.lock_time)}`:"Lock time TBD";
  leaderboard.innerHTML=(DATA.leaderboard||[]).length?DATA.leaderboard.map((e,i)=>`<div class="lb-row"><div class="lb-top"><div><span class="lb-rank">#${i+1}</span><span class="lb-name">${esc(e.display_name)}</span></div><div class="lb-score">${Number(e.total_points).toFixed(2)}</div></div><div class="lb-picks">${(e.picks||[]).map(p=>`${p.slot_type==="bat"?"BAT":"PIT"} · ${esc(p.name)} · ${Number(p.base_points).toFixed(2)} × ${Number(p.multiplier).toFixed(2)} = ${Number(p.final_points).toFixed(2)}`).join("<br>")}</div></div>`).join(""):'<div class="slate-empty">No entries yet.</div>';

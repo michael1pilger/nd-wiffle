@@ -21,7 +21,7 @@ export async function onRequestGet(context){
     ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
    `).bind(season)
   ]);
-  return json({ok:true,build:"v65",season,teams:teams.results||[],scheduled:scheduled.results||[],actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v66",season,teams:teams.results||[],scheduled:scheduled.results||[],actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

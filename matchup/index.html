@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
+<title>Matchup | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=66">
 <style>
 .match-back{display:inline-flex;gap:6px;align-items:center;color:var(--gold);font-size:12px;font-weight:900;text-decoration:none;margin-bottom:16px}
 .match-hero{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:20px;margin-bottom:16px}
@@ -39,9 +39,9 @@
 <main><div class="container pagehead"><a class="match-back" href="javascript:history.back()">← Back</a><div class="eyebrow">2026 Matchup</div><h1>Matchup Preview</h1><p class="muted">Current records, team form, and player leaders for this matchup.</p></div>
 <div class="container"><div id="matchRoot"><div class="match-empty">Loading matchup…</div></div></div></main>
 <footer><div class="container">ND Wiffle · Matchup details.</div></footer>
-<script src="/assets/data.js?v=65"></script><script src="/assets/bvp.js?v=65"></script>
+<script src="/assets/data.js?v=66"></script><script src="/assets/bvp.js?v=66"></script>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=65","midnight":"/assets/logos/midnight.png?v=65","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=65","ball-busters":"/assets/logos/ball-busters.png?v=65","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=65","twin-titans":"/assets/logos/twin-titans.png?v=65","goofy-goobers":"/assets/logos/goofy-goobers.png?v=65","silverbacks":"/assets/logos/silverbacks.png?v=65","underdawgs":"/assets/logos/underdawgs.png?v=65","zyns":"/assets/logos/zyns.png?v=65"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=66","midnight":"/assets/logos/midnight.png?v=66","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=66","ball-busters":"/assets/logos/ball-busters.png?v=66","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=66","twin-titans":"/assets/logos/twin-titans.png?v=66","goofy-goobers":"/assets/logos/goofy-goobers.png?v=66","silverbacks":"/assets/logos/silverbacks.png?v=66","underdawgs":"/assets/logos/underdawgs.png?v=66","zyns":"/assets/logos/zyns.png?v=66"};
 const MATCH_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
 const qp=new URLSearchParams(location.search),awayId=qp.get("away"),homeId=qp.get("home"),seriesId=qp.get("series"),scheduledDate=qp.get("date");

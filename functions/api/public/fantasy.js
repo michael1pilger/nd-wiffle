@@ -7,7 +7,7 @@ export async function onRequestGet(context){
  if(!validDate(date))return json({ok:false,error:"A YYYY-MM-DD date is required."},400);
  try{
   const slate=await buildSlate(DB,date),leaderboard=await scoreEntries(DB,date);
-  return json({ok:true,build:"v65",date,...slate,leaderboard});
+  return json({ok:true,build:"v66",date,...slate,leaderboard});
  }catch(err){
   const msg=String(err?.message||err);
   if(msg.includes("no such table"))return json({ok:false,code:"FANTASY_SCHEMA_MISSING",error:"Daily Fantasy is not installed yet. Run migrations/0020_daily_fantasy.sql."},503);
