@@ -1,0 +1,69 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Fantasy | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
+<style>
+.fantasy-shell{padding:34px 0 60px}.fantasy-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:18px}
+.fantasy-date{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+.fantasy-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(310px,.85fr);gap:16px;align-items:start}
+.f-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:16px}.f-card h2{margin:0 0 6px}
+.entry-name{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:11px;margin:10px 0 14px}
+.slot-title{display:flex;justify-content:space-between;align-items:center;margin:15px 0 8px}.slot-title strong{font-size:13px}.slot-title span{font-size:10px;color:var(--muted)}
+.player-list{display:grid;gap:7px}.player-pick{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--border);border-radius:10px;padding:9px 10px;background:#0d1729;cursor:pointer}
+.player-pick input{width:18px;height:18px}.player-meta{min-width:0}.player-name{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.player-team{font-size:10px;color:var(--muted);margin-top:2px}.mult{font-weight:950;color:var(--gold);font-size:13px}.rookie{font-size:8px;color:var(--muted);display:block;margin-top:2px}
+.submit-row{display:flex;gap:9px;align-items:center;margin-top:16px}.f-btn{border:1px solid var(--border);background:#14243b;color:#fff;border-radius:8px;padding:10px 13px;font-weight:900;cursor:pointer}.f-btn.primary{background:var(--gold);border-color:var(--gold);color:#111}.f-btn:disabled{opacity:.45;cursor:not-allowed}
+.f-status{font-size:11px;color:var(--muted);margin-top:10px}.f-status.err{color:#eb7884}.f-status.ok{color:#71d49c}
+.slate-info{display:flex;gap:8px;flex-wrap:wrap;margin:9px 0}.chip{border:1px solid var(--border);border-radius:999px;padding:5px 8px;font-size:10px;color:var(--muted)}
+.lb{display:grid;gap:8px;margin-top:12px}.lb-row{border:1px solid var(--border);border-radius:10px;background:#0d1729;padding:10px}.lb-top{display:flex;justify-content:space-between;gap:10px}.lb-rank{font-weight:950;color:var(--gold);margin-right:7px}.lb-name{font-weight:900}.lb-score{font-weight:950}.lb-picks{display:none;margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px;color:var(--muted);font-size:10px;line-height:1.6}.lb-row.open .lb-picks{display:block}
+.slate-empty{color:var(--muted);padding:12px 0}.lock-note{font-size:10px;color:var(--muted);line-height:1.5;margin-top:8px}
+@media(max-width:800px){.fantasy-grid{grid-template-columns:1fr}.fantasy-head{display:block}.fantasy-date{margin-top:10px}}
+</style></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/results/">Results</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a class="active" href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div>
+<main class="fantasy-shell"><div class="container">
+<div class="fantasy-head"><div><div class="eyebrow">ND Wiffle Daily Fantasy</div><h1>Build Your Lineup</h1><p class="muted">Pick 3 batters and 2 pitchers from teams playing that day. Multipliers are locked when you submit.</p></div><input id="dateSel" class="fantasy-date" type="date"></div>
+<div class="fantasy-grid">
+<section class="f-card"><h2 id="slateTitle">Daily Slate</h2><div id="slateInfo" class="slate-info"></div>
+<input id="displayName" class="entry-name" maxlength="40" placeholder="Name or Instagram handle">
+<div class="slot-title"><strong>Batters</strong><span id="batCount">0 / 3 selected</span></div><div id="batList" class="player-list"></div>
+<div class="slot-title"><strong>Pitchers</strong><span id="pitCount">0 / 2 selected</span></div><div id="pitList" class="player-list"></div>
+<div class="submit-row"><button id="submitBtn" class="f-btn primary">Submit Lineup</button><span id="lockText" class="muted"></span></div>
+<div id="status" class="f-status"></div><div class="lock-note">You may edit the same name/handle until the slate locks. A player may be selected once as a batter and once as a pitcher. Negative fantasy points remain negative after the multiplier.</div>
+</section>
+<section class="f-card"><h2>Daily Leaderboard</h2><p class="muted" style="font-size:11px">Scores update automatically as published series stats arrive.</p><div id="leaderboard" class="lb"></div></section>
+</div></div></main>
+<script>
+let DATA=null;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const localDate=()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`};
+const fmtDate=v=>{const d=new Date(v+"T12:00:00");return d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})};
+const fmtTime=v=>{if(!v)return "TBD";const [h,m]=v.split(":").map(Number),d=new Date(2000,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
+function checked(type){return [...document.querySelectorAll(`input[data-type="${type}"]:checked`)].map(x=>x.value)}
+function enforce(type,max){const picks=checked(type),boxes=[...document.querySelectorAll(`input[data-type="${type}"]`)];boxes.forEach(x=>{if(!x.checked)x.disabled=DATA?.locked||picks.length>=max});document.getElementById(type==="bat"?"batCount":"pitCount").textContent=`${picks.length} / ${max} selected`}
+function playerRows(kind){
+ const eligible=(DATA?.players||[]).filter(p=>kind==="bat"?p.batting_eligible:p.pitching_eligible);
+ if(!eligible.length)return '<div class="slate-empty">No eligible players.</div>';
+ return eligible.map(p=>{const mult=kind==="bat"?p.batting_multiplier:p.pitching_multiplier,rookie=kind==="bat"?p.batting_rookie:p.pitching_rookie;return `<label class="player-pick"><input type="checkbox" data-type="${kind}" value="${p.player_id}" ${DATA.locked?"disabled":""}><div class="player-meta"><div class="player-name">${esc(p.name)}</div><div class="player-team">${esc(p.team_name)}${rookie?'<span class="rookie">Rookie baseline</span>':""}</div></div><div class="mult">${Number(mult).toFixed(2)}x</div></label>`}).join("")
+}
+function render(){
+ slateTitle.textContent=`Daily Fantasy · ${fmtDate(DATA.date)}`;
+ const series=DATA.scheduled||[];slateInfo.innerHTML=series.length?series.map(x=>`<span class="chip">${esc(x.team_a)} vs ${esc(x.team_b)} · ${fmtTime(x.series_time)}</span>`).join(""):'<span class="chip">No scheduled series</span>';
+ batList.innerHTML=playerRows("bat");pitList.innerHTML=playerRows("pit");
+ document.querySelectorAll('input[data-type="bat"]').forEach(x=>x.addEventListener("change",()=>enforce("bat",3)));
+ document.querySelectorAll('input[data-type="pit"]').forEach(x=>x.addEventListener("change",()=>enforce("pit",2)));
+ enforce("bat",3);enforce("pit",2);
+ submitBtn.disabled=DATA.locked||!series.length;lockText.textContent=DATA.locked?"Slate locked":DATA.slate?.lock_time?`Locks ${fmtTime(DATA.slate.lock_time)}`:"Lock time TBD";
+ leaderboard.innerHTML=(DATA.leaderboard||[]).length?DATA.leaderboard.map((e,i)=>`<div class="lb-row"><div class="lb-top"><div><span class="lb-rank">#${i+1}</span><span class="lb-name">${esc(e.display_name)}</span></div><div class="lb-score">${Number(e.total_points).toFixed(2)}</div></div><div class="lb-picks">${(e.picks||[]).map(p=>`${p.slot_type==="bat"?"BAT":"PIT"} · ${esc(p.name)} · ${Number(p.base_points).toFixed(2)} × ${Number(p.multiplier).toFixed(2)} = ${Number(p.final_points).toFixed(2)}`).join("<br>")}</div></div>`).join(""):'<div class="slate-empty">No entries yet.</div>';
+ document.querySelectorAll(".lb-row").forEach(x=>x.addEventListener("click",()=>x.classList.toggle("open")));
+}
+async function load(){
+ status.textContent="Loading slate…";const r=await fetch(`/api/public/fantasy?date=${encodeURIComponent(dateSel.value)}`,{cache:"no-store"}),j=await r.json();
+ if(!r.ok||!j.ok){status.textContent=j.error||"Fantasy unavailable.";status.className="f-status err";return}
+ DATA=j;status.textContent="";status.className="f-status";render();
+}
+submitBtn.onclick=async()=>{
+ const body={date:dateSel.value,display_name:displayName.value,batters:checked("bat"),pitchers:checked("pit")};
+ status.textContent="Saving lineup…";status.className="f-status";
+ const r=await fetch("/api/public/fantasy",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),j=await r.json();
+ if(!r.ok||!j.ok){status.textContent=j.error||"Could not save lineup.";status.className="f-status err";return}
+ status.textContent="Lineup saved.";status.className="f-status ok";await load();
+};
+dateSel.value=localDate();dateSel.onchange=load;load();
+</script></body></html>

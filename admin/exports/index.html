@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Data Export | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64">
+<title>Data Export | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
 <style>
 .export-shell{padding:34px 0 55px}.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:18px}
 .export-card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:15px}.export-card h2{margin:0 0 6px;font-size:17px}.export-card p{margin:0 0 12px;color:var(--muted);font-size:11px;line-height:1.5}
@@ -7,7 +7,7 @@
 .export-status{margin-top:14px;color:var(--muted);font-size:11px}.export-note{border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:14px;color:var(--muted);font-size:11px;line-height:1.55}
 @media(max-width:760px){.export-grid{grid-template-columns:1fr}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a class="active" href="/admin/exports/">Export Data</a><a href="/admin/series-archive/">Series Archive</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a class="active" href="/admin/exports/">Export Data</a><a href="/admin/series-archive/">Series Archive</a></div></div></div>
 <main class="export-shell"><div class="container"><div class="eyebrow">Commissioner Tools</div><h1>Export League Data</h1>
 <p class="muted">Download the underlying league data as ordinary CSV files. D1 exports reproduce the normalized data actually published to the website; historical exports reproduce the preserved 2021–2025 season datasets.</p>
 <div class="export-grid">
@@ -29,7 +29,7 @@
 <div id="status" class="export-status"></div>
 <div class="export-note">The ZIP is generated in your browser and does not modify D1. Keep the series-level batting and pitching exports as the archival source of truth; cumulative files can always be regenerated from them.</div>
 </div></main>
-<script src="/assets/data.js?v=64"></script>
+<script src="/assets/data.js?v=65"></script>
 <script>
 const escCsv=v=>{if(v==null)return "";const s=String(v);return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
 function rowsCsv(rows,cols){return cols.join(",")+"\n"+rows.map(r=>cols.map(c=>escCsv(r[c])).join(",")).join("\n")+"\n"}

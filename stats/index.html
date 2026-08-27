@@ -1,11 +1,11 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
 .sortable tbody tr{--team-rgb:90,98,110}.sortable tbody tr.team-tint{background:linear-gradient(90deg,rgba(var(--team-rgb),.075),transparent 35%)}
 .full-stats-hint{display:none}.full-stats-hint.show{display:block}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="active" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="active" href="/stats/">Stats</a></div></div></div>
 
 
 <main>
@@ -45,7 +45,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=64"></script>
+<script src="/assets/data.js?v=65"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
@@ -110,7 +110,7 @@ function teamCell(r){
  const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
  const label=name||ui?.name||id;
  const rgb=ui?.rgb||"90,98,110";
- const logo=id?`/assets/logos/${id}.png?v=64`:"";
+ const logo=id?`/assets/logos/${id}.png?v=65`:"";
  return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
 }
 function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}

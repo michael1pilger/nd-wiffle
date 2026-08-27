@@ -441,3 +441,20 @@ The current static historical database is treated as the authoritative 2021–20
 - Zero-out pitchers now have undefined ERA/WHIP (`—`) instead of 0.00.
 - ERA/WHIP sorting always places undefined zero-out pitchers behind pitchers with defined rates.
 - Zyns team page loads its 2026 active roster from D1.
+
+## v65: Daily Fantasy
+- Adds public `/fantasy/`.
+- Visitors enter a name or Instagram handle and pick 3 unique batters + 2 unique pitchers.
+- The same player may be used once as a batter and once as a pitcher.
+- Entries can be resubmitted/edited under the same name or handle until the slate locks.
+- Slate locks automatically at the earliest scheduled series time for that date.
+- Batting fantasy = TB + RBI + BB - K.
+- Pitching fantasy = Outs - 2*ER + K - H - BB.
+- Final daily score = base fantasy points × the submitted multiplier; negative scores stay negative.
+- Rookie multiplier starts at 3.00x.
+- Current 2026 data is used after 15 PA (batting) or 9 outs / 3 IP (pitching); otherwise career data is used.
+- Experienced-player multiplier ranks are distributed symmetrically around 2.25x (1.00x best through 3.50x worst) and normalized toward a 2.25x slate mean while keeping rookies at 3.00x.
+- All multipliers are clamped between 1.00x and 6.00x and saved with the submitted lineup so later multiplier changes do not alter old entries.
+- Adds protected `/admin/fantasy/` for eligibility, manual multiplier overrides, refresh, lock, and finalize controls.
+- Daily leaderboards and lineup breakdowns remain available by date.
+- Adds `migrations/0020_daily_fantasy.sql`.

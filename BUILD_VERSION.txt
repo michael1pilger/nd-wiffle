@@ -1,2 +1,2 @@
-ND Wiffle build v64
-Pitching corrections, Zyns roster additions, and undefined ERA/WHIP handling for zero-out pitchers.
+ND Wiffle build v65
+D1-backed Daily Fantasy Drafts with multiplier slates, editable public lineups, and daily leaderboards.

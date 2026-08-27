@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=64">
+<title>Admin | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=65">
 <style>
 .admin-home{padding:38px 0 60px}
 .admin-home-head{display:flex;justify-content:space-between;gap:22px;align-items:end;margin-bottom:22px}
@@ -17,11 +17,11 @@
 .admin-health{display:inline-flex;align-items:center;gap:7px}.health-dot{width:8px;height:8px;border-radius:50%;background:#657080}.health-dot.ok{background:#62c98c}.health-dot.err{background:#e56d78}
 @media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-home-head{display:block}.admin-home-status{text-align:left;margin-top:12px}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a><a href="/admin/series-archive/">Series Archive</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/admin/">Admin Home</a><a href="/admin/series/">Series Entry</a><a href="/admin/schedule/">Schedule Series</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a><a href="/admin/series-archive/">Series Archive</a></div></div></div>
 
 <main class="admin-home"><div class="container">
 <div class="admin-home-head">
- <div><div class="eyebrow">Commissioner Tools · BUILD v64</div><h1>Admin Dashboard</h1><p class="muted">Manage the 2026 season from one place.</p></div>
+ <div><div class="eyebrow">Commissioner Tools · BUILD v65</div><h1>Admin Dashboard</h1><p class="muted">Manage the 2026 season from one place.</p></div>
  <div class="admin-home-status"><span class="admin-health"><span id="healthDot" class="health-dot"></span><span id="healthText">Checking database…</span></span></div>
 </div>
 
@@ -36,6 +36,12 @@
   <div class="admin-card-tag">Schedule Operations</div><h2>Schedule a Series</h2>
   <p>Choose two teams and set the date, time, location, or notes directly in D1. The public Schedule page updates without a GitHub push.</p>
   <div class="admin-card-link">Open Series Scheduler →</div>
+ </a>
+
+ <a class="admin-card" href="/admin/fantasy/">
+  <div class="admin-card-tag">Daily Game</div><h2>Fantasy Slates</h2>
+  <p>Manage daily fantasy eligibility, review automatic multipliers, override a multiplier when needed, and lock or finalize a slate.</p>
+  <div class="admin-card-link">Manage Fantasy →</div>
  </a>
 
  <a class="admin-card" href="/admin/rosters/">
