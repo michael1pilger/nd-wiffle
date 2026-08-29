@@ -1,2 +1,2 @@
-ND Wiffle build v66
-Fantasy UX refresh, Anthony Bellone moved to Zyns, enlarged standings W/L.
+ND Wiffle build v67
+Recent Series capped at 3; standings GB measured from 7th-place playoff cutoff.

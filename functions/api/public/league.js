@@ -138,11 +138,11 @@ export async function onRequestGet(context){
     }).sort((a,b)=>
       b.PCT-a.PCT || b.W-a.W || b.DIFF-a.DIFF || b.RS-a.RS || a.team.localeCompare(b.team)
     );
-    const leader=rows[0]||{W:0,L:0};
+    const playoffCutoff=rows[6]||rows[0]||{W:0,L:0};
     rows=rows.map((r,i)=>({
       ...r,
       rank:i+1,
-      GB:i===0?0:((leader.W-r.W)+(r.L-leader.L))/2
+      GB:i===6?0:((playoffCutoff.W-r.W)+(r.L-playoffCutoff.L))/2
     }));
 
     const decisions=new Map((decisionsRes.results||[]).map(r=>[r.player_id,r]));
