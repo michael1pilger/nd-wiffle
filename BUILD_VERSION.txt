@@ -1,2 +1,2 @@
-ND Wiffle build v67
-Recent Series capped at 3; standings GB measured from 7th-place playoff cutoff.
+ND Wiffle League Website v68
+Changes: GB +/- playoff-cutoff display; total-points leaderboard order; cumulative pitcher records in game recaps; series winners derived from game scores.

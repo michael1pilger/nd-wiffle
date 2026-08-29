@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=67">
+<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=68">
 <style>
 .leaders-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin:0 0 18px}
 .leaders-controls label{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;margin-bottom:4px}
@@ -45,7 +45,7 @@
 <div class="full-table-card"><div class="full-table-head"><h2>2026 Leaderboard</h2><span id="tableStatus">All published player totals</span></div><div class="tablewrap"><table class="leaders-table"><thead id="fullHead"></thead><tbody id="fullBody"></tbody></table></div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 league leaders.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=67","midnight":"/assets/logos/midnight.png?v=67","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=67","ball-busters":"/assets/logos/ball-busters.png?v=67","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=67","twin-titans":"/assets/logos/twin-titans.png?v=67","goofy-goobers":"/assets/logos/goofy-goobers.png?v=67","silverbacks":"/assets/logos/silverbacks.png?v=67","underdawgs":"/assets/logos/underdawgs.png?v=67","zyns":"/assets/logos/zyns.png?v=67"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=68","midnight":"/assets/logos/midnight.png?v=68","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=68","ball-busters":"/assets/logos/ball-busters.png?v=68","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=68","twin-titans":"/assets/logos/twin-titans.png?v=68","goofy-goobers":"/assets/logos/goofy-goobers.png?v=68","silverbacks":"/assets/logos/silverbacks.png?v=68","underdawgs":"/assets/logos/underdawgs.png?v=68","zyns":"/assets/logos/zyns.png?v=68"};
 const BAT_METRICS=[
  {id:"BA",label:"AVG",desc:"Batting Average",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
  {id:"OPS",label:"OPS",desc:"OPS",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
@@ -80,16 +80,16 @@ function leaderRows(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_M
 function renderTabs(id,metrics,current,type){document.getElementById(id).innerHTML=metrics.map(m=>`<button class="metric-tab ${m.id===current?"active":""}" type="button" data-metric="${m.id}">${m.label}</button>`).join("");document.querySelectorAll(`#${id} [data-metric]`).forEach(btn=>btn.addEventListener("click",()=>{if(type==="bat")batMetric=btn.dataset.metric;else pitMetric=btn.dataset.metric;render()}))}
 function renderTable(){
  const bat=sorted(playerPool(DATA.batting,"bat"),"Fantasy","bat"),pit=sorted(playerPool(DATA.pitching,"pit"),"Fantasy","pit");
- document.getElementById("fullHead").innerHTML='<tr><th>Player</th><th>Team</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>AVG</th><th>OPS</th><th>Bat Pts</th><th>IP</th><th>W</th><th>SV</th><th>K</th><th>ERA</th><th>WHIP</th><th>Pit Pts</th></tr>';
+ document.getElementById("fullHead").innerHTML='<tr><th>Player</th><th>Team</th><th>Total Pts</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>AVG</th><th>OPS</th><th>Bat Pts</th><th>IP</th><th>W</th><th>SV</th><th>K</th><th>ERA</th><th>WHIP</th><th>Pit Pts</th></tr>';
  const ids=new Set([...bat.map(x=>x.Player_ID),...pit.map(x=>x.Player_ID)]),bm=new Map(DATA.batting.map(x=>[x.Player_ID,x])),pm=new Map(DATA.pitching.map(x=>[x.Player_ID,x])),tm=teamMap();
  const rows=[...ids].map(id=>({id,b:bm.get(id),p:pm.get(id),team:tm.get(id),score:(bm.get(id)?.Fantasy||0)+(pm.get(id)?.Fantasy||0)})).sort((a,b)=>b.score-a.score||(a.b?.Name||a.p?.Name||"").localeCompare(b.b?.Name||b.p?.Name||""));
- document.getElementById("fullBody").innerHTML=rows.map(x=>{const b=x.b||{},p=x.p||{},name=b.Name||p.Name;return `<tr><td>${esc(name)}</td><td><div class="team-cell">${x.team&&LOGOS[x.team.id]?`<img src="${LOGOS[x.team.id]}" alt="">`:""}<span>${esc(x.team?.name||"")}</span></div></td><td>${b.PAs??"—"}</td><td>${b.Hits??"—"}</td><td>${b.HRs??"—"}</td><td>${b.RBI??"—"}</td><td>${b.BA?Number(b.BA).toFixed(3).replace(/^0/,""):"—"}</td><td>${b.OPS?Number(b.OPS).toFixed(3).replace(/^0/,""):"—"}</td><td>${b.Fantasy??"—"}</td><td>${p.IP??"—"}</td><td>${p.W??"—"}</td><td>${p.S??"—"}</td><td>${p.Ks??"—"}</td><td>${p.ERA??"—"}</td><td>${p.WHIP??"—"}</td><td>${p.Fantasy??"—"}</td></tr>`}).join("");
+ document.getElementById("fullBody").innerHTML=rows.map(x=>{const b=x.b||{},p=x.p||{},name=b.Name||p.Name;return `<tr><td>${esc(name)}</td><td><div class="team-cell">${x.team&&LOGOS[x.team.id]?`<img src="${LOGOS[x.team.id]}" alt="">`:""}<span>${esc(x.team?.name||"")}</span></div></td><td><strong>${x.score}</strong></td><td>${b.PAs??"—"}</td><td>${b.Hits??"—"}</td><td>${b.HRs??"—"}</td><td>${b.RBI??"—"}</td><td>${b.BA?Number(b.BA).toFixed(3).replace(/^0/,""):"—"}</td><td>${b.OPS?Number(b.OPS).toFixed(3).replace(/^0/,""):"—"}</td><td>${b.Fantasy??"—"}</td><td>${p.IP??"—"}</td><td>${p.W??"—"}</td><td>${p.S??"—"}</td><td>${p.Ks??"—"}</td><td>${p.ERA??"—"}</td><td>${p.WHIP??"—"}</td><td>${p.Fantasy??"—"}</td></tr>`}).join("");
 }
 function render(){
  renderTabs("batTabs",BAT_METRICS,batMetric,"bat");renderTabs("pitTabs",PIT_METRICS,pitMetric,"pit");
  document.getElementById("batLeaders").innerHTML=leaderRows(DATA.batting,batMetric,"bat");document.getElementById("pitLeaders").innerHTML=leaderRows(DATA.pitching,pitMetric,"pit");
  document.getElementById("batCount").textContent=`${playerPool(DATA.batting,"bat").length} hitters`;document.getElementById("pitCount").textContent=`${playerPool(DATA.pitching,"pit").length} pitchers`;
- document.getElementById("tableStatus").textContent=qualified?"Qualified players only":"All published player totals";renderTable();
+ document.getElementById("tableStatus").textContent=qualified?"Qualified players only · sorted by total points":"All published player totals · sorted by batting + pitching points";renderTable();
 }
 document.getElementById("allBtn").addEventListener("click",()=>{qualified=false;document.getElementById("allBtn").classList.add("active");document.getElementById("qualBtn").classList.remove("active");render()});
 document.getElementById("qualBtn").addEventListener("click",()=>{qualified=true;document.getElementById("qualBtn").classList.add("active");document.getElementById("allBtn").classList.remove("active");render()});

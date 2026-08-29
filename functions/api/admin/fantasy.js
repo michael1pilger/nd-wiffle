@@ -5,7 +5,7 @@ export async function onRequestGet(context){
  const DB=context.env.DB;if(!DB)return json({ok:false,error:"D1 binding DB is missing."},500);
  const date=clean(new URL(context.request.url).searchParams.get("date"));
  if(!validDate(date))return json({ok:false,error:"A YYYY-MM-DD date is required."},400);
- try{return json({ok:true,build:"v66",date,...await buildSlate(DB,date),leaderboard:await scoreEntries(DB,date)})}
+ try{return json({ok:true,build:"v68",date,...await buildSlate(DB,date),leaderboard:await scoreEntries(DB,date)})}
  catch(err){return json({ok:false,error:"Fantasy admin query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

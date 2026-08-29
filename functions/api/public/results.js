@@ -39,7 +39,8 @@ export async function onRequestGet(context){
       `).bind(season),
       DB.prepare(`
         SELECT
-          g.series_id,g.game_number,g.away_score,g.home_score,
+          g.series_id,s.series_date,g.game_number,g.away_score,g.home_score,
+          g.winning_pitcher_id,g.losing_pitcher_id,g.save_pitcher_id,
           wp.name AS winning_pitcher,
           lp.name AS losing_pitcher,
           sv.name AS save_pitcher
@@ -75,6 +76,27 @@ export async function onRequestGet(context){
         ORDER BY s.series_date DESC,ps.series_id,p.name
       `).bind(season)
     ]);
+
+
+    // Annotate each game with each decision pitcher's cumulative season W-L record immediately after that game.
+    const pitcherRecords=new Map();
+    const recordFor=id=>{
+      if(!id)return {W:0,L:0};
+      if(!pitcherRecords.has(id))pitcherRecords.set(id,{W:0,L:0});
+      return pitcherRecords.get(id);
+    };
+    const chronological=[...(gamesRes.results||[])].sort((a,b)=>
+      String(a.series_date||"").localeCompare(String(b.series_date||"")) ||
+      String(a.series_id).localeCompare(String(b.series_id)) ||
+      n(a.game_number)-n(b.game_number)
+    );
+    for(const g of chronological){
+      const wr=recordFor(g.winning_pitcher_id);wr.W++;
+      const lr=recordFor(g.losing_pitcher_id);lr.L++;
+      g.winning_pitcher_record=`${wr.W}-${wr.L}`;
+      g.losing_pitcher_record=`${lr.W}-${lr.L}`;
+      if(g.save_pitcher_id){const sr=recordFor(g.save_pitcher_id);g.save_pitcher_record=`${sr.W}-${sr.L}`;}
+    }
 
     const gamesBySeries=new Map();
     for(const g of gamesRes.results||[]){
@@ -136,7 +158,7 @@ export async function onRequestGet(context){
       };
     });
 
-    return json({ok:true,build:"v66",season,series_count:series.length,series});
+    return json({ok:true,build:"v68",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

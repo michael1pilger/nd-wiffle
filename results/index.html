@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=67">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=68">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -44,9 +44,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=67","midnight":"/assets/logos/midnight.png?v=67","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=67",
- "ball-busters":"/assets/logos/ball-busters.png?v=67","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=67","twin-titans":"/assets/logos/twin-titans.png?v=67",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=67","silverbacks":"/assets/logos/silverbacks.png?v=67","underdawgs":"/assets/logos/underdawgs.png?v=67","zyns":"/assets/logos/zyns.png?v=67"
+ "storm":"/assets/logos/storm.png?v=68","midnight":"/assets/logos/midnight.png?v=68","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=68",
+ "ball-busters":"/assets/logos/ball-busters.png?v=68","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=68","twin-titans":"/assets/logos/twin-titans.png?v=68",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=68","silverbacks":"/assets/logos/silverbacks.png?v=68","underdawgs":"/assets/logos/underdawgs.png?v=68","zyns":"/assets/logos/zyns.png?v=68"
 };
 const RESULT_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
@@ -58,6 +58,14 @@ function topBatter(rows){
 }
 function topPitcher(rows){
  return [...rows].sort((a,b)=>(6*Number(b.W)+3*Number(b.S)+Number(b.K)-2*Number(b.ER)-.5*Number(b.BB))-(6*Number(a.W)+3*Number(a.S)+Number(a.K)-2*Number(a.ER)-.5*Number(a.BB))||Number(b.K)-Number(a.K)||Number(a.ER)-Number(b.ER))[0]||null
+}
+function seriesWins(games){
+  let away=0,home=0;
+  for(const g of games||[]){
+    const a=Number(g.away_score||0),h=Number(g.home_score||0);
+    if(a>h)away++;else if(h>a)home++;
+  }
+  return {away,home};
 }
 function teamHeader(id,name){return `<div class="result-team-heading">${logo(id,name)}<span>${esc(name)}</span></div>`}
 function battingTable(rows){
@@ -73,11 +81,12 @@ function render(series){
  if(!series.length){list.innerHTML='<div class="result-empty"><strong>No 2026 results yet.</strong><br>Published series will appear here automatically.</div>';return}
  const requested=new URLSearchParams(location.search).get("series");
  list.innerHTML=series.map((s,idx)=>{
-   const awayWon=s.away_wins>s.home_wins,homeWon=s.home_wins>s.away_wins;
+   const sw=seriesWins(s.games);
+   const awayWon=sw.away>sw.home,homeWon=sw.home>sw.away;
    const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
-   const result=awayWon||homeWon?`${winner} wins ${Math.max(s.away_wins,s.home_wins)}–${Math.min(s.away_wins,s.home_wins)}`:"Series tied";
+   const result=awayWon||homeWon?`${winner} wins ${Math.max(sw.away,sw.home)}–${Math.min(sw.away,sw.home)}`:"Series tied";
    const bat=topBatter(publicRows(s.batting)),pit=topPitcher(publicRows(s.pitching));
-   const games=(s.games||[]).map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(s.away_team)} ${g.away_score} · ${esc(s.home_team)} ${g.home_score}</div><div class="decision">WP: ${esc(g.winning_pitcher)} · LP: ${esc(g.losing_pitcher)}${g.save_pitcher?` · SV: ${esc(g.save_pitcher)}`:""}</div></div>`).join("");
+   const games=(s.games||[]).map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(s.away_team)} ${g.away_score} · ${esc(s.home_team)} ${g.home_score}</div><div class="decision">W - ${esc(g.winning_pitcher)}${g.winning_pitcher_record?` (${esc(g.winning_pitcher_record)})`:""} · L - ${esc(g.losing_pitcher)}${g.losing_pitcher_record?` (${esc(g.losing_pitcher_record)})`:""}${g.save_pitcher?` · SV - ${esc(g.save_pitcher)}${g.save_pitcher_record?` (${esc(g.save_pitcher_record)})`:""}`:""}</div></div>`).join("");
    const teamBoxes=[["away",s.away_team_id,s.away_team],["home",s.home_team_id,s.home_team]].map(([side,id,name])=>{
      const batRows=publicRows(s.batting).filter(r=>r.side===side),pitRows=publicRows(s.pitching).filter(r=>r.side===side);
      return `${teamHeader(id,name)}<div class="boxscore-title">Batting</div>${battingTable(batRows)}<div class="boxscore-title">Pitching</div>${pitchingTable(pitRows)}`;

@@ -37,7 +37,7 @@ export async function onRequestGet(context){
       `).bind(season)
     ]);
     return json({
-      ok:true,build:"v66",season,
+      ok:true,build:"v68",season,
       actor_email:context.data.actorEmail||null,
       players:playersRes.results||[],
       teams:(teamsRes.results||[]).filter(t=>season===2026?Number(t.active_2026)===1:true),
