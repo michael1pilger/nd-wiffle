@@ -174,7 +174,7 @@ export async function onRequestGet(context){
       };
     });
 
-    return json({ok:true,build:"v69",season,series_count:series.length,series});
+    return json({ok:true,build:"v70",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

@@ -696,3 +696,14 @@ tbody .stats-rank-col{
   .grid .team-clue-head{gap:7px}
   .grid .team-clue-head img{width:32px;height:32px;flex-basis:32px}
 }
+
+/* v70: sortable tables + reliable floating headers */
+thead th{position:static!important;top:auto!important;z-index:auto!important}
+.auto-sort-head{cursor:pointer!important;user-select:none;position:relative;padding-right:24px!important}
+.auto-sort-head:hover{color:#fff}
+.auto-sort-head::after{content:'↕';position:absolute;right:8px;opacity:.35;color:var(--gold);font-size:10px}
+.auto-sort-head.sort-asc::after{content:'▲';opacity:1}
+.auto-sort-head.sort-desc::after{content:'▼';opacity:1}
+.floating-table-head{position:fixed!important;z-index:45!important;margin:0!important;display:none;pointer-events:auto;border-collapse:collapse!important;background:#101d31!important;box-shadow:0 8px 20px rgba(0,0,0,.28);table-layout:fixed!important;min-width:0!important}
+.floating-table-head thead th{background:#101d31!important;border-bottom:1px solid var(--border)!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.floating-table-head tbody{display:none!important}
