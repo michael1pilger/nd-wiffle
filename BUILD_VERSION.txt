@@ -1,2 +1,1 @@
-ND Wiffle League Website v68
-Changes: GB +/- playoff-cutoff display; total-points leaderboard order; cumulative pitcher records in game recaps; series winners derived from game scores.
+v69

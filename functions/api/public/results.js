@@ -98,6 +98,22 @@ export async function onRequestGet(context){
       if(g.save_pitcher_id){const sr=recordFor(g.save_pitcher_id);g.save_pitcher_record=`${sr.W}-${sr.L}`;}
     }
 
+    // Normalize legacy uploads where away/home score columns were accidentally reversed.
+    // Pitching-series rows preserve each pitcher's actual side, so the winning pitcher is
+    // a reliable cross-check for which side won the game.
+    const pitcherSide=new Map();
+    for(const p of pitRes.results||[]){
+      pitcherSide.set(`${p.series_id}::${p.player_id}`,p.side);
+    }
+    for(const g of gamesRes.results||[]){
+      const winnerSide=pitcherSide.get(`${g.series_id}::${g.winning_pitcher_id}`);
+      const scoreSide=n(g.away_score)>n(g.home_score)?"away":n(g.home_score)>n(g.away_score)?"home":null;
+      if(winnerSide && scoreSide && winnerSide!==scoreSide){
+        const tmp=g.away_score;g.away_score=g.home_score;g.home_score=tmp;
+        g.score_orientation_corrected=true;
+      }
+    }
+
     const gamesBySeries=new Map();
     for(const g of gamesRes.results||[]){
       if(!gamesBySeries.has(g.series_id))gamesBySeries.set(g.series_id,[]);
@@ -158,7 +174,7 @@ export async function onRequestGet(context){
       };
     });
 
-    return json({ok:true,build:"v68",season,series_count:series.length,series});
+    return json({ok:true,build:"v69",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

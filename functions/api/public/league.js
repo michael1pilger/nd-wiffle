@@ -43,7 +43,10 @@ export async function onRequestGet(context){
           s.away_team_id,s.home_team_id,
           at.display_name AS away_team,
           ht.display_name AS home_team,
-          g.game_number,g.away_score,g.home_score
+          g.game_number,g.away_score,g.home_score,g.winning_pitcher_id,
+          (SELECT ps.side FROM pitching_series_stats ps
+             WHERE ps.series_id=g.series_id AND ps.player_id=g.winning_pitcher_id
+             LIMIT 1) AS winning_pitcher_side
         FROM games g
         JOIN series s ON s.series_id=g.series_id
         JOIN teams at ON at.team_id=s.away_team_id
@@ -121,6 +124,14 @@ export async function onRequestGet(context){
 
     const teams=teamsRes.results||[];
     const games=gamesRes.results||[];
+    // Correct legacy games whose away/home score columns conflict with the winning pitcher's side.
+    for(const g of games){
+      const scoreSide=n(g.away_score)>n(g.home_score)?"away":n(g.home_score)>n(g.away_score)?"home":null;
+      if(g.winning_pitcher_side && scoreSide && g.winning_pitcher_side!==scoreSide){
+        const tmp=g.away_score;g.away_score=g.home_score;g.home_score=tmp;
+        g.score_orientation_corrected=true;
+      }
+    }
     const standings=new Map(teams.map(t=>[t.team_id,{
       team_id:t.team_id,team:t.display_name,W:0,L:0,RS:0,RA:0
     }]));
@@ -177,7 +188,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v68",season,
+      ok:true,build:"v69",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

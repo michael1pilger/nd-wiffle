@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=68"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=69"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -28,6 +28,9 @@
    <option value="2022">2022</option>
    <option value="2021">2021</option>
   </select>
+  <select id="teamSel" onchange="render()" aria-label="Filter by team">
+   <option value="all">All Teams</option>
+  </select>
   <label class="qualifier-control">
     <input type="checkbox" id="showRetired" checked onchange="render()">
     <span>Show retired</span>
@@ -45,7 +48,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=68"></script>
+<script src="/assets/data.js?v=69"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
@@ -81,6 +84,10 @@ const TEAM_NAME_TO_ID={
  "Goofy Goobers":"goofy-goobers","Goobers":"goofy-goobers","Silverbacks":"silverbacks","Beavers":"silverbacks",
  "Underdawgs":"underdawgs","Zyns":"zyns","Seven Deadly Zyns":"zyns"
 };
+const teamSel=document.getElementById("teamSel");
+Object.entries(TEAM_BY_ID).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,t])=>{
+ const o=document.createElement("option");o.value=id;o.textContent=t.name;teamSel.appendChild(o);
+});
 const CURRENT_ROSTER_TEAM_BY_NAME={};
 [
  ["storm",["Michael Pilger","Will Stevens","Gerard Sharkey","Landon Edwards","Xavier Hirsch","Jimmy Suter","Collin Barker","Vasco Esquivel","Anthony Bellone","Freddy Rudolph","Johnny Carey","John Savage","Liam Lyon"]],
@@ -110,7 +117,7 @@ function teamCell(r){
  const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
  const label=name||ui?.name||id;
  const rgb=ui?.rgb||"90,98,110";
- const logo=id?`/assets/logos/${id}.png?v=68`:"";
+ const logo=id?`/assets/logos/${id}.png?v=69`:"";
  return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
 }
 function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
@@ -251,6 +258,8 @@ function sortBy(k){
 function render(){
  const qv=(q.value||"").toLowerCase();
  let rows=sourceRows().filter(r=>(r.Name||"").toLowerCase().includes(qv));
+ const selectedTeam=teamSel.value;
+ if(selectedTeam!=="all")rows=rows.filter(r=>teamInfo(r).id===selectedTeam);
  if(!showRetired.checked)rows=rows.filter(r=>!isRetiredRow(r));
  const before=rows.length;
  if(qualOnly.checked)rows=rows.filter(qualifies);

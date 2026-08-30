@@ -466,3 +466,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Adds live `0/3 B` and `0/2 P` selection trackers.
 - Migration 0021 moves Anthony Bellone to Zyns for 2026.
 - Standings W/L columns are enlarged to be the largest numeric text on the page.
+
+## v69
+- Adds a team filter to the Stats page.
+- Makes table headers sticky across the site.
+- GB display is rank-aware relative to 7th place: teams above 7th show `+`, teams below 7th show games behind without `+`.
+- Public results and standings normalize legacy games when the stored score-side winner conflicts with the winning pitcher's recorded team side, fixing reversed 2-1 series and the standings they affected.
