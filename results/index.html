@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=70">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=71">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -44,9 +44,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=70","midnight":"/assets/logos/midnight.png?v=70","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=70",
- "ball-busters":"/assets/logos/ball-busters.png?v=70","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=70","twin-titans":"/assets/logos/twin-titans.png?v=70",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=70","silverbacks":"/assets/logos/silverbacks.png?v=70","underdawgs":"/assets/logos/underdawgs.png?v=70","zyns":"/assets/logos/zyns.png?v=70"
+ "storm":"/assets/logos/storm.png?v=71","midnight":"/assets/logos/midnight.png?v=71","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=71",
+ "ball-busters":"/assets/logos/ball-busters.png?v=71","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=71","twin-titans":"/assets/logos/twin-titans.png?v=71",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=71","silverbacks":"/assets/logos/silverbacks.png?v=71","underdawgs":"/assets/logos/underdawgs.png?v=71","zyns":"/assets/logos/zyns.png?v=71"
 };
 const RESULT_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
@@ -119,4 +119,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
  .then(async r=>({ok:r.ok,body:await r.json()}))
  .then(({ok,body})=>{if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");render(body.series||[])})
  .catch(err=>{console.error(err);document.getElementById("resultsList").innerHTML='<div class="result-empty">Results are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=70"></script></body></html>
+</script><script src="/assets/table-tools.js?v=71"></script></body></html>
