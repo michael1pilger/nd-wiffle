@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=71">
+<title>2026 League Leaders | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=72">
 <style>
 .leaders-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin:0 0 18px}
 .leaders-controls label{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase;margin-bottom:4px}
@@ -45,7 +45,7 @@
 <div class="full-table-card"><div class="full-table-head"><h2>2026 Leaderboard</h2><span id="tableStatus">All published player totals</span></div><div class="tablewrap"><table class="leaders-table"><thead id="fullHead"></thead><tbody id="fullBody"></tbody></table></div></div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 league leaders.</div></footer>
 <script>
-const LOGOS={"storm":"/assets/logos/storm.png?v=71","midnight":"/assets/logos/midnight.png?v=71","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=71","ball-busters":"/assets/logos/ball-busters.png?v=71","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=71","twin-titans":"/assets/logos/twin-titans.png?v=71","goofy-goobers":"/assets/logos/goofy-goobers.png?v=71","silverbacks":"/assets/logos/silverbacks.png?v=71","underdawgs":"/assets/logos/underdawgs.png?v=71","zyns":"/assets/logos/zyns.png?v=71"};
+const LOGOS={"storm":"/assets/logos/storm.png?v=72","midnight":"/assets/logos/midnight.png?v=72","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=72","ball-busters":"/assets/logos/ball-busters.png?v=72","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=72","twin-titans":"/assets/logos/twin-titans.png?v=72","goofy-goobers":"/assets/logos/goofy-goobers.png?v=72","silverbacks":"/assets/logos/silverbacks.png?v=72","underdawgs":"/assets/logos/underdawgs.png?v=72","zyns":"/assets/logos/zyns.png?v=72"};
 const BAT_METRICS=[
  {id:"BA",label:"AVG",desc:"Batting Average",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
  {id:"OPS",label:"OPS",desc:"OPS",higher:true,fmt:v=>Number(v).toFixed(3).replace(/^0/,"")},
@@ -95,4 +95,4 @@ document.getElementById("allBtn").addEventListener("click",()=>{qualified=false;
 document.getElementById("qualBtn").addEventListener("click",()=>{qualified=true;document.getElementById("qualBtn").classList.add("active");document.getElementById("allBtn").classList.remove("active");render()});
 document.getElementById("teamFilter").addEventListener("change",render);
 fetch("/api/public/league?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})).then(({ok,j})=>{if(!ok||!j.ok)throw new Error(j.error||"Unable to load leaders");DATA=j;DATA.batting=(DATA.batting||[]).filter(r=>String(r.Name||"").trim().toLowerCase()!=="max partovi");DATA.pitching=(DATA.pitching||[]).filter(r=>String(r.Name||"").trim().toLowerCase()!=="max partovi");DATA.participants=(DATA.participants||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi");enrich();const teams=[...new Map((j.participants||[]).map(x=>[x.team_id,x.team_name])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));document.getElementById("teamFilter").innerHTML='<option value="">All Teams</option>'+teams.map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join("");render()}).catch(err=>{console.error(err);document.getElementById("batLeaders").innerHTML='<div class="leaders-empty">Leaders are temporarily unavailable.</div>';document.getElementById("pitLeaders").innerHTML='<div class="leaders-empty">Leaders are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=71"></script></body></html>
+</script><script src="/assets/table-tools.js?v=72"></script></body></html>

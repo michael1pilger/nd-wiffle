@@ -10,7 +10,7 @@ export async function onRequestGet(context){
  if(!(await schemaReady(DB)))return json({ok:false,code:"SCHEDULE_SCHEMA_MISSING",error:"Series scheduler is not installed. Run migrations/0017_scheduled_series.sql."},503);
  const season=Number(new URL(context.request.url).searchParams.get("season")||2026);
  try{
-  const [teams,scheduled]=await DB.batch([
+  const [teams,scheduled,completed]=await DB.batch([
    DB.prepare("SELECT team_id,display_name FROM teams WHERE active_2026=1 ORDER BY display_name"),
    DB.prepare(`
     SELECT ss.*,ta.display_name AS team_a,tb.display_name AS team_b
@@ -19,9 +19,13 @@ export async function onRequestGet(context){
     JOIN teams tb ON tb.team_id=ss.team_b_id
     WHERE ss.season=?
     ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
+   `).bind(season),
+   DB.prepare(`
+    SELECT series_id,series_date,away_team_id,home_team_id
+    FROM series WHERE season=? ORDER BY series_date,series_id
    `).bind(season)
   ]);
-  return json({ok:true,build:"v71",season,teams:teams.results||[],scheduled:scheduled.results||[],actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v72",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

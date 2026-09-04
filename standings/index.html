@@ -1,9 +1,10 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Standings | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=71">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Standings | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=72">
 <style>
 .standings-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .standings-tab{border:1px solid var(--border);background:#0b1525;color:var(--muted);border-radius:999px;padding:9px 14px;font-size:11px;font-weight:900;cursor:pointer}
 .standings-tab.active{background:var(--gold);border-color:var(--gold);color:#111}
-.power-panel{display:none}.power-panel.active{display:block}.standings-panel.hidden{display:none}
+.power-panel,.playoff-panel{display:none}.power-panel.active,.playoff-panel.active{display:block}.standings-panel.hidden{display:none}
+.playoff-pct{font-size:20px;font-weight:950}.playoff-bar{width:110px;height:7px;background:#17243a;border-radius:999px;overflow:hidden;margin-left:auto}.playoff-fill{height:100%;background:var(--gold);border-radius:999px}.playoff-note2{color:var(--muted);font-size:11px;line-height:1.6;margin-top:14px}
 .power-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
 .power-summary-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:13px 15px}
 .power-summary-card small{display:block;color:var(--muted);text-transform:uppercase;font-size:9px;font-weight:900;letter-spacing:.08em}
@@ -19,37 +20,37 @@
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Standings</h1>
-<p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button></div></div>
+<p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button><button class="standings-tab" type="button" data-standings-tab="playoff">Playoff %</button></div></div>
 <section class="standings-shell standings-panel" id="standingsPanel"><div class="container"><div class="tablewrap"><table class="standings-table">
 <thead><tr><th class="standings-rank">RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>RS</th><th>RA</th><th>DIFF</th></tr></thead>
-<tbody id="standingsBody"><tr style="--team:90,98,110"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/midnight.png?v=71" alt="Midnight"><span>Midnight</span></div></td>
+<tbody id="standingsBody"><tr style="--team:90,98,110"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/midnight.png?v=72" alt="Midnight"><span>Midnight</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:96,0,160"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/storm.png?v=71" alt="Storm"><span>Storm</span></div></td>
+</tr><tr style="--team:96,0,160"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/storm.png?v=72" alt="Storm"><span>Storm</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:24,49,83"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/stiff-wifflers.png?v=71" alt="Stiff Wifflers"><span>Stiff Wifflers</span></div></td>
+</tr><tr style="--team:24,49,83"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/stiff-wifflers.png?v=72" alt="Stiff Wifflers"><span>Stiff Wifflers</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:144,32,32"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/ball-busters.png?v=71" alt="Ball Busters"><span>Ball Busters</span></div></td>
+</tr><tr style="--team:144,32,32"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/ball-busters.png?v=72" alt="Ball Busters"><span>Ball Busters</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:96,0,24"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/dirty-dawgs.png?v=71" alt="Dirty Dawgs"><span>Dirty Dawgs</span></div></td>
+</tr><tr style="--team:96,0,24"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/dirty-dawgs.png?v=72" alt="Dirty Dawgs"><span>Dirty Dawgs</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:64,80,112"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/twin-titans.png?v=71" alt="Twin Titans"><span>Twin Titans</span></div></td>
+</tr><tr style="--team:64,80,112"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/twin-titans.png?v=72" alt="Twin Titans"><span>Twin Titans</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:208,80,32"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/goofy-goobers.png?v=71" alt="Goofy Goobers"><span>Goofy Goobers</span></div></td>
+</tr><tr style="--team:208,80,32"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/goofy-goobers.png?v=72" alt="Goofy Goobers"><span>Goofy Goobers</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr class="playoff-line" style="--team:192,160,80"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/silverbacks.png?v=71" alt="Silverbacks"><span>Silverbacks</span></div></td>
+</tr><tr class="playoff-line" style="--team:192,160,80"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/silverbacks.png?v=72" alt="Silverbacks"><span>Silverbacks</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:64,48,96"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/underdawgs.png?v=71" alt="Underdawgs"><span>Underdawgs</span></div></td>
+</tr><tr style="--team:64,48,96"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/underdawgs.png?v=72" alt="Underdawgs"><span>Underdawgs</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr><tr style="--team:144,224,224"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/zyns.png?v=71" alt="Zyns"><span>Zyns</span></div></td>
+</tr><tr style="--team:144,224,224"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/zyns.png?v=72" alt="Zyns"><span>Zyns</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 </tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order.</div></div></section>
@@ -60,21 +61,30 @@
     <div class="power-summary-card"><small>Scale</small><strong>Relative 25–95 rating</strong></div>
   </div>
   <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Rating</th><th>W-L</th><th>SOS</th><th>RD/G</th><th>Player Form</th></tr></thead><tbody id="powerBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading power rankings…</td></tr></tbody></table></div>
-  <div class="power-method"><strong>Power rating methodology:</strong> 45% current win percentage, 25% strength of schedule based on opponents faced, 15% run differential per game, and 15% player form. Player form compares each player’s batting + pitching points in the team’s two most recent series with that player’s own 2026 per-series baseline, using only series in which that player appeared. All four inputs are standardized across the league before being combined, so the rating is a relative measure of current 2026 performance rather than a playoff seeding formula.</div>
+  <div class="power-method"><strong>Power rating methodology:</strong> 55% current win percentage, 20% strength of schedule based on opponents faced, 12.5% run differential per game, and 12.5% player form. Player form compares each player’s batting + pitching points in the team’s two most recent series with that player’s own 2026 per-series baseline, using only series in which that player appeared. All four inputs are standardized across the league before being combined, so the rating is a relative measure of current 2026 performance rather than a playoff seeding formula.</div>
+</div></section>
+<section class="standings-shell playoff-panel" id="playoffPanel"><div class="container">
+  <div class="power-summary">
+    <div class="power-summary-card"><small>Playoff field</small><strong>7 teams</strong></div>
+    <div class="power-summary-card"><small>Model</small><strong>Remaining-schedule simulation</strong></div>
+    <div class="power-summary-card"><small>Tiebreaker</small><strong>Point differential first</strong></div>
+  </div>
+  <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Playoff %</th><th>W-L</th><th>Games Left</th><th>DIFF</th><th>Future SOS</th></tr></thead><tbody id="playoffBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading playoff odds…</td></tr></tbody></table></div>
+  <div class="playoff-note2"><strong>Playoff probability model:</strong> 12,000 simulations of the remaining 24-game regular-season schedule. The model uses current record, point differential, opponent-adjusted power, known future opponents, estimated opponents for unscheduled series, and games remaining. Seven teams qualify, so displayed probabilities are normalized to total exactly 700%. A team is shown at 100% only when mathematically clinched and at 0% only when mathematically eliminated.</div>
 </div></section>
 </main>
 <script>
 const STANDING_TEAM_UI={
- "midnight":{color:"90,98,110",logo:"/assets/logos/midnight.png?v=71"},
- "storm":{color:"96,0,160",logo:"/assets/logos/storm.png?v=71"},
- "stiff-wifflers":{color:"24,49,83",logo:"/assets/logos/stiff-wifflers.png?v=71"},
- "ball-busters":{color:"144,32,32",logo:"/assets/logos/ball-busters.png?v=71"},
- "dirty-dawgs":{color:"96,0,24",logo:"/assets/logos/dirty-dawgs.png?v=71"},
- "twin-titans":{color:"64,80,112",logo:"/assets/logos/twin-titans.png?v=71"},
- "goofy-goobers":{color:"208,80,32",logo:"/assets/logos/goofy-goobers.png?v=71"},
- "silverbacks":{color:"192,160,80",logo:"/assets/logos/silverbacks.png?v=71"},
- "underdawgs":{color:"64,48,96",logo:"/assets/logos/underdawgs.png?v=71"},
- "zyns":{color:"144,224,224",logo:"/assets/logos/zyns.png?v=71"}
+ "midnight":{color:"90,98,110",logo:"/assets/logos/midnight.png?v=72"},
+ "storm":{color:"96,0,160",logo:"/assets/logos/storm.png?v=72"},
+ "stiff-wifflers":{color:"24,49,83",logo:"/assets/logos/stiff-wifflers.png?v=72"},
+ "ball-busters":{color:"144,32,32",logo:"/assets/logos/ball-busters.png?v=72"},
+ "dirty-dawgs":{color:"96,0,24",logo:"/assets/logos/dirty-dawgs.png?v=72"},
+ "twin-titans":{color:"64,80,112",logo:"/assets/logos/twin-titans.png?v=72"},
+ "goofy-goobers":{color:"208,80,32",logo:"/assets/logos/goofy-goobers.png?v=72"},
+ "silverbacks":{color:"192,160,80",logo:"/assets/logos/silverbacks.png?v=72"},
+ "underdawgs":{color:"64,48,96",logo:"/assets/logos/underdawgs.png?v=72"},
+ "zyns":{color:"144,224,224",logo:"/assets/logos/zyns.png?v=72"}
 };
 function pct(v){return Number(v||0).toFixed(3).replace(/^0/,"")}
 function gb(v,rank){
@@ -137,29 +147,112 @@ function renderPowerRankings(league,results){
  });
  const zPct=zMap(metrics.map(x=>num(x.PCT))),zSos=zMap(metrics.map(x=>x.sos)),zRdg=zMap(metrics.map(x=>x.rdg)),zForm=zMap(metrics.map(x=>x.form));
  for(const m of metrics){
-   const composite=.45*zPct(num(m.PCT))+.25*zSos(m.sos)+.15*zRdg(m.rdg)+.15*zForm(m.form);
+   const composite=.55*zPct(num(m.PCT))+.20*zSos(m.sos)+.125*zRdg(m.rdg)+.125*zForm(m.form);
    m.rating=Math.max(25,Math.min(95,60+12*composite));
  }
  metrics.sort((a,b)=>b.rating-a.rating||b.PCT-a.PCT||b.DIFF-a.DIFF||a.team.localeCompare(b.team));
  const body=document.getElementById("powerBody");
  body.innerHTML=metrics.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};const f=r.form>0.05?`<span class="power-up">+${r.form.toFixed(1)}</span>`:r.form<-0.05?`<span class="power-down">${r.form.toFixed(1)}</span>`:`<span class="power-flat">0.0</span>`;return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td class="power-rating">${r.rating.toFixed(1)}</td><td>${r.W}-${r.L}</td><td>${r.sos.toFixed(3).replace(/^0/,"")}</td><td>${r.rdg>0?"+":""}${r.rdg.toFixed(2)}</td><td>${f}</td></tr>`}).join("");
+ return metrics;
 }
+
+const pairKey=(a,b)=>[a,b].sort().join("__");
+function seededRandom(seed=20260904){let x=seed>>>0;return ()=>{x=(1664525*x+1013904223)>>>0;return x/4294967296}}
+function buildFuturePairs(teams,results,scheduled){
+ const targetSeries=8, ids=teams.map(t=>t.team_id), completed=new Set(), planned=new Set(), pairs=[];
+ const used=Object.fromEntries(ids.map(id=>[id,0]));
+ for(const s of results.series||[]){const k=pairKey(s.away_team_id,s.home_team_id);if(completed.has(k))continue;completed.add(k);used[s.away_team_id]=(used[s.away_team_id]||0)+1;used[s.home_team_id]=(used[s.home_team_id]||0)+1;}
+ for(const x of scheduled.scheduled||[]){const a=x.team_a_id,b=x.team_b_id,k=pairKey(a,b);if(completed.has(k)||planned.has(k)||!used.hasOwnProperty(a)||!used.hasOwnProperty(b))continue;if(used[a]>=targetSeries||used[b]>=targetSeries)continue;planned.add(k);pairs.push([a,b,true]);used[a]++;used[b]++;}
+ let safety=0;
+ while(safety++<500){
+   const need=ids.filter(id=>used[id]<targetSeries).sort((a,b)=>(targetSeries-used[b])-(targetSeries-used[a])||a.localeCompare(b));
+   if(need.length<2)break;
+   let best=null,bestScore=-1;
+   for(let i=0;i<need.length;i++)for(let j=i+1;j<need.length;j++){
+     const a=need[i],b=need[j],k=pairKey(a,b);if(completed.has(k)||planned.has(k))continue;
+     const score=(targetSeries-used[a])+(targetSeries-used[b]);if(score>bestScore){best=[a,b,false];bestScore=score;}
+   }
+   if(!best)break;
+   planned.add(pairKey(best[0],best[1]));pairs.push(best);used[best[0]]++;used[best[1]]++;
+ }
+ return {pairs,used};
+}
+function normalizePlayoffProbabilities(rows){
+ const target=700;
+ let fixed=0, free=[];
+ for(const r of rows){if(r.clinched){r.prob=100;fixed+=100}else if(r.eliminated){r.prob=0}else free.push(r)}
+ let remaining=Math.max(0,target-fixed);
+ if(free.length){
+   let rawSum=free.reduce((a,r)=>a+Math.max(.001,r.rawProb),0)||1;
+   for(const r of free)r.prob=Math.max(.1,Math.min(99.9,remaining*Math.max(.001,r.rawProb)/rawSum));
+   for(let iter=0;iter<8;iter++){
+     const sum=free.reduce((a,r)=>a+r.prob,0),diff=remaining-sum;if(Math.abs(diff)<1e-8)break;
+     const adjustable=free.filter(r=>diff>0?r.prob<99.9:r.prob>.1);if(!adjustable.length)break;
+     const d=diff/adjustable.length;for(const r of adjustable)r.prob=Math.max(.1,Math.min(99.9,r.prob+d));
+   }
+ }
+ // Round to tenths while preserving exactly 700.0.
+ const tenths=rows.map(r=>Math.round(r.prob*10));let diff=Math.round(target*10)-tenths.reduce((a,b)=>a+b,0);
+ const order=[...rows.keys()].sort((i,j)=>rows[j].prob-rows[i].prob);
+ let k=0;while(diff!==0&&k<10000){const i=order[k%order.length],r=rows[i];if(diff>0&&tenths[i]<999&&!r.clinched){tenths[i]++;diff--}else if(diff<0&&tenths[i]>1&&!r.eliminated){tenths[i]--;diff++}k++;}
+ rows.forEach((r,i)=>r.displayProb=tenths[i]/10);
+}
+function renderPlayoffOdds(league,results,scheduled,powerMetrics){
+ const teams=(league.standings||[]).map(r=>({...r})), byId=new Map(teams.map(t=>[t.team_id,t])), powerById=new Map((powerMetrics||[]).map(t=>[t.team_id,t]));
+ const {pairs}=buildFuturePairs(teams,results,scheduled||{scheduled:[]});
+ const futureOpp=Object.fromEntries(teams.map(t=>[t.team_id,[]]));for(const [a,b] of pairs){futureOpp[a].push(b);futureOpp[b].push(a)}
+ const rows=teams.map(t=>{
+   const rem=Math.max(0,24-num(t.GP)), maxW=num(t.W)+rem;
+   const opps=futureOpp[t.team_id]||[], fsos=opps.length?opps.reduce((a,id)=>a+num(byId.get(id)?.PCT||.5),0)/opps.length:.5;
+   return {...t,rem,maxW,fsos,rawProb:0,clinched:false,eliminated:false};
+ });
+ // Conservative mathematical clinch/elimination checks. Ties are intentionally not treated as clinched/eliminated because DIFF is the first tiebreaker.
+ for(const r of rows){
+   const others=rows.filter(x=>x.team_id!==r.team_id);
+   const otherMax=others.map(x=>x.maxW).sort((a,b)=>b-a); // 7 teams would have to beat r for r to miss.
+   const otherMin=others.map(x=>num(x.W)).sort((a,b)=>b-a);
+   r.clinched=otherMax.length>=7 && num(r.W)>otherMax[6];
+   r.eliminated=otherMin.length>=7 && r.maxW<otherMin[6];
+ }
+ const rng=seededRandom(20260904),N=12000,tallies=Object.fromEntries(rows.map(r=>[r.team_id,0]));
+ for(let sim=0;sim<N;sim++){
+   const state=Object.fromEntries(rows.map(r=>[r.team_id,{W:num(r.W),diff:num(r.DIFF)}]));
+   for(const [a,b] of pairs){
+     const pa=powerById.get(a)?.rating??60,pb=powerById.get(b)?.rating??60;
+     const base=1/(1+Math.exp(-(pa-pb)/10));
+     const p=Math.max(.14,Math.min(.86,base));
+     for(let g=0;g<3;g++){
+       const aWin=rng()<p,w=aWin?a:b,l=aWin?b:a;state[w].W++;
+       const margin=1+(rng()<Math.min(.55,Math.abs(pa-pb)/35)?1:0);state[w].diff+=margin;state[l].diff-=margin;
+     }
+   }
+   const ranked=[...rows].sort((x,y)=>state[y.team_id].W-state[x.team_id].W||state[y.team_id].diff-state[x.team_id].diff||((powerById.get(y.team_id)?.rating||60)-(powerById.get(x.team_id)?.rating||60))||x.team.localeCompare(y.team));
+   for(const r of ranked.slice(0,7))tallies[r.team_id]++;
+ }
+ for(const r of rows)r.rawProb=tallies[r.team_id]/N*100;
+ normalizePlayoffProbabilities(rows);
+ rows.sort((a,b)=>b.displayProb-a.displayProb||b.PCT-a.PCT||b.DIFF-a.DIFF);
+ document.getElementById("playoffBody").innerHTML=rows.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td><div class="playoff-pct">${r.displayProb.toFixed(1)}%</div><div class="playoff-bar"><div class="playoff-fill" style="width:${r.displayProb}%"></div></div></td><td>${r.W}-${r.L}</td><td>${r.rem}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${r.fsos.toFixed(3).replace(/^0/,"")}</td></tr>`}).join("");
+}
+
 document.querySelectorAll("[data-standings-tab]").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll("[data-standings-tab]").forEach(x=>x.classList.toggle("active",x===btn));
- const power=btn.dataset.standingsTab==="power";document.getElementById("standingsPanel").classList.toggle("hidden",power);document.getElementById("powerPanel").classList.toggle("active",power);
+ const tab=btn.dataset.standingsTab;document.getElementById("standingsPanel").classList.toggle("hidden",tab!=="standings");document.getElementById("powerPanel").classList.toggle("active",tab==="power");document.getElementById("playoffPanel").classList.toggle("active",tab==="playoff");
 }));
 Promise.all([
  fetch("/api/public/league?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j}))),
- fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j})))
-]).then(([leagueRes,resultRes])=>{
+ fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j}))),
+ fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j}))).catch(()=>({ok:false,j:{ok:false,scheduled:[]}}))
+]).then(([leagueRes,resultRes,scheduleRes])=>{
  if(!leagueRes.ok||!leagueRes.j.ok)throw new Error(leagueRes.j.error||"Live standings unavailable");
  renderLiveStandings(leagueRes.j.standings||[],leagueRes.j.series_count||0);
- if(resultRes.ok&&resultRes.j.ok)renderPowerRankings(leagueRes.j,resultRes.j);
- else document.getElementById("powerBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';
+ if(resultRes.ok&&resultRes.j.ok){const powerMetrics=renderPowerRankings(leagueRes.j,resultRes.j);renderPlayoffOdds(leagueRes.j,resultRes.j,(scheduleRes.ok&&scheduleRes.j.ok)?scheduleRes.j:{scheduled:[]},powerMetrics);}
+ else {document.getElementById("powerBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';document.getElementById("playoffBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';}
 }).catch(err=>{
  document.getElementById("standingsStatus").textContent="Live standings are temporarily unavailable. Showing the preseason table.";
  document.getElementById("powerBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';
+ document.getElementById("playoffBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=71"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=72"></script></body></html>

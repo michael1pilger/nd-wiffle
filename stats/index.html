@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=71"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=72"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -48,7 +48,7 @@
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=71"></script>
+<script src="/assets/data.js?v=72"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveLoaded=false;
@@ -84,6 +84,28 @@ const TEAM_NAME_TO_ID={
  "Goofy Goobers":"goofy-goobers","Goobers":"goofy-goobers","Silverbacks":"silverbacks","Beavers":"silverbacks",
  "Underdawgs":"underdawgs","Zyns":"zyns","Seven Deadly Zyns":"zyns"
 };
+
+// Career team badge: use the franchise with the most batting PA for that player.
+// This prevents a tiny late-career cameo from replacing the franchise that represents most of the player's career.
+const CAREER_PRIMARY_TEAM_BY_PLAYER={};
+(function buildCareerPrimaryTeams(){
+ const totals=new Map();
+ for(const r of (ND_DATA.battingSeasons||[])){
+   const id=r.Player_ID,teamId=TEAM_NAME_TO_ID[r.Team]||r.Team_ID||null,pa=num(r.PAs);
+   if(!id||!teamId)continue;const key=id+"|"+teamId;totals.set(key,(totals.get(key)||0)+pa);
+ }
+ // Fallback for pitchers with no batting PA: use the team with the most BF in pitching-season data.
+ for(const p of (ND_DATA.players||[])){
+   const id=p.Player_ID;let choices=[];
+   for(const [key,value] of totals){if(key.startsWith(id+"|"))choices.push([key.slice(id.length+1),value]);}
+   if(!choices.length){
+     const pit=new Map();for(const r of (ND_DATA.pitchingSeasons||[])){if(r.Player_ID!==id)continue;const tid=TEAM_NAME_TO_ID[r.Team]||r.Team_ID||null;if(!tid)continue;pit.set(tid,(pit.get(tid)||0)+num(r.BF));}
+     choices=[...pit.entries()];
+   }
+   choices.sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));if(choices.length)CAREER_PRIMARY_TEAM_BY_PLAYER[id]=choices[0][0];
+ }
+})();
+
 const teamSel=document.getElementById("teamSel");
 Object.entries(TEAM_BY_ID).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([id,t])=>{
  const o=document.createElement("option");o.value=id;o.textContent=t.name;teamSel.appendChild(o);
@@ -103,6 +125,7 @@ const CURRENT_ROSTER_TEAM_BY_NAME={};
 
 function teamInfo(r){
  let id=r.Team_ID||r.team_id||null,name=r.Team||r.team_name||"";
+ if(scopeSel.value==="career"&&r.Player_ID&&CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID]){id=CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID];name=TEAM_BY_ID[id]?.name||name;}
  if(!id&&name)id=TEAM_NAME_TO_ID[name]||null;
  if(!id && ["2026","career"].includes(scopeSel.value))id=CURRENT_ROSTER_TEAM_BY_NAME[String(r.Name||"").toLowerCase()]||null;
  if(!name&&id)name=TEAM_BY_ID[id]?.name||"";
@@ -117,7 +140,7 @@ function teamCell(r){
  const {id,name,ui}=teamInfo(r);if(!name&&!id)return "—";
  const label=name||ui?.name||id;
  const rgb=ui?.rgb||"90,98,110";
- const logo=id?`/assets/logos/${id}.png?v=71`:"";
+ const logo=id?`/assets/logos/${id}.png?v=72`:"";
  return `<div class="stats-team" style="--team-rgb:${rgb}">${logo?`<img src="${logo}" width="22" height="22" alt="${label} logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block'"><span class="stats-team-dot" style="display:none"></span>`:'<span class="stats-team-dot"></span>'}<span>${label}</span></div>`;
 }
 function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
@@ -285,4 +308,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer><script src="/assets/table-tools.js?v=71"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer><script src="/assets/table-tools.js?v=72"></script></body></html>
