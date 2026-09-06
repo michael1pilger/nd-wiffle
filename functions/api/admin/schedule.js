@@ -25,7 +25,18 @@ export async function onRequestGet(context){
     FROM series WHERE season=? ORDER BY series_date,series_id
    `).bind(season)
   ]);
-  return json({ok:true,build:"v73",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],actor_email:context.data.actorEmail||null});
+  let captain_availability=[];
+  try{
+    const ar=await DB.prepare(`
+      SELECT ca.team_id,t.display_name AS team_name,ca.availability_date,ca.start_time,ca.end_time,ca.notes,ca.captain_email
+      FROM captain_availability ca
+      JOIN teams t ON t.team_id=ca.team_id
+      WHERE ca.season=? AND ca.availability_date>=date('now')
+      ORDER BY ca.availability_date,ca.start_time,t.display_name
+    `).bind(season).all();
+    captain_availability=ar.results||[];
+  }catch{}
+  return json({ok:true,build:"v75",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

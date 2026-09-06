@@ -124,3 +124,15 @@ Primary source-of-truth tables:
 - `import_history`
 
 Career and season rate statistics are intentionally not stored yet. They should be derived from the normalized counting stats so corrected/replaced series automatically produce correct totals.
+
+
+## Captain portal (v75)
+Run `migrations/0022_captain_availability.sql` on the same D1 database. Then map each Cloudflare Access email to a team. Example:
+
+```sql
+INSERT INTO captain_access(season,email,team_id,display_name)
+VALUES (2026,'captain@example.edu','storm','Storm Captain')
+ON CONFLICT(season,email) DO UPDATE SET team_id=excluded.team_id, display_name=excluded.display_name, updated_at=CURRENT_TIMESTAMP;
+```
+
+Repeat once per captain. `/captains/*` should remain protected by Cloudflare Access. The captain portal reads the authenticated Access email and only exposes the team mapped to that email. Commissioner scheduling remains under `/admin/*` and reads submitted availability from D1.

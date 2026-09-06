@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=73">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=75">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -38,7 +38,7 @@
 @media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
 .result-series{--winner-rgb:90,98,110}.result-series .result-summary{background:linear-gradient(90deg,rgba(var(--winner-rgb),.15),transparent 48%)}.result-series.open{border-color:rgba(var(--winner-rgb),.46)}
 
-.result-series-bubbles{display:grid;gap:6px;justify-self:end;min-width:155px}.bubble-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.bubble-team-name{font-size:9px;font-weight:900;color:#d8e1ed;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bubble-strip{display:flex;gap:5px}.game-bubble{width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.17);background:transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}.game-bubble.win{background:rgb(var(--dot-rgb));border-color:rgba(var(--dot-rgb),.95);box-shadow:0 0 0 2px rgba(var(--dot-rgb),.12)}.bubble-caption{font-size:8px;color:var(--muted);text-transform:uppercase;text-align:right;margin-top:1px}@media(max-width:760px){.result-series-bubbles{grid-column:1;justify-self:start;min-width:210px}.bubble-team-name{text-align:left}.bubble-team-row{grid-template-columns:100px auto}.bubble-caption{text-align:left}}
+.result-series-bubbles{display:grid;gap:6px;justify-self:end;min-width:155px}.bubble-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.bubble-team-name{font-size:9px;font-weight:900;color:#d8e1ed;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bubble-strip{display:flex;gap:5px}.game-bubble{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16);display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:950;color:#dbe5f1;line-height:1}.game-bubble.win{background:rgb(var(--dot-rgb));border-color:rgba(var(--dot-rgb),.95);box-shadow:0 0 0 2px rgba(var(--dot-rgb),.12);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65)}.bubble-caption{font-size:8px;color:var(--muted);text-transform:uppercase;text-align:right;margin-top:1px}@media(max-width:760px){.result-series-bubbles{grid-column:1;justify-self:start;min-width:210px}.bubble-team-name{text-align:left}.bubble-team-row{grid-template-columns:100px auto}.bubble-caption{text-align:left}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
@@ -46,9 +46,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=73","midnight":"/assets/logos/midnight.png?v=73","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=73",
- "ball-busters":"/assets/logos/ball-busters.png?v=73","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=73","twin-titans":"/assets/logos/twin-titans.png?v=73",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=73","silverbacks":"/assets/logos/silverbacks.png?v=73","underdawgs":"/assets/logos/underdawgs.png?v=73","zyns":"/assets/logos/zyns.png?v=73"
+ "storm":"/assets/logos/storm.png?v=75","midnight":"/assets/logos/midnight.png?v=75","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=75",
+ "ball-busters":"/assets/logos/ball-busters.png?v=75","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=75","twin-titans":"/assets/logos/twin-titans.png?v=75",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=75","silverbacks":"/assets/logos/silverbacks.png?v=75","underdawgs":"/assets/logos/underdawgs.png?v=75","zyns":"/assets/logos/zyns.png?v=75"
 };
 const RESULT_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
@@ -72,7 +72,7 @@ function seriesWins(games){
 
 function seriesBubbleHtml(s){
  const games=[...(s.games||[])].sort((a,b)=>Number(a.game_number)-Number(b.game_number));
- const row=(side,id,name)=>{const rgb=RESULT_TEAM_RGB[id]||"90,98,110";const dots=[1,2,3].map(n=>{const g=games.find(x=>Number(x.game_number)===n),win=g&&(side==="away"?Number(g.away_score)>Number(g.home_score):Number(g.home_score)>Number(g.away_score));return `<span class="game-bubble ${win?"win":""}" style="--dot-rgb:${rgb}" title="Game ${n}${win?" win":" loss"}"></span>`}).join("");return `<div class="bubble-team-row"><span class="bubble-team-name">${esc(name)}</span><span class="bubble-strip">${dots}</span></div>`};
+ const row=(side,id,name)=>{const rgb=RESULT_TEAM_RGB[id]||"90,98,110";const dots=[1,2,3].map(n=>{const g=games.find(x=>Number(x.game_number)===n),us=g?(side==="away"?Number(g.away_score):Number(g.home_score)):null,them=g?(side==="away"?Number(g.home_score):Number(g.away_score)):null,win=g&&us>them;return `<span class="game-bubble ${win?"win":""}" style="--dot-rgb:${rgb}" title="Game ${n}: ${us??"–"}-${them??"–"}">${g?`${us}`:"–"}</span>`}).join("");return `<div class="bubble-team-row"><span class="bubble-team-name">${esc(name)}</span><span class="bubble-strip">${dots}</span></div>`};
  return `<div class="result-series-bubbles">${row("away",s.away_team_id,s.away_team)}${row("home",s.home_team_id,s.home_team)}<div class="bubble-caption">Game wins</div></div>`;
 }
 function teamHeader(id,name){return `<div class="result-team-heading">${logo(id,name)}<span>${esc(name)}</span></div>`}
@@ -126,4 +126,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
  .then(async r=>({ok:r.ok,body:await r.json()}))
  .then(({ok,body})=>{if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");render(body.series||[])})
  .catch(err=>{console.error(err);document.getElementById("resultsList").innerHTML='<div class="result-empty">Results are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=73"></script></body></html>
+</script><script src="/assets/table-tools.js?v=75"></script></body></html>
