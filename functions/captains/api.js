@@ -78,7 +78,7 @@ export async function onRequestGet(context){
   const ownScheduled=allScheduled.filter(x=>x.team_a_id===captain.team_id||x.team_b_id===captain.team_id);
   const completedPairs=[...new Set((completed.results||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)))];
   const scheduledPairs=[...new Set(allScheduled.map(x=>pairKey(x.team_a_id,x.team_b_id)))];
-  return json({ok:true,build:"v79",season,captain,teams:teams.results||[],availability:ownAvailability,all_availability:allAvailability,scheduled:ownScheduled,all_scheduled:allScheduled,completed_pairs:completedPairs,scheduled_pairs:scheduledPairs});
+  return json({ok:true,build:"v80",season,captain,teams:teams.results||[],availability:ownAvailability,all_availability:allAvailability,scheduled:ownScheduled,all_scheduled:allScheduled,completed_pairs:completedPairs,scheduled_pairs:scheduledPairs});
 }
 export async function onRequestPost(context){
   const DB=context.env.DB;if(!DB)return json({ok:false,error:"D1 binding DB is missing."},500);
@@ -98,9 +98,27 @@ export async function onRequestPost(context){
     if(s<first||s>lastStart||s%15!==0||e%15!==0||e-s<90||e>maxEnd)continue;
     cleaned.push({date,start,end,notes:notes.slice(0,180)});
   }
+  const scheduled=await DB.prepare(`
+    SELECT ss.series_date,ss.series_time,ta.display_name AS team_a,tb.display_name AS team_b
+    FROM scheduled_series ss
+    JOIN teams ta ON ta.team_id=ss.team_a_id
+    JOIN teams tb ON tb.team_id=ss.team_b_id
+    WHERE ss.season=? AND ss.series_time IS NOT NULL
+      AND ss.series_date BETWEEN '2026-09-06' AND '2026-09-19'
+  `).bind(season).all();
+  const conflicts=[];
+  for(const w of cleaned){
+    const ws=toMin(w.start),we=toMin(w.end);
+    for(const x of (scheduled.results||[])){
+      if(x.series_date!==w.date)continue;
+      const ss=toMin(x.series_time),se=ss+90;
+      if(Math.max(ws,ss)<Math.min(we,se))conflicts.push({date:w.date,start:x.series_time,end:`${String(Math.floor(se/60)).padStart(2,"0")}:${String(se%60).padStart(2,"0")}`,matchup:`${x.team_a} vs ${x.team_b}`});
+    }
+  }
+  if(conflicts.length)return json({ok:false,code:"SCHEDULE_CONFLICT",error:"Availability overlaps a commissioner-scheduled series. Refresh the captain calendar and choose a different time.",conflicts},409);
   await DB.prepare("DELETE FROM captain_availability WHERE season=? AND team_id=? AND availability_date BETWEEN '2026-09-06' AND '2026-09-19'").bind(season,captain.team_id).run();
   if(cleaned.length){
     await DB.batch(cleaned.map(w=>DB.prepare(`INSERT INTO captain_availability(season,team_id,captain_email,availability_date,start_time,end_time,notes) VALUES(?,?,?,?,?,?,?)`).bind(season,captain.team_id,id.email,w.date,w.start,w.end,w.notes||null)));
   }
-  return json({ok:true,build:"v79",season,team_id:captain.team_id,saved:cleaned.length});
+  return json({ok:true,build:"v80",season,team_id:captain.team_id,saved:cleaned.length});
 }
