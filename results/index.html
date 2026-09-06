@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=72">
+<title>2026 Results | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=73">
 <style>
 .results-list{display:grid;gap:15px;padding-bottom:40px}
 .result-series{border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden}
@@ -37,6 +37,8 @@
 .results-meta{margin-top:5px;color:var(--muted);font-size:12px}
 @media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:9px}.result-date{grid-column:1}.result-matchup{grid-column:1}.result-outcome{grid-column:1;text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}.result-detail{padding:13px}.tablewrap{overflow:auto}}
 .result-series{--winner-rgb:90,98,110}.result-series .result-summary{background:linear-gradient(90deg,rgba(var(--winner-rgb),.15),transparent 48%)}.result-series.open{border-color:rgba(var(--winner-rgb),.46)}
+
+.result-series-bubbles{display:grid;gap:6px;justify-self:end;min-width:155px}.bubble-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}.bubble-team-name{font-size:9px;font-weight:900;color:#d8e1ed;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bubble-strip{display:flex;gap:5px}.game-bubble{width:15px;height:15px;border-radius:50%;border:2px solid rgba(255,255,255,.17);background:transparent;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}.game-bubble.win{background:rgb(var(--dot-rgb));border-color:rgba(var(--dot-rgb),.95);box-shadow:0 0 0 2px rgba(var(--dot-rgb),.12)}.bubble-caption{font-size:8px;color:var(--muted);text-transform:uppercase;text-align:right;margin-top:1px}@media(max-width:760px){.result-series-bubbles{grid-column:1;justify-self:start;min-width:210px}.bubble-team-name{text-align:left}.bubble-team-row{grid-template-columns:100px auto}.bubble-caption{text-align:left}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="active" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Results</h1><p class="muted">Every published 2026 series, game result, pitcher decision, and series box score.</p><div id="resultsMeta" class="results-meta"></div></div>
@@ -44,9 +46,9 @@
 <footer><div class="container">ND Wiffle · Official 2026 results.</div></footer>
 <script>
 const TEAM_LOGOS={
- "storm":"/assets/logos/storm.png?v=72","midnight":"/assets/logos/midnight.png?v=72","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=72",
- "ball-busters":"/assets/logos/ball-busters.png?v=72","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=72","twin-titans":"/assets/logos/twin-titans.png?v=72",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=72","silverbacks":"/assets/logos/silverbacks.png?v=72","underdawgs":"/assets/logos/underdawgs.png?v=72","zyns":"/assets/logos/zyns.png?v=72"
+ "storm":"/assets/logos/storm.png?v=73","midnight":"/assets/logos/midnight.png?v=73","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=73",
+ "ball-busters":"/assets/logos/ball-busters.png?v=73","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=73","twin-titans":"/assets/logos/twin-titans.png?v=73",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=73","silverbacks":"/assets/logos/silverbacks.png?v=73","underdawgs":"/assets/logos/underdawgs.png?v=73","zyns":"/assets/logos/zyns.png?v=73"
 };
 const RESULT_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
@@ -67,6 +69,12 @@ function seriesWins(games){
   }
   return {away,home};
 }
+
+function seriesBubbleHtml(s){
+ const games=[...(s.games||[])].sort((a,b)=>Number(a.game_number)-Number(b.game_number));
+ const row=(side,id,name)=>{const rgb=RESULT_TEAM_RGB[id]||"90,98,110";const dots=[1,2,3].map(n=>{const g=games.find(x=>Number(x.game_number)===n),win=g&&(side==="away"?Number(g.away_score)>Number(g.home_score):Number(g.home_score)>Number(g.away_score));return `<span class="game-bubble ${win?"win":""}" style="--dot-rgb:${rgb}" title="Game ${n}${win?" win":" loss"}"></span>`}).join("");return `<div class="bubble-team-row"><span class="bubble-team-name">${esc(name)}</span><span class="bubble-strip">${dots}</span></div>`};
+ return `<div class="result-series-bubbles">${row("away",s.away_team_id,s.away_team)}${row("home",s.home_team_id,s.home_team)}<div class="bubble-caption">Game wins</div></div>`;
+}
 function teamHeader(id,name){return `<div class="result-team-heading">${logo(id,name)}<span>${esc(name)}</span></div>`}
 function battingTable(rows){
  return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.PA}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.RBI}</td><td>${r.BB}</td><td>${r.SO}</td><td>${r.BA}</td><td>${r.OPS}</td></tr>`).join("")}</tbody></table></div>`
@@ -84,7 +92,6 @@ function render(series){
    const sw=seriesWins(s.games);
    const awayWon=sw.away>sw.home,homeWon=sw.home>sw.away;
    const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
-   const result=awayWon||homeWon?`${winner} wins ${Math.max(sw.away,sw.home)}–${Math.min(sw.away,sw.home)}`:"Series tied";
    const bat=topBatter(publicRows(s.batting)),pit=topPitcher(publicRows(s.pitching));
    const games=(s.games||[]).map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(s.away_team)} ${g.away_score} · ${esc(s.home_team)} ${g.home_score}</div><div class="decision">W - ${esc(g.winning_pitcher)}${g.winning_pitcher_record?` (${esc(g.winning_pitcher_record)})`:""} · L - ${esc(g.losing_pitcher)}${g.losing_pitcher_record?` (${esc(g.losing_pitcher_record)})`:""}${g.save_pitcher?` · SV - ${esc(g.save_pitcher)}${g.save_pitcher_record?` (${esc(g.save_pitcher_record)})`:""}`:""}</div></div>`).join("");
    const teamBoxes=[["away",s.away_team_id,s.away_team],["home",s.home_team_id,s.home_team]].map(([side,id,name])=>{
@@ -96,7 +103,7 @@ function render(series){
     <div class="result-summary" data-series="${esc(s.series_id)}" role="button" tabindex="0" aria-expanded="${open}">
       <div class="result-date">${fmtDate(s.series_date)}</div>
       <a class="result-matchup result-matchup-link" href="/matchup/?away=${encodeURIComponent(s.away_team_id)}&home=${encodeURIComponent(s.home_team_id)}&series=${encodeURIComponent(s.series_id)}" aria-label="Open matchup details for ${esc(s.away_team)} at ${esc(s.home_team)}"><div class="result-team">${logo(s.away_team_id,s.away_team)}<span>${esc(s.away_team)}</span></div><span class="result-vs">at</span><div class="result-team">${logo(s.home_team_id,s.home_team)}<span>${esc(s.home_team)}</span></div></a>
-      <div class="result-outcome">${esc(result)}</div><div class="result-chevron">⌄</div>
+      ${seriesBubbleHtml(s)}<div class="result-chevron">⌄</div>
     </div>
     <div class="result-detail"><div class="result-score-strip">${games}</div>
       <div class="result-stars">
@@ -119,4 +126,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
  .then(async r=>({ok:r.ok,body:await r.json()}))
  .then(({ok,body})=>{if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");render(body.series||[])})
  .catch(err=>{console.error(err);document.getElementById("resultsList").innerHTML='<div class="result-empty">Results are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=72"></script></body></html>
+</script><script src="/assets/table-tools.js?v=73"></script></body></html>

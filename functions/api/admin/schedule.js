@@ -25,7 +25,7 @@ export async function onRequestGet(context){
     FROM series WHERE season=? ORDER BY series_date,series_id
    `).bind(season)
   ]);
-  return json({ok:true,build:"v72",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v73",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

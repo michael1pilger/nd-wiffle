@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2026 Schedule | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=72">
+<title>2026 Schedule | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=73">
 <style>
 .schedule-controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
 .schedule-controls select,.schedule-controls button{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-weight:800}
@@ -38,6 +38,18 @@
 .schedule-section-title{grid-column:1/-1;margin:7px 0 0;padding:8px 2px 1px;color:var(--gold);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.07em}
 .live-series.final{--winner-rgb:90,98,110;background:linear-gradient(135deg,rgba(var(--winner-rgb),.16),var(--panel) 44%);border-color:rgba(var(--winner-rgb),.42)}
 .live-game-decision{font-size:8px;color:var(--muted);margin-top:3px;line-height:1.35}.live-final-star{margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:9px;font-size:10px;color:var(--muted)}.live-final-star b{color:var(--gold);margin-right:5px}
+
+.calendar-panel{border:1px solid var(--border);border-radius:15px;background:var(--panel);overflow:hidden;margin-bottom:18px}
+.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.calendar-toolbar h2{margin:0;font-size:20px}.calendar-nav{display:flex;gap:7px}.calendar-nav button{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-weight:900;cursor:pointer}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}.calendar-weekdays{background:#0a1423;border-bottom:1px solid var(--border)}
+.calendar-weekdays div{padding:7px 8px;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase;text-align:center}
+.calendar-day{min-height:88px;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);padding:6px;min-width:0}.calendar-day:nth-child(7n){border-right:0}.calendar-day.outside{opacity:.34}.calendar-day.today{box-shadow:inset 0 0 0 1px rgba(215,173,72,.55)}
+.calendar-date{font-size:10px;font-weight:900;color:#dce5f1;margin-bottom:5px}.calendar-date span{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;border-radius:50%}.calendar-day.today .calendar-date span{background:var(--gold);color:#111}
+.calendar-event{display:block;text-decoration:none;color:inherit;background:#101d31;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:5px 6px;margin-top:4px;overflow:hidden}.calendar-event:hover{border-color:var(--gold)}
+.calendar-event-top{display:flex;align-items:center;gap:4px;min-width:0}.calendar-event-logos{display:flex;flex:0 0 auto}.calendar-event-logos img{width:19px;height:19px;object-fit:contain;background:#09111d;border-radius:50%;padding:1px}.calendar-event-logos img+img{margin-left:-5px}.calendar-event-name{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendar-event-time{font-size:8px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendar-empty{padding:16px;color:var(--muted);font-size:12px}.calendar-legend{padding:8px 14px 10px;color:var(--muted);font-size:10px;border-top:1px solid rgba(255,255,255,.05)}
+@media(max-width:720px){.calendar-day{min-height:72px;padding:4px}.calendar-event-name{display:none}.calendar-event-time{font-size:7px}.calendar-toolbar{align-items:flex-start}.calendar-event-logos img{width:17px;height:17px}.calendar-weekdays div{padding:6px 2px}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">The page lists all 45 possible 2026 matchups. Commissioner-scheduled dates and times update automatically, and completed series switch to Final with all three scores.</p></div>
@@ -51,15 +63,16 @@
 </div>
 <div class="schedule-note">The schedule now lists all 45 possible matchups in a true 10-team round robin. Series are claimed on a first-come, first-served basis, and four of these listed matchups will ultimately go unplayed. Series are normally completed as one three-game set.</div>
 <div id="scheduleError"></div>
+<div id="calendarPanel" class="calendar-panel" hidden><div class="calendar-toolbar"><div><div class="live-series-kicker">Scheduled Series</div><h2 id="calendarTitle">Calendar</h2></div><div class="calendar-nav"><button id="calPrev" type="button" aria-label="Previous month">‹</button><button id="calToday" type="button">Today</button><button id="calNext" type="button" aria-label="Next month">›</button></div></div><div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="calendarGrid" class="calendar-grid"></div><div class="calendar-legend">Each calendar event is one three-game series. Team logos show the matchup; click an event for the matchup preview.</div></div>
 <div id="scheduleGrid" class="live-schedule-grid"></div>
 </div></main>
 <footer><div class="container">ND Wiffle · 2026 regular-season schedule.</div></footer>
 <script>
 const STATIC_SCHEDULE=[{"away_id":"twin-titans","away":"Twin Titans","home_id":"storm","home":"Storm","date":"2026-08-25","time":"5:00 PM"},{"away_id":"storm","away":"Storm","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"storm","home":"Storm","date":"TBD","time":"TBD"},{"away_id":"storm","away":"Storm","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"stiff-wifflers","away":"Stiff Wifflers","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"stiff-wifflers","home":"Stiff Wifflers","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"midnight","home":"Midnight","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"midnight","away":"Midnight","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"goofy-goobers","away":"Goofy Goobers","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"goofy-goobers","home":"Goofy Goobers","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"dirty-dawgs","home":"Dirty Dawgs","date":"TBD","time":"TBD"},{"away_id":"dirty-dawgs","away":"Dirty Dawgs","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"underdawgs","away":"Underdawgs","home_id":"ball-busters","home":"Ball Busters","date":"TBD","time":"TBD"},{"away_id":"ball-busters","away":"Ball Busters","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"silverbacks","home":"Silverbacks","date":"TBD","time":"TBD"},{"away_id":"twin-titans","away":"Twin Titans","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"twin-titans","home":"Twin Titans","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"},{"away_id":"silverbacks","away":"Silverbacks","home_id":"zyns","home":"Zyns","date":"TBD","time":"TBD"},{"away_id":"zyns","away":"Zyns","home_id":"underdawgs","home":"Underdawgs","date":"TBD","time":"TBD"}];
 const LOGOS={
- "storm":"/assets/logos/storm.png?v=72","midnight":"/assets/logos/midnight.png?v=72","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=72",
- "ball-busters":"/assets/logos/ball-busters.png?v=72","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=72","twin-titans":"/assets/logos/twin-titans.png?v=72",
- "goofy-goobers":"/assets/logos/goofy-goobers.png?v=72","silverbacks":"/assets/logos/silverbacks.png?v=72","underdawgs":"/assets/logos/underdawgs.png?v=72","zyns":"/assets/logos/zyns.png?v=72"
+ "storm":"/assets/logos/storm.png?v=73","midnight":"/assets/logos/midnight.png?v=73","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=73",
+ "ball-busters":"/assets/logos/ball-busters.png?v=73","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=73","twin-titans":"/assets/logos/twin-titans.png?v=73",
+ "goofy-goobers":"/assets/logos/goofy-goobers.png?v=73","silverbacks":"/assets/logos/silverbacks.png?v=73","underdawgs":"/assets/logos/underdawgs.png?v=73","zyns":"/assets/logos/zyns.png?v=73"
 };
 const SCHEDULE_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
@@ -129,6 +142,28 @@ function seriesWins(games){
   }
   return {away,home};
 }
+let calendarMonth=null;
+function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`}
+function scheduledUpcomingRows(team=""){
+ return STATIC_SCHEDULE.map((base,index)=>{const item=scheduledItem(base),result=resultsByPair.get(pairKey(base.away_id,base.home_id)),isFinal=!!result&&(result.games||[]).length===3,isScheduled=!isFinal&&item.date&&item.date!=="TBD";return {base,item,index,isFinal,isScheduled}}).filter(x=>x.isScheduled&&(!team||x.base.away_id===team||x.base.home_id===team));
+}
+function renderCalendar(team=""){
+ if(activeFilter==="final"){document.getElementById("calendarPanel").hidden=true;return}
+ const rows=scheduledUpcomingRows(team);
+ const panel=document.getElementById("calendarPanel"),grid=document.getElementById("calendarGrid");
+ if(!rows.length){panel.hidden=true;return}panel.hidden=false;
+ if(!calendarMonth){const first=[...rows].sort((a,b)=>String(a.item.date).localeCompare(String(b.item.date)))[0];const d=new Date(`${first.item.date}T12:00:00`);calendarMonth=new Date(d.getFullYear(),d.getMonth(),1)}
+ document.getElementById("calendarTitle").textContent=calendarMonth.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+ const first=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1),start=new Date(first);start.setDate(1-first.getDay());
+ const last=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,0),end=new Date(last);end.setDate(last.getDate()+(6-last.getDay()));
+ const byDate=new Map();for(const x of rows){if(!byDate.has(x.item.date))byDate.set(x.item.date,[]);byDate.get(x.item.date).push(x)}
+ const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+ let html="";for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+   const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,outside=d.getMonth()!==calendarMonth.getMonth(),events=byDate.get(key)||[];
+   html+=`<div class="calendar-day ${outside?"outside":""} ${key===todayKey?"today":""}"><div class="calendar-date"><span>${d.getDate()}</span></div>${events.map(x=>{const i=x.item,href=`/matchup/?away=${encodeURIComponent(i.away_id)}&home=${encodeURIComponent(i.home_id)}&date=${encodeURIComponent(i.date)}`;return `<a class="calendar-event" href="${href}" title="${esc(i.away)} at ${esc(i.home)} · ${fmtTime(i.time)}"><div class="calendar-event-top"><span class="calendar-event-logos">${LOGOS[i.away_id]?`<img src="${LOGOS[i.away_id]}" alt="">`:""}${LOGOS[i.home_id]?`<img src="${LOGOS[i.home_id]}" alt="">`:""}</span><span class="calendar-event-name">${esc(i.away)} @ ${esc(i.home)}</span></div><div class="calendar-event-time">${fmtTime(i.time)}${i.location?` · ${esc(i.location)}`:""}</div></a>`}).join("")}</div>`;
+ }
+ grid.innerHTML=html;
+}
 function render(){
  const team=document.getElementById("teamFilter").value;
  let rows=STATIC_SCHEDULE.map((base,index)=>{
@@ -166,14 +201,16 @@ function render(){
  const scheduledCount=rows.filter(x=>x.isScheduled).length;
  const finalCount=rows.filter(x=>x.isFinal).length;
  const tbdCount=rows.length-scheduledCount-finalCount;
+ renderCalendar(team);
 
  let html="";
  if(rows.length){
    let lastSection="";
    for(const x of rows){
-     const section=x.isScheduled?"scheduled":(x.isFinal?"final":"tbd");
+     if(x.isScheduled)continue;
+     const section=x.isFinal?"final":"tbd";
      if(section!==lastSection){
-       const label=section==="scheduled"?"Scheduled Upcoming Series":section==="final"?"Completed Series":"Remaining Matchups · TBD";
+       const label=section==="final"?"Completed Series":"Remaining Matchups · TBD";
        html+=`<div class="schedule-section-title" data-schedule-section="${section}">${label}</div>`;
        lastSection=section;
      }
@@ -192,6 +229,9 @@ function setup(){
  for(const s of STATIC_SCHEDULE){teams.set(s.away_id,s.away);teams.set(s.home_id,s.home)}
  document.getElementById("teamFilter").innerHTML='<option value="">All teams</option>'+[...teams.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join("");
  document.getElementById("teamFilter").addEventListener("change",render);
+ document.getElementById("calPrev").addEventListener("click",()=>{if(calendarMonth){calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()-1,1);renderCalendar(document.getElementById("teamFilter").value)}});
+ document.getElementById("calNext").addEventListener("click",()=>{if(calendarMonth){calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,1);renderCalendar(document.getElementById("teamFilter").value)}});
+ document.getElementById("calToday").addEventListener("click",()=>{const d=new Date();calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar(document.getElementById("teamFilter").value)});
  document.querySelectorAll("[data-filter]").forEach(btn=>btn.addEventListener("click",()=>{
    activeFilter=btn.dataset.filter;
    document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===btn));
