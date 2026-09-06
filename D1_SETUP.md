@@ -126,7 +126,7 @@ Primary source-of-truth tables:
 Career and season rate statistics are intentionally not stored yet. They should be derived from the normalized counting stats so corrected/replaced series automatically produce correct totals.
 
 
-## Captain portal (v75)
+## Captain portal (v76)
 Run `migrations/0022_captain_availability.sql` on the same D1 database. Then map each Cloudflare Access email to a team. Example:
 
 ```sql

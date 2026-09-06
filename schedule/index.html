@@ -51,7 +51,7 @@
 .calendar-empty{padding:16px;color:var(--muted);font-size:12px}.calendar-legend{padding:8px 14px 10px;color:var(--muted);font-size:10px;border-top:1px solid rgba(255,255,255,.05)}
 @media(max-width:720px){.calendar-day{min-height:72px;padding:4px}.calendar-event-name{display:none}.calendar-event-time{font-size:7px}.calendar-toolbar{align-items:flex-start}.calendar-event-logos img{width:17px;height:17px}.calendar-weekdays div{padding:6px 2px}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a href="/captains/">Captains</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">The page lists all 45 possible 2026 matchups. Commissioner-scheduled dates and times update automatically, and completed series switch to Final with all three scores.</p></div>
 <div class="container">
 <div class="schedule-controls">
@@ -142,7 +142,8 @@ function seriesWins(games){
   }
   return {away,home};
 }
-let calendarWeekStart=null;
+const DEFAULT_CALENDAR_WEEK=new Date(2026,8,6,12,0,0,0);
+let calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
 function scheduledUpcomingRows(team=""){
  return STATIC_SCHEDULE.map((base,index)=>{const item=scheduledItem(base),result=resultsByPair.get(pairKey(base.away_id,base.home_id)),isFinal=!!result&&(result.games||[]).length===3,isScheduled=!isFinal&&item.date&&item.date!=="TBD";return {base,item,index,isFinal,isScheduled}}).filter(x=>x.isScheduled&&(!team||x.base.away_id===team||x.base.home_id===team));
 }
@@ -152,12 +153,7 @@ function renderCalendar(team=""){
  const rows=scheduledUpcomingRows(team);
  const panel=document.getElementById("calendarPanel"),grid=document.getElementById("calendarGrid");
  if(!rows.length){panel.hidden=true;return}panel.hidden=false;
- if(!calendarWeekStart){
-   const today=startOfWeek(new Date());
-   const hasThisWeek=rows.some(x=>{const d=new Date(`${x.item.date}T12:00:00`);return d>=today&&d<new Date(today.getFullYear(),today.getMonth(),today.getDate()+7,12)});
-   if(hasThisWeek)calendarWeekStart=today;
-   else {const first=[...rows].sort((a,b)=>String(a.item.date).localeCompare(String(b.item.date)))[0];calendarWeekStart=startOfWeek(new Date(`${first.item.date}T12:00:00`));}
- }
+ if(!calendarWeekStart)calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
  const weekEnd=new Date(calendarWeekStart);weekEnd.setDate(weekEnd.getDate()+6);
  const titleStart=calendarWeekStart.toLocaleDateString(undefined,{month:"short",day:"numeric"});
  const titleEnd=weekEnd.toLocaleDateString(undefined,{month:calendarWeekStart.getMonth()===weekEnd.getMonth()?undefined:"short",day:"numeric",year:"numeric"});
@@ -238,7 +234,7 @@ function setup(){
  document.getElementById("teamFilter").addEventListener("change",render);
  document.getElementById("calPrev").addEventListener("click",()=>{if(calendarWeekStart){calendarWeekStart=new Date(calendarWeekStart);calendarWeekStart.setDate(calendarWeekStart.getDate()-7);renderCalendar(document.getElementById("teamFilter").value)}});
  document.getElementById("calNext").addEventListener("click",()=>{if(calendarWeekStart){calendarWeekStart=new Date(calendarWeekStart);calendarWeekStart.setDate(calendarWeekStart.getDate()+7);renderCalendar(document.getElementById("teamFilter").value)}});
- document.getElementById("calToday").addEventListener("click",()=>{calendarWeekStart=startOfWeek(new Date());renderCalendar(document.getElementById("teamFilter").value)});
+ document.getElementById("calToday").addEventListener("click",()=>{calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);renderCalendar(document.getElementById("teamFilter").value)});
  document.querySelectorAll("[data-filter]").forEach(btn=>btn.addEventListener("click",()=>{
    activeFilter=btn.dataset.filter;
    document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===btn));
