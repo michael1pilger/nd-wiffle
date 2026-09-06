@@ -36,7 +36,7 @@ export async function onRequestGet(context){
     `).bind(season).all();
     captain_availability=ar.results||[];
   }catch{}
-  return json({ok:true,build:"v77",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v78",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
