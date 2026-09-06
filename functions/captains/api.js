@@ -78,7 +78,7 @@ export async function onRequestGet(context){
   const ownScheduled=allScheduled.filter(x=>x.team_a_id===captain.team_id||x.team_b_id===captain.team_id);
   const completedPairs=[...new Set((completed.results||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)))];
   const scheduledPairs=[...new Set(allScheduled.map(x=>pairKey(x.team_a_id,x.team_b_id)))];
-  return json({ok:true,build:"v78",season,captain,teams:teams.results||[],availability:ownAvailability,all_availability:allAvailability,scheduled:ownScheduled,all_scheduled:allScheduled,completed_pairs:completedPairs,scheduled_pairs:scheduledPairs});
+  return json({ok:true,build:"v79",season,captain,teams:teams.results||[],availability:ownAvailability,all_availability:allAvailability,scheduled:ownScheduled,all_scheduled:allScheduled,completed_pairs:completedPairs,scheduled_pairs:scheduledPairs});
 }
 export async function onRequestPost(context){
   const DB=context.env.DB;if(!DB)return json({ok:false,error:"D1 binding DB is missing."},500);
@@ -94,7 +94,7 @@ export async function onRequestPost(context){
     const date=clean(w.date),start=clean(w.start),end=clean(w.end),notes=clean(w.notes);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end))continue;
     if(date<"2026-09-06"||date>"2026-09-19")continue;
-    const d=new Date(date+"T12:00:00Z"),weekend=d.getUTCDay()===0||d.getUTCDay()===6,s=toMin(start),e=toMin(end),first=weekend?11*60:15*60+30,lastStart=18*60+30,maxEnd=22*60;
+    const d=new Date(date+"T12:00:00Z"),weekend=d.getUTCDay()===0||d.getUTCDay()===6,s=toMin(start),e=toMin(end),first=weekend?11*60:15*60+30,lastStart=18*60+30,maxEnd=20*60;
     if(s<first||s>lastStart||s%15!==0||e%15!==0||e-s<90||e>maxEnd)continue;
     cleaned.push({date,start,end,notes:notes.slice(0,180)});
   }
@@ -102,5 +102,5 @@ export async function onRequestPost(context){
   if(cleaned.length){
     await DB.batch(cleaned.map(w=>DB.prepare(`INSERT INTO captain_availability(season,team_id,captain_email,availability_date,start_time,end_time,notes) VALUES(?,?,?,?,?,?,?)`).bind(season,captain.team_id,id.email,w.date,w.start,w.end,w.notes||null)));
   }
-  return json({ok:true,build:"v78",season,team_id:captain.team_id,saved:cleaned.length});
+  return json({ok:true,build:"v79",season,team_id:captain.team_id,saved:cleaned.length});
 }
