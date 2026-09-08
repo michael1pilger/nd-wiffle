@@ -26,39 +26,23 @@ export async function ensureSlate(DB,date,actor="system"){
  `).bind(date,lock,actor).run();
  return DB.prepare("SELECT * FROM fantasy_slates WHERE slate_date=?").bind(date).first();
 }
-function normalizeMean(values,target,fixedMask){
- const out=[...values];
- const adjustable=out.map((_,i)=>i).filter(i=>!fixedMask[i]);
- if(!adjustable.length)return out.map(roundMult);
- for(let iter=0;iter<8;iter++){
-   const mean=out.reduce((a,b)=>a+b,0)/out.length;
-   const delta=target-mean;
-   if(Math.abs(delta)<.002)break;
-   const movable=adjustable.filter(i=>(delta>0&&out[i]<6)||(delta<0&&out[i]>1));
-   if(!movable.length)break;
-   const step=delta*out.length/movable.length;
-   for(const i of movable)out[i]=Math.max(1,Math.min(6,out[i]+step));
- }
- return out.map(roundMult);
-}
 export function assignMultipliers(rows,kind){
- // Higher expected production = lower multiplier.
- // Experienced distribution is symmetric around 2.25: 1.00x best to 3.50x worst.
- // True rookies have the user's fixed 3.00x starting multiplier.
+ // Historical/expected production sets the player multiplier. Better players pay a lower multiplier.
+ // The spread is intentionally wide (1.00x to 4.25x) and continuous instead of collapsing players into a few buckets.
  const expectedKey=kind==="bat"?"bat_expected":"pit_expected";
- const rookieKey=kind==="bat"?"bat_rookie":"pit_rookie";
- const experienced=rows.filter(r=>!r[rookieKey]&&Number.isFinite(r[expectedKey])).sort((a,b)=>b[expectedKey]-a[expectedKey]);
- const raw=new Map();
- if(experienced.length===1)raw.set(experienced[0].player_id,2.25);
- experienced.forEach((r,i)=>{
-   const q=experienced.length<=1?.5:i/(experienced.length-1);
-   raw.set(r.player_id,1+(2.5*q)); // 1.00 to 3.50, centered at 2.25
+ const ranked=rows.filter(r=>Number.isFinite(r[expectedKey])).sort((a,b)=>b[expectedKey]-a[expectedKey]);
+ const out=new Map();
+ if(ranked.length===1)out.set(ranked[0].player_id,2.25);
+ ranked.forEach((r,i)=>{
+   const q=ranked.length<=1?.5:i/(ranked.length-1);
+   const mult=1+3.25*Math.pow(q,1.12);
+   out.set(r.player_id,roundMult(mult));
  });
- const values=rows.map(r=>r[rookieKey]?3:(raw.get(r.player_id)??3));
- const fixed=rows.map(r=>!!r[rookieKey]);
- const normalized=normalizeMean(values,2.25,fixed);
- return new Map(rows.map((r,i)=>[r.player_id,normalized[i]]));
+ // Players without a usable history/current sample start in the upper-middle rather than at an extreme.
+ for(const r of rows)if(!out.has(r.player_id))out.set(r.player_id,3.25);
+ return out;
 }
+
 export async function buildSlate(DB,date){
  const slate=await ensureSlate(DB,date);
  const [schedRes,rosterRes,currentBat,currentPit,settingsRes]=await DB.batch([
@@ -97,16 +81,20 @@ export async function buildSlate(DB,date){
  const settings=new Map((settingsRes.results||[]).map(r=>[r.player_id,r]));
  const rows=roster.map(r=>{
    const b=bcur.get(r.player_id),p=pcur.get(r.player_id);
-   const enoughBat=num(b?.pa)>=15;
-   const enoughPit=num(p?.outs)>=9;
+   const currentBat=num(b?.gp)>0?num(b.fp)/num(b.gp):null;
+   const currentPit=num(p?.apps)>0?num(p.fp)/num(p.apps):null;
    const careerBat=r.batting_fp_per_game===null||r.batting_fp_per_game===undefined?null:Number(r.batting_fp_per_game);
    const careerPit=r.pitching_fp_per_app===null||r.pitching_fp_per_app===undefined?null:Number(r.pitching_fp_per_app);
-   const batExpected=enoughBat&&num(b?.gp)>0?num(b.fp)/num(b.gp):careerBat;
-   const pitExpected=enoughPit&&num(p?.apps)>0?num(p.fp)/num(p.apps):careerPit;
+   const batW=Math.min(.70,num(b?.pa)/60);
+   const pitW=Math.min(.70,num(p?.outs)/45);
+   const batExpected=Number.isFinite(currentBat)&&Number.isFinite(careerBat)?batW*currentBat+(1-batW)*careerBat:
+     (Number.isFinite(careerBat)?careerBat:(num(b?.pa)>=8?currentBat:null));
+   const pitExpected=Number.isFinite(currentPit)&&Number.isFinite(careerPit)?pitW*currentPit+(1-pitW)*careerPit:
+     (Number.isFinite(careerPit)?careerPit:(num(p?.outs)>=6?currentPit:null));
    const set=settings.get(r.player_id)||{};
    return {...r,
     bat_expected:Number.isFinite(batExpected)?batExpected:null,pit_expected:Number.isFinite(pitExpected)?pitExpected:null,
-    bat_rookie:!enoughBat&&!Number.isFinite(careerBat),pit_rookie:!enoughPit&&!Number.isFinite(careerPit),
+    bat_rookie:!Number.isFinite(careerBat),pit_rookie:!Number.isFinite(careerPit),
     batting_eligible:set.batting_eligible===undefined?1:num(set.batting_eligible),
     pitching_eligible:set.pitching_eligible===undefined?1:num(set.pitching_eligible),
     batting_multiplier_override:set.batting_multiplier_override,
@@ -134,9 +122,12 @@ export async function scoreEntries(DB,date){
  const byEntry=new Map();
  for(const p of picks.results||[]){
    const base=p.slot_type==="bat"?(bmap.get(p.player_id)||0):(pmap.get(p.player_id)||0);
-   const final=base*num(p.multiplier);
+   const slotMult=p.slot_type==="bat"?({1:3,2:2,3:1}[Number(p.slot_number)]||1):({1:3,2:2}[Number(p.slot_number)]||1);
+   const playerMult=num(p.multiplier);
+   const totalMult=playerMult*slotMult;
+   const final=base*totalMult;
    if(!byEntry.has(p.entry_id))byEntry.set(p.entry_id,[]);
-   byEntry.get(p.entry_id).push({...p,base_points:base,final_points:Math.round(final*100)/100});
+   byEntry.get(p.entry_id).push({...p,base_points:base,player_multiplier:playerMult,slot_multiplier:slotMult,total_multiplier:Math.round(totalMult*100)/100,final_points:Math.round(final*100)/100});
  }
  return (entries.results||[]).map(e=>{
    const ps=byEntry.get(e.entry_id)||[];
