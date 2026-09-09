@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=84"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -42,16 +42,16 @@
   <input id="q" placeholder="Search player..." oninput="render()">
   <div id="statsCount" class="stats-count"></div>
  </div>
- <div class="qualifier-hint">Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.</div>
+ <div id="qualifierHint" class="qualifier-hint">Qualification filter: career/historical views use 50+ PA for batters and 18+ IP for pitchers. The 2026 view prorates those requirements by each player's team games played.</div>
  <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
  <div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=81"></script>
+<script src="/assets/data.js?v=84"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
-let liveBat=[],livePit=[],liveLoaded=false;
+let liveBat=[],livePit=[],liveStandings=[],liveLoaded=false;
 
 const canonicalBattingFallback=[
  {"Player_ID":"patrick_thompson","Name":"Patrick Thompson","PAs":"493","ABs":"384","Hits":"147","Singles":"80","Doubles":"19","Triples":"6","HRs":"43","BA":"0.383","BB":"107","RBI":"39","OBP":"0.515","SLG":"0.802","Ks":"98","GP":"106","OPS":"1.317","wOBA":"0.546","Retired":"1","Class_Year":"2025"},
@@ -255,7 +255,50 @@ function label(c){
  if(c==="Walks")return "BB";
  return c;
 }
-function qualifies(r){return mode==="bat"?num(r.PAs)>=50:num(r.IP)>=18}
+function teamGamesPlayedForRow(r){
+ if(scopeSel.value!=="2026")return 24;
+ const tid=teamInfo(r).id;
+ const st=(liveStandings||[]).find(x=>x.team_id===tid);
+ return st?num(st.GP):0;
+}
+function dynamicPaRequirement(gp){return Math.ceil((50/24)*gp)}
+function dynamicPitchOutRequirement(gp){return Math.ceil((18/24)*gp*3)}
+function qualifies(r){
+ if(scopeSel.value!=="2026")return mode==="bat"?num(r.PAs)>=50:num(r.IP)>=18;
+ const gp=teamGamesPlayedForRow(r);
+ if(gp<=0)return false;
+ if(mode==="bat")return num(r.PAs)>=dynamicPaRequirement(gp);
+ const outs=(r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP);
+ return outs>=dynamicPitchOutRequirement(gp);
+}
+function formatOutsAsIP(outs){const whole=Math.floor(outs/3),rem=outs%3;return rem?`${whole}.${rem}`:String(whole)}
+function updateQualifierText(){
+ const label=document.getElementById("qualLabel"),hint=document.getElementById("qualifierHint");
+ if(scopeSel.value!=="2026"){
+   label.textContent=mode==="bat"?"Qualified only (50+ PA)":"Qualified only (18+ IP)";
+   hint.textContent="Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.";
+   return;
+ }
+ const selectedTeam=teamSel.value;
+ if(selectedTeam!=="all"){
+   const st=(liveStandings||[]).find(x=>x.team_id===selectedTeam),gp=st?num(st.GP):0;
+   const pa=dynamicPaRequirement(gp),outs=dynamicPitchOutRequirement(gp);
+   label.textContent=mode==="bat"?`Qualified only (${pa}+ PA)`: `Qualified only (${formatOutsAsIP(outs)}+ IP)`;
+   hint.textContent=`2026 dynamic qualification for ${TEAM_BY_ID[selectedTeam]?.name||selectedTeam}: ${gp} team games played → ${pa}+ PA or ${formatOutsAsIP(outs)}+ IP. Full-season targets remain 50 PA / 18 IP at 24 games.`;
+   return;
+ }
+ const gps=(liveStandings||[]).map(x=>num(x.GP)).filter(x=>x>0);
+ if(!gps.length){
+   label.textContent="Qualified only (dynamic)";
+   hint.textContent="2026 qualification is prorated by each player's team games played, converging to 50 PA / 18 IP at 24 games.";
+   return;
+ }
+ const minGP=Math.min(...gps),maxGP=Math.max(...gps);
+ const minPA=dynamicPaRequirement(minGP),maxPA=dynamicPaRequirement(maxGP);
+ const minOut=dynamicPitchOutRequirement(minGP),maxOut=dynamicPitchOutRequirement(maxGP);
+ label.textContent="Qualified only (dynamic)";
+ hint.textContent=`2026 qualification is team-schedule adjusted. Current team GP range: ${minGP}–${maxGP}; batting thresholds: ${minPA}–${maxPA} PA; pitching thresholds: ${formatOutsAsIP(minOut)}–${formatOutsAsIP(maxOut)} IP. Full-season targets remain 50 PA / 18 IP at 24 games.`;
+}
 function sortRows(rows){
  if(!sortKey){
    const k=mode==="bat"?"Hits":"Ks";
@@ -279,6 +322,7 @@ function sortBy(k){
  render();
 }
 function render(){
+ updateQualifierText();
  const qv=(q.value||"").toLowerCase();
  let rows=sourceRows().filter(r=>(r.Name||"").toLowerCase().includes(qv));
  const selectedTeam=teamSel.value;
@@ -298,7 +342,7 @@ async function loadLive(){
    const res=await fetch("/api/public/league?season=2026",{cache:"no-store"});
    const j=await res.json();
    if(!res.ok||!j.ok)throw new Error(j.error||"Live stats unavailable");
-   liveBat=j.batting||[]; livePit=j.pitching||[]; liveLoaded=true; render();
+   liveBat=j.batting||[]; livePit=j.pitching||[]; liveStandings=j.standings||[]; liveLoaded=true; render();
  }catch(err){
    liveLoaded=true;
    console.error(err);
@@ -308,4 +352,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer><script src="/assets/table-tools.js?v=81"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer><script src="/assets/table-tools.js?v=84"></script></body></html>

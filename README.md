@@ -472,3 +472,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Makes table headers sticky across the site.
 - GB display is rank-aware relative to 7th place: teams above 7th show `+`, teams below 7th show games behind without `+`.
 - Public results and standings normalize legacy games when the stored score-side winner conflicts with the winning pitcher's recorded team side, fixing reversed 2-1 series and the standings they affected.
+
+## v84: dynamic 2026 qualification
+- 2026 batting and pitching qualification is prorated by each player's current team games played.
+- Batting threshold = ceil(50 / 24 × team GP).
+- Pitching threshold = ceil(18 / 24 × team GP × 3) outs, displayed as baseball innings.
+- Career and historical season views retain fixed 50 PA / 18 IP qualification.
