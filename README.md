@@ -478,3 +478,7 @@ The current static historical database is treated as the authoritative 2021–20
 - Batting threshold = ceil(50 / 24 × team GP).
 - Pitching threshold = ceil(18 / 24 × team GP × 3) outs, displayed as baseball innings.
 - Career and historical season views retain fixed 50 PA / 18 IP qualification.
+
+
+## v85
+- Adds sortable K% and BB% columns to batting and pitching stats. Batting rates use PA; pitching rates use BF.
