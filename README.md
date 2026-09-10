@@ -482,3 +482,8 @@ The current static historical database is treated as the authoritative 2021–20
 
 ## v85
 - Adds sortable K% and BB% columns to batting and pitching stats. Batting rates use PA; pitching rates use BF.
+
+
+## v86
+- Added sortable career team stat board to /teams/.
+- Added migrations/0023_roster_and_status_updates.sql for requested 2026 roster/status corrections.
