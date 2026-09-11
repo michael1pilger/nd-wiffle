@@ -186,7 +186,7 @@ export async function onRequestGet(context) {
       FROM captain_availability ca
       JOIN teams t ON t.team_id = ca.team_id
       WHERE ca.season = ?
-        AND ca.availability_date BETWEEN '2026-09-06' AND '2026-09-19'
+        AND ca.availability_date BETWEEN '2026-09-13' AND '2026-09-26'
       ORDER BY ca.availability_date, ca.start_time, t.display_name
     `).bind(season),
 
@@ -244,7 +244,7 @@ export async function onRequestGet(context) {
 
   return json({
     ok: true,
-    build: "master-captain-api",
+    build: "v88-master-captain",
     season,
     captain,
     selected_team_id: selectedTeamId,
@@ -329,7 +329,7 @@ export async function onRequestPost(context) {
       !/^\d{2}:\d{2}$/.test(end)
     ) continue;
 
-    if (date < "2026-09-06" || date > "2026-09-19") continue;
+    if (date < "2026-09-13" || date > "2026-09-26") continue;
 
     const d = new Date(date + "T12:00:00Z");
     const weekend = d.getUTCDay() === 0 || d.getUTCDay() === 6;
@@ -368,7 +368,7 @@ export async function onRequestPost(context) {
     JOIN teams tb ON tb.team_id = ss.team_b_id
     WHERE ss.season = ?
       AND ss.series_time IS NOT NULL
-      AND ss.series_date BETWEEN '2026-09-06' AND '2026-09-19'
+      AND ss.series_date BETWEEN '2026-09-13' AND '2026-09-26'
   `).bind(season).all();
 
   const conflicts = [];
@@ -407,7 +407,7 @@ export async function onRequestPost(context) {
     DELETE FROM captain_availability
     WHERE season = ?
       AND team_id = ?
-      AND availability_date BETWEEN '2026-09-06' AND '2026-09-19'
+      AND availability_date BETWEEN '2026-09-13' AND '2026-09-26'
   `).bind(season, requestedTeamId).run();
 
   if (cleaned.length) {
@@ -439,7 +439,7 @@ export async function onRequestPost(context) {
 
   return json({
     ok: true,
-    build: "master-captain-api",
+    build: "v88-master-captain",
     season,
     team_id: requestedTeamId,
     saved: cleaned.length

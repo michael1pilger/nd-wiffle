@@ -1,4 +1,6 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Players | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81"></head><body>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Players | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81"><style>
+.playercard{cursor:pointer;transition:border-color .15s ease,background .15s ease}.playercard:hover{border-color:#3d5675}.playercard:focus{outline:2px solid #d7ad48;outline-offset:2px}.playercard.expanded{grid-column:1/-1;cursor:default}.player-expand-hint{font-size:9px;color:#718198;margin-top:8px;font-weight:800}.playercard.expanded .player-expand-hint{display:none}.player-history{display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}.playercard.expanded .player-history{display:block}.history-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px}.history-head h3{margin:0;font-size:15px}.history-head span{font-size:9px;color:#718198}.season-list{display:grid;gap:10px}.season-row{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#091321;padding:11px}.season-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}.season-year{font-size:16px;font-weight:950}.season-teams{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end}.season-team{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:850;color:#dce6f3;background:#111e31;border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:4px 7px}.season-team img{width:15px;height:15px;object-fit:contain}.season-awards{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px}.season-award{font-size:9px;font-weight:900;border-radius:999px;padding:4px 7px;background:rgba(215,173,72,.1);border:1px solid rgba(215,173,72,.3);color:#efd57f}.season-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.season-stat-block{background:#0d1929;border-radius:8px;padding:8px}.season-stat-block strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#718198;margin-bottom:5px}.season-stat-values{display:flex;flex-wrap:wrap;gap:5px}.season-stat-values span{font-size:9px;background:#132238;border-radius:6px;padding:4px 6px;color:#dce6f3}.season-empty{font-size:10px;color:#718198}.player-details-close{border:1px solid rgba(255,255,255,.1);background:#101d2e;color:#dce6f3;border-radius:7px;padding:5px 8px;font-size:9px;font-weight:850;cursor:pointer}@media(max-width:700px){.season-stats{grid-template-columns:1fr}.playercard.expanded{grid-column:auto}.season-top{flex-direction:column}.season-teams{justify-content:flex-start}}
+</style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="active" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">League Directory</div><h1>Players</h1></div><div class="container"><div class="player-controls">
 <input class="search" id="pq" placeholder="Search players...">
@@ -16,7 +18,7 @@
 <option value="ip">Sort: Career IP</option>
 </select>
 <div id="playerCount" class="player-count"></div>
-</div><div class="player-data-note">Player cards use the cumulative stat database for class and career totals, roster history for team logos, and season files for best-season summaries.</div><div class="playergrid" id="pg"></div></div></main><footer><div class="container">ND Wiffle · League database · Historical career totals plus live 2026 results.</div></footer>
+</div><div class="player-data-note">Player cards use the cumulative stat database for career totals. Click any player to open their year-by-year teams, batting and pitching stats, and awards.</div><div class="playergrid" id="pg"></div></div></main><footer><div class="container">ND Wiffle · League database · Historical career totals plus live 2026 results.</div></footer>
 
 
 <script src="/assets/data.js?v=81"></script>
@@ -115,6 +117,14 @@ for(const a of (ND_DATA.awards||[])){
  const obj=(accoladesById[pid]??={});
  obj[award]=(obj[award]||0)+1;
 }
+const awardsByIdSeason={};
+for(const a of (ND_DATA.awards||[])){
+ const pid=a.Player_ID,season=String(a.Season||"");
+ if(!pid||!season)continue;
+ const award=accoladeAliases[a.Award]||a.Award;
+ const key=pid+"|"+season;
+ (awardsByIdSeason[key]??=[]).push({award,detail:a.Detail||""});
+}
 function accoladeHTML(pid){
  const obj=accoladesById[pid]||{};
  const chips=accoladeOrder.filter(a=>obj[a]).map(a=>{
@@ -150,16 +160,47 @@ function sortRows(rows){
  const v={hits:[num(ab.Hits),num(bb.Hits)],hrs:[num(ab.HRs),num(bb.HRs)],batK:[num(ab.Ks),num(bb.Ks)],pitK:[num(ap.Ks),num(bp.Ks)],pa:[num(ab.PAs),num(bb.PAs)],ip:[num(ap.IP),num(bp.IP)]};
  if(k==="era"){const ae=num(ap.ERA)||9999,be=num(bp.ERA)||9999;return ae-be} const x=v[k]||[0,0];return x[1]-x[0]})
 }
+let expandedPlayerId="";
+function seasonTeams(pid,season,b,pit){
+ const teams=[];
+ for(const r of (rostersById[pid]||[]))if(String(r.Season)===String(season)&&r.Team)teams.push(canonicalTeam(r.Team));
+ if(b?.Team)teams.push(canonicalTeam(b.Team));if(pit?.Team)teams.push(canonicalTeam(pit.Team));
+ return [...new Set(teams.filter(Boolean))];
+}
+function pct(v){const n=Number(v);if(!Number.isFinite(n))return "—";return (n*100).toFixed(1)+"%"}
+function seasonHistoryHTML(p){
+ const pid=p.Player_ID,batRows=batSeasonsById[pid]||[],pitRows=pitSeasonsById[pid]||[],years=new Set();
+ for(const r of batRows)if(r.Season)years.add(String(r.Season));for(const r of pitRows)if(r.Season)years.add(String(r.Season));for(const r of (rostersById[pid]||[]))if(r.Season)years.add(String(r.Season));
+ for(const a of (ND_DATA.awards||[]))if(a.Player_ID===pid&&a.Season)years.add(String(a.Season));
+ const ordered=[...years].sort((a,b)=>Number(b)-Number(a));
+ if(!ordered.length)return '<div class="season-empty">No season-by-season records are available for this player.</div>';
+ return `<div class="season-list">${ordered.map(year=>{
+   const b=batRows.find(r=>String(r.Season)===year)||{},pit=pitRows.find(r=>String(r.Season)===year)||{},teams=seasonTeams(pid,year,b,pit),awards=awardsByIdSeason[pid+"|"+year]||[];
+   const teamHTML=teams.length?teams.map(t=>`<span class="season-team">${logoMap[t]?`<img src="${logoMap[t]}" alt="">`:''}${escHtml(t)}</span>`).join(''):'<span class="season-team">Team —</span>';
+   const awardHTML=awards.length?`<div class="season-awards">${awards.map(a=>`<span class="season-award" title="${escHtml(a.detail)}">${accoladeIcon[a.award]||'•'} ${escHtml(a.award)}${a.detail?` · ${escHtml(a.detail)}`:''}</span>`).join('')}</div>`:'';
+   const hasBat=Object.keys(b).length>0&&num(b.PAs)>0,hasPit=Object.keys(pit).length>0&&(num(pit.Apps)>0||num(pit.IP)>0||num(pit.Outs)>0);
+   const batHTML=hasBat?`<div class="season-stat-block"><strong>Batting</strong><div class="season-stat-values"><span>${b.PAs??0} PA</span><span>${b.Hits??0} H</span><span>${b.HRs??0} HR</span><span>${b.BB??0} BB</span><span>${b.Ks??0} K</span><span>${b.BA??'—'} BA</span><span>${b.OBP??'—'} OBP</span><span>${b.SLG??'—'} SLG</span><span>${b.OPS??'—'} OPS</span></div></div>`:`<div class="season-stat-block"><strong>Batting</strong><div class="season-empty">No batting stats recorded.</div></div>`;
+   const ip=pit.IP!=null?pit.IP:(pit.Outs!=null?liveOutsToIp(pit.Outs):'—');
+   const pitHTML=hasPit?`<div class="season-stat-block"><strong>Pitching</strong><div class="season-stat-values"><span>${pit.Apps??0} App</span><span>${pit.Starts??0} GS</span><span>${ip} IP</span><span>${pit.Ks??0} K</span><span>${pit.W??0}-${pit.L??0} W-L</span><span>${fmt2(pit.ERA)} ERA</span><span>${fmt2(pit.WHIP)} WHIP</span></div></div>`:`<div class="season-stat-block"><strong>Pitching</strong><div class="season-empty">No pitching stats recorded.</div></div>`;
+   return `<div class="season-row"><div class="season-top"><div class="season-year">${year}</div><div class="season-teams">${teamHTML}</div></div>${awardHTML}<div class="season-stats">${batHTML}${pitHTML}</div></div>`;
+ }).join('')}</div>`;
+}
+function escHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function renderPlayers(){
  const q=(pq.value||"").trim().toLowerCase();
  let rows=(ND_DATA.players||[]).filter(publicVisiblePlayer).map(p=>[p,batById[p.Player_ID]||{},pitById[p.Player_ID]||{}]).filter(([p,b,pit])=>{
   if(q&&!(p.Name||"").toLowerCase().includes(q))return false;const teams=playerTeams(p);if(teamSel.value&&!teams.includes(teamSel.value))return false;
   const c=playerClass(p,b,pit);if(classSel.value&&c!==classSel.value)return false;const r=isRetired(p,b,pit);if(statusSel.value==="active"&&r)return false;if(statusSel.value==="retired"&&!r)return false;return true});
  rows=sortRows(rows);playerCount.textContent=`${rows.length} players`;
- pg.innerHTML=rows.map(([p,b,pit])=>{const c=playerClass(p,b,pit),ret=isRetired(p,b,pit),teams=playerTeams(p),logos=teams.filter(t=>logoMap[t]).map(t=>`<img src="${logoMap[t]}" title="${t}" alt="${t}">`).join(""),bb=bestBat(p.Player_ID),bp=bestPit(p.Player_ID),best=[];
+ pg.innerHTML=rows.map(([p,b,pit])=>{const c=playerClass(p,b,pit),ret=isRetired(p,b,pit),teams=playerTeams(p),logos=teams.filter(t=>logoMap[t]).map(t=>`<img src="${logoMap[t]}" title="${t}" alt="${t}">`).join(""),bb=bestBat(p.Player_ID),bp=bestPit(p.Player_ID),best=[],expanded=expandedPlayerId===p.Player_ID;
  if(bb)best.push(`<b>Best batting:</b> ${bb.Season} · ${bb.Hits??0} H · ${bb.HRs??0} HR · ${bb.BA??"—"} AVG`);if(bp)best.push(`<b>Best pitching:</b> ${bp.Season} · ${bp.Ks??0} K · ${fmt2(bp.ERA)} ERA`);
- return `<div class="card playercard"><div class="player-card-top"><div><div class="player-name">${p.Name}${ret?'<span class="retired-badge">Retired</span>':""}</div><div class="player-meta">${c?`Class '${c.slice(-2)}`:"Class —"}</div></div><div class="player-team-logos">${logos}</div></div>
- <div class="player-statline"><span class="tag">${b.Hits??0} H</span><span class="tag">${b.HRs??0} HR</span><span class="tag">${pit.Ks??0} Pitching K</span>${num(pit.IP)>0?`<span class="tag">${fmt2(pit.ERA)} ERA</span>`:""}</div>${accoladeHTML(p.Player_ID)}${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}</div>`}).join("")
+ return `<div class="card playercard ${expanded?'expanded':''}" data-player-id="${p.Player_ID}" role="button" tabindex="0" aria-expanded="${expanded?'true':'false'}"><div class="player-card-top"><div><div class="player-name">${p.Name}${ret?'<span class="retired-badge">Retired</span>':""}</div><div class="player-meta">${c?`Class '${c.slice(-2)}`:"Class —"}</div></div><div class="player-team-logos">${logos}</div></div>
+ <div class="player-statline"><span class="tag">${b.Hits??0} H</span><span class="tag">${b.HRs??0} HR</span><span class="tag">${pit.Ks??0} Pitching K</span>${num(pit.IP)>0?`<span class="tag">${fmt2(pit.ERA)} ERA</span>`:""}</div>${accoladeHTML(p.Player_ID)}${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}<div class="player-expand-hint">Click for year-by-year history</div><div class="player-history"><div class="history-head"><div><h3>Year-by-year history</h3><span>Teams, stats and awards by season</span></div><button class="player-details-close" type="button">Close</button></div>${seasonHistoryHTML(p)}</div></div>`}).join("");
+ for(const card of pg.querySelectorAll('.playercard')){
+   const toggle=()=>{expandedPlayerId=expandedPlayerId===card.dataset.playerId?'':card.dataset.playerId;renderPlayers();if(expandedPlayerId){const el=pg.querySelector(`[data-player-id="${expandedPlayerId}"]`);el?.scrollIntoView({block:'nearest',behavior:'smooth'})}};
+   card.addEventListener('click',e=>{if(e.target.closest('.player-details-close')){expandedPlayerId='';renderPlayers();return}toggle()});
+   card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+ }
 }
 [pq,teamSel,classSel,statusSel,sortSel].forEach(el=>el.addEventListener(el===pq?"input":"change",renderPlayers));populateFilters();renderPlayers();loadLivePlayerData();
 </script></body></html>
