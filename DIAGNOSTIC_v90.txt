@@ -1,0 +1,8 @@
+ND Wiffle v90 diagnostic
+========================
+
+HTML embedded JavaScript syntax: PASS
+JavaScript file syntax: PASS
+Local static links/assets: PASS
+Restricted umpire list: PASS
+Commissioner Series Hub cleanup: PASS

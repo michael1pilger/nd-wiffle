@@ -25,11 +25,24 @@ export async function onRequestGet(context){
     FROM series WHERE season=? ORDER BY series_date,series_id
    `).bind(season),
    DB.prepare(`
-    SELECT DISTINCT p.player_id,p.name,tr.team_id
-    FROM team_rosters tr JOIN players p ON p.player_id=tr.player_id
-    WHERE tr.season=? AND COALESCE(p.retired,0)=0
-    ORDER BY p.name
-   `).bind(season)
+    SELECT p.player_id,p.name
+    FROM players p
+    WHERE lower(p.name) IN (
+      lower('Jimmy Szpak'),
+      lower('Joey Thomalla'),
+      lower('Will Stevens'),
+      lower('Michael Pilger'),
+      lower('Brendan Mato')
+    )
+    ORDER BY CASE lower(p.name)
+      WHEN lower('Jimmy Szpak') THEN 1
+      WHEN lower('Joey Thomalla') THEN 2
+      WHEN lower('Will Stevens') THEN 3
+      WHEN lower('Michael Pilger') THEN 4
+      WHEN lower('Brendan Mato') THEN 5
+      ELSE 99
+    END
+   `)
   ]);
   let captain_availability=[];
   try{
@@ -42,7 +55,8 @@ export async function onRequestGet(context){
     `).bind(season).all();
     captain_availability=ar.results||[];
   }catch{}
-  return json({ok:true,build:"v88",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],umpires:umpires.results||[],captain_availability,actor_email:context.data.actorEmail||null});
+  const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
+  return json({ok:true,build:"v90",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
@@ -66,9 +80,16 @@ export async function onRequestPost(context){
  const teamRows=await DB.prepare("SELECT team_id FROM teams WHERE team_id IN (?,?) AND active_2026=1").bind(a,b).all();
  if((teamRows.results||[]).length!==2)return json({ok:false,error:"Unknown or inactive team."},422);
  let verifiedUmpireName=umpire_name;
- if(umpire_player_id){
-   const ur=await DB.prepare("SELECT name FROM players WHERE player_id=?").bind(umpire_player_id).first();
-   if(!ur)return json({ok:false,error:"Selected umpire was not found."},422);
+ let storedUmpirePlayerId=umpire_player_id;
+ if(umpire_player_id==="__other__"){
+   storedUmpirePlayerId="";
+   verifiedUmpireName=umpire_name||"Other";
+ }else if(umpire_player_id){
+   const allowedNames=["jimmy szpak","joey thomalla","will stevens","michael pilger","brendan mato"];
+   const ur=await DB.prepare("SELECT player_id,name FROM players WHERE player_id=?").bind(umpire_player_id).first();
+   if(!ur||!allowedNames.includes(String(ur.name||"").toLowerCase())){
+     return json({ok:false,error:"That player is not an eligible umpire."},422);
+   }
    verifiedUmpireName=ur.name;
  }
  const key=pairKey(a,b),ids=[a,b].sort();
@@ -80,6 +101,6 @@ export async function onRequestPost(context){
     series_date=excluded.series_date,series_time=excluded.series_time,
     location=excluded.location,notes=excluded.notes,umpire_player_id=excluded.umpire_player_id,umpire_name=excluded.umpire_name,
     updated_at=CURRENT_TIMESTAMP,updated_by=excluded.updated_by
- `).bind(season,key,ids[0],ids[1],date,time||null,location||null,notes||null,actor,umpire_player_id||null,verifiedUmpireName||null).run();
+ `).bind(season,key,ids[0],ids[1],date,time||null,location||null,notes||null,actor,storedUmpirePlayerId||null,verifiedUmpireName||null).run();
  return json({ok:true,action:"saved",season,pair_key:key});
 }
