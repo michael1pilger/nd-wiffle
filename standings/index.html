@@ -22,7 +22,7 @@
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Standings</h1>
 <p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button><button class="standings-tab" type="button" data-standings-tab="playoff">Playoff %</button></div></div>
 <section class="standings-shell standings-panel" id="standingsPanel"><div class="container"><div class="tablewrap"><table class="standings-table">
-<thead><tr><th class="standings-rank">RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>RS</th><th>RA</th><th>DIFF</th></tr></thead>
+<thead><tr><th class="standings-rank">RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>RS</th><th>RA</th><th>DIFF</th><th>FORM</th></tr></thead>
 <tbody id="standingsBody"><tr style="--team:90,98,110"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/midnight.png?v=81" alt="Midnight"><span>Midnight</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
@@ -60,8 +60,8 @@
     <div class="power-summary-card"><small>Player component</small><strong>Series performance vs own baseline</strong></div>
     <div class="power-summary-card"><small>Scale</small><strong>Relative 25–95 rating</strong></div>
   </div>
-  <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Rating</th><th>W-L</th><th>SOS</th><th>RD/G</th><th>Player Form</th></tr></thead><tbody id="powerBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading power rankings…</td></tr></tbody></table></div>
-  <div class="power-method"><strong>Power rating methodology:</strong> 55% current win percentage, 20% strength of schedule based on opponents faced, 12.5% run differential per game, and 12.5% player form. Player form compares each player’s batting + pitching points in the team’s two most recent series with that player’s own 2026 per-series baseline, using only series in which that player appeared. All four inputs are standardized across the league before being combined, so the rating is a relative measure of current 2026 performance rather than a playoff seeding formula.</div>
+  <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Rating</th><th>W-L</th><th>SOS</th><th>RD/G</th><th>Player Form</th><th>Last 6</th></tr></thead><tbody id="powerBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading power rankings…</td></tr></tbody></table></div>
+  <div class="power-method"><strong>Power rating methodology:</strong> 60% current win percentage, 10% strength of schedule based on opponents faced, 10% run differential per game, 10% player form, and 10% team record over the last six games. Player form compares each player’s batting + pitching points in the team’s two most recent series with that player’s own 2026 per-series baseline, using only series in which that player appeared. All four inputs are standardized across the league before being combined, so the rating is a relative measure of current 2026 performance rather than a playoff seeding formula.</div>
 </div></section>
 <section class="standings-shell playoff-panel" id="playoffPanel"><div class="container">
   <div class="power-summary">
@@ -69,7 +69,7 @@
     <div class="power-summary-card"><small>Model</small><strong>Parity-aware simulation</strong></div>
     <div class="power-summary-card"><small>Tiebreaker</small><strong>Point differential first</strong></div>
   </div>
-  <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Playoff %</th><th>W-L</th><th>Games Left</th><th>DIFF</th><th>Future SOS</th></tr></thead><tbody id="playoffBody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading playoff odds…</td></tr></tbody></table></div>
+  <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Playoff %</th><th>W-L</th><th>Games Left</th><th>DIFF</th><th>Future SOS</th></tr></thead><tbody id="playoffBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading playoff odds…</td></tr></tbody></table></div>
   <div class="playoff-note2"><strong>Playoff probability model:</strong> 20,000 simulations of the remaining 24-game regular-season schedule. Early-season results are deliberately regressed toward league parity, with that regression fading as teams play more games. Each simulation also includes team-strength uncertainty, so a 0-6 start matters without being treated as proof that a team is permanently weak. Current record, point differential, future SOS, known future opponents, unscheduled matchups, and games remaining are still included. Seven teams qualify, so probabilities total exactly 700%. A team is shown at 100% only when mathematically clinched and at 0% only when mathematically eliminated.</div>
 </div></section>
 </main>
@@ -96,6 +96,43 @@ function gb(v,rank){
  // even when games-in-hand makes the raw algebraic GB value negative.
  return Number(rank)<7?`+${text}`:text;
 }
+
+let LAST6_BY_TEAM=new Map();
+function buildLast6(results){
+  const games=[];
+  for(const sr of (results?.series||[])){
+    for(const g of (sr.games||[])){
+      games.push({
+        date:sr.series_date||"",
+        game_number:Number(g.game_number||0),
+        away:sr.away_team_id,
+        home:sr.home_team_id,
+        away_score:Number(g.away_score||0),
+        home_score:Number(g.home_score||0)
+      });
+    }
+  }
+  games.sort((a,b)=>`${b.date}|${b.game_number}`.localeCompare(`${a.date}|${a.game_number}`));
+  const ids=[...new Set(games.flatMap(g=>[g.away,g.home]))];
+  const out=new Map();
+  for(const id of ids){
+    const last=games.filter(g=>g.away===id||g.home===id).slice(0,6);
+    const form=last.map(g=>{
+      const own=g.away===id?g.away_score:g.home_score;
+      const opp=g.away===id?g.home_score:g.away_score;
+      return own>opp?"W":"L";
+    });
+    const wins=form.filter(x=>x==="W").length;
+    out.set(id,{form,wins,losses:form.length-wins,pct:form.length?wins/form.length:.5});
+  }
+  LAST6_BY_TEAM=out;
+}
+function formHtml(teamId){
+  const f=LAST6_BY_TEAM.get(teamId)?.form||[];
+  if(!f.length)return '<span style="color:var(--muted)">—</span>';
+  return `<span style="letter-spacing:.12em;font-weight:900">${f.map(x=>`<span style="color:${x==="W"?"#71d49c":"#eb7884"}">${x}</span>`).join(" ")}</span>`;
+}
+
 function renderLiveStandings(rows,seriesCount){
  const body=document.getElementById("standingsBody");
  body.innerHTML=rows.map((r,i)=>{
@@ -105,7 +142,7 @@ function renderLiveStandings(rows,seriesCount){
     <td class="standings-rank">${r.rank}</td>
     <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}</span></div></td>
     <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td>${gb(r.GB,r.rank)}</td>
-    <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td>
+    <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${formHtml(r.team_id)}</td>
    </tr>`;
  }).join("");
  document.getElementById("standingsStatus").textContent=seriesCount
@@ -143,16 +180,16 @@ function renderPowerRankings(league,results){
      const deltas=[];for(const [pid,x] of per)if(x.team_id===t.team_id)deltas.push(x.pts-num(playerAvg.get(pid)));
      if(deltas.length)forms.push(deltas.reduce((a,b)=>a+b,0)/deltas.length);
    }
-   return {...t,sos:faced.length?faced.reduce((a,b)=>a+b,0)/faced.length:.5,rdg:num(t.GP)?num(t.DIFF)/num(t.GP):0,form:forms.length?forms.slice(0,2).reduce((a,b)=>a+b,0)/Math.min(2,forms.length):0};
+   return {...t,sos:faced.length?faced.reduce((a,b)=>a+b,0)/faced.length:.5,rdg:num(t.GP)?num(t.DIFF)/num(t.GP):0,form:forms.length?forms.slice(0,2).reduce((a,b)=>a+b,0)/Math.min(2,forms.length):0,last6:(LAST6_BY_TEAM.get(t.team_id)?.pct??.5)};
  });
- const zPct=zMap(metrics.map(x=>num(x.PCT))),zSos=zMap(metrics.map(x=>x.sos)),zRdg=zMap(metrics.map(x=>x.rdg)),zForm=zMap(metrics.map(x=>x.form));
+ const zPct=zMap(metrics.map(x=>num(x.PCT))),zSos=zMap(metrics.map(x=>x.sos)),zRdg=zMap(metrics.map(x=>x.rdg)),zForm=zMap(metrics.map(x=>x.form)),zLast6=zMap(metrics.map(x=>x.last6));
  for(const m of metrics){
-   const composite=.55*zPct(num(m.PCT))+.20*zSos(m.sos)+.125*zRdg(m.rdg)+.125*zForm(m.form);
+   const composite=.60*zPct(num(m.PCT))+.10*zSos(m.sos)+.10*zRdg(m.rdg)+.10*zForm(m.form)+.10*zLast6(m.last6);
    m.rating=Math.max(25,Math.min(95,60+12*composite));
  }
  metrics.sort((a,b)=>b.rating-a.rating||b.PCT-a.PCT||b.DIFF-a.DIFF||a.team.localeCompare(b.team));
  const body=document.getElementById("powerBody");
- body.innerHTML=metrics.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};const f=r.form>0.05?`<span class="power-up">+${r.form.toFixed(1)}</span>`:r.form<-0.05?`<span class="power-down">${r.form.toFixed(1)}</span>`:`<span class="power-flat">0.0</span>`;return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td class="power-rating">${r.rating.toFixed(1)}</td><td>${r.W}-${r.L}</td><td>${r.sos.toFixed(3).replace(/^0/,"")}</td><td>${r.rdg>0?"+":""}${r.rdg.toFixed(2)}</td><td>${f}</td></tr>`}).join("");
+ body.innerHTML=metrics.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};const f=r.form>0.05?`<span class="power-up">+${r.form.toFixed(1)}</span>`:r.form<-0.05?`<span class="power-down">${r.form.toFixed(1)}</span>`:`<span class="power-flat">0.0</span>`;const l6=LAST6_BY_TEAM.get(r.team_id)||{wins:0,losses:0};return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td class="power-rating">${r.rating.toFixed(1)}</td><td>${r.W}-${r.L}</td><td>${r.sos.toFixed(3).replace(/^0/,"")}</td><td>${r.rdg>0?"+":""}${r.rdg.toFixed(2)}</td><td>${f}</td><td>${l6.wins}-${l6.losses}</td></tr>`}).join("");
  return metrics;
 }
 
@@ -257,13 +294,14 @@ Promise.all([
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j}))).catch(()=>({ok:false,j:{ok:false,scheduled:[]}}))
 ]).then(([leagueRes,resultRes,scheduleRes])=>{
  if(!leagueRes.ok||!leagueRes.j.ok)throw new Error(leagueRes.j.error||"Live standings unavailable");
+ if(resultRes.ok&&resultRes.j.ok)buildLast6(resultRes.j);
  renderLiveStandings(leagueRes.j.standings||[],leagueRes.j.series_count||0);
  if(resultRes.ok&&resultRes.j.ok){const powerMetrics=renderPowerRankings(leagueRes.j,resultRes.j);renderPlayoffOdds(leagueRes.j,resultRes.j,(scheduleRes.ok&&scheduleRes.j.ok)?scheduleRes.j:{scheduled:[]},powerMetrics);}
- else {document.getElementById("powerBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';document.getElementById("playoffBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';}
+ else {document.getElementById("powerBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';document.getElementById("playoffBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';}
 }).catch(err=>{
  document.getElementById("standingsStatus").textContent="Live standings are temporarily unavailable. Showing the preseason table.";
- document.getElementById("powerBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';
- document.getElementById("playoffBody").innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';
+ document.getElementById("powerBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';
+ document.getElementById("playoffBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';
  console.error(err);
 });
 </script>

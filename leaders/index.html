@@ -39,7 +39,7 @@
 <div><label>&nbsp;</label><button id="qualBtn" type="button">Qualified Only</button></div>
 <div><label>Team</label><select id="teamFilter"><option value="">All Teams</option></select></div>
 </div>
-<div class="leaders-note">Qualified batting requires 50 PA; qualified pitching requires 18 IP. Fantasy points use the league's post-series formulas: batting = total bases + RBI + BB − K; pitching = outs − 2×ER + K − H − BB.</div>
+<div class="leaders-note" id="qualNote">Leader qualification is based on current league usage averages. Fantasy points use the league's post-series formulas: batting = total bases + RBI + BB − K; pitching = outs − 2×ER + K − H − BB.</div>
 <div class="leaders-grid">
 <section class="leader-panel"><div class="leader-panel-head"><h2>Batting Leaders</h2><span id="batCount"></span></div><div class="metric-tabs" id="batTabs"></div><div class="leader-list" id="batLeaders"><div class="leaders-empty">Loading…</div></div></section>
 <section class="leader-panel"><div class="leader-panel-head"><h2>Pitching Leaders</h2><span id="pitCount"></span></div><div class="metric-tabs" id="pitTabs"></div><div class="leader-list" id="pitLeaders"><div class="leaders-empty">Loading…</div></div></section>
@@ -76,7 +76,14 @@ function metricValue(r,id){
  if(["ERA","WHIP"].includes(id)&&(r[id]===null||r[id]===undefined||r[id]===""))return null;
  return num(r[id]);
 }
-function playerPool(rows,type){const team=document.getElementById("teamFilter").value;return rows.filter(r=>{if(team&&r.Team?.id!==team)return false;if(!qualified)return true;return type==="bat"?num(r.PAs)>=50:num(r.Outs)>=54})}
+function leaderThreshold(type){
+ const source=type==="bat"?(DATA.batting||[]).filter(r=>num(r.PAs)>0):(DATA.pitching||[]).filter(r=>num(r.Outs)>0);
+ if(!source.length)return 0;
+ if(type==="bat"){const avg=source.reduce((a,r)=>a+num(r.PAs),0)/source.length;return Math.max(0,Math.ceil(avg-5))}
+ const avgOuts=source.reduce((a,r)=>a+num(r.Outs),0)/source.length;
+ return Math.max(0,Math.ceil(avgOuts-9));
+}
+function playerPool(rows,type){const team=document.getElementById("teamFilter").value;const threshold=leaderThreshold(type);return rows.filter(r=>{if(team&&r.Team?.id!==team)return false;if(!qualified)return true;return type==="bat"?num(r.PAs)>=threshold:num(r.Outs)>=threshold})}
 function sorted(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return [...rows].sort((a,b)=>{const av=metricValue(a,metric),bv=metricValue(b,metric);if(["ERA","WHIP"].includes(metric)){const am=av===null,bm=bv===null;if(am!==bm)return am?1:-1;}if(av!==bv)return meta.higher?bv-av:av-bv;return type==="bat"?num(b.PAs)-num(a.PAs):num(b.Outs)-num(a.Outs)||a.Name.localeCompare(b.Name)})}
 function valFmt(v,meta){if(v===null||v===undefined||v==="")return "—";return meta.fmt?meta.fmt(v):String(v)}
 function leaderRows(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return sorted(playerPool(rows,type),metric,type).slice(0,10).map((r,i)=>`<div class="leader-row"><div class="leader-rank">${i+1}</div><div>${r.Team&&LOGOS[r.Team.id]?`<img class="leader-logo" src="${LOGOS[r.Team.id]}" alt="">`:""}</div><div class="leader-player"><strong>${esc(r.Name)}</strong><small>${esc(r.Team?.name||"")}${type==="bat"?` · ${r.PAs} PA`:` · ${r.IP} IP`}</small></div><div class="leader-value">${valFmt(metricValue(r,metric),meta)}<small>${meta.label}</small></div></div>`).join("")||'<div class="leaders-empty">No players meet the current filters.</div>'}
@@ -132,7 +139,9 @@ function render(){
  renderTabs("batTabs",BAT_METRICS,batMetric,"bat");renderTabs("pitTabs",PIT_METRICS,pitMetric,"pit");
  document.getElementById("batLeaders").innerHTML=leaderRows(DATA.batting,batMetric,"bat");document.getElementById("pitLeaders").innerHTML=leaderRows(DATA.pitching,pitMetric,"pit");
  document.getElementById("batCount").textContent=`${playerPool(DATA.batting,"bat").length} hitters`;document.getElementById("pitCount").textContent=`${playerPool(DATA.pitching,"pit").length} pitchers`;
- document.getElementById("tableStatus").textContent=qualified?"Qualified players only · sorted by total points":"All published player totals · sorted by batting + pitching points";renderTable();renderAwardTracker();
+ const paQ=leaderThreshold("bat"),outQ=leaderThreshold("pit"),ipQ=`${Math.floor(outQ/3)}.${outQ%3}`;
+ document.getElementById("qualNote").innerHTML=`Qualified leader threshold: <strong>${paQ}+ PA</strong> for batting (5 below current league-average PA) and <strong>${ipQ}+ IP</strong> for pitching (3 IP below current league-average IP). Stats-page qualification remains 50 PA / 18 IP. Fantasy points use the league's post-series formulas: batting = total bases + RBI + BB − K; pitching = outs − 2×ER + K − H − BB.`;
+ document.getElementById("tableStatus").textContent=qualified?`Qualified only · ${paQ}+ PA / ${ipQ}+ IP · sorted by total points`:"All published player totals · sorted by batting + pitching points";renderTable();renderAwardTracker();
 }
 document.getElementById("allBtn").addEventListener("click",()=>{qualified=false;document.getElementById("allBtn").classList.add("active");document.getElementById("qualBtn").classList.remove("active");render()});
 document.getElementById("qualBtn").addEventListener("click",()=>{qualified=true;document.getElementById("qualBtn").classList.add("active");document.getElementById("allBtn").classList.remove("active");render()});

@@ -247,7 +247,7 @@ function renderHomeSeries(series){
   }).join("");
 }
 function renderSeasonPace(series){
- const target=document.getElementById("homeSeasonPace"),totalRequired=36;
+ const target=document.getElementById("homeSeasonPace"),totalRequired=40;
  const completed=(series||[]).filter(s=>(s.games||[]).length>=3).length;
  const remaining=Math.max(0,totalRequired-completed);
  const now=new Date();now.setHours(0,0,0,0);const deadline=new Date(2026,9,17,23,59,59);
@@ -255,7 +255,7 @@ function renderSeasonPace(series){
  const weeksLeft=Math.max(daysLeft/7,1/7),exactRate=remaining?remaining/weeksLeft:0,targetRate=remaining?Math.ceil(exactRate):0;
  const progress=Math.min(100,totalRequired?completed/totalRequired*100:0);
  const status=remaining===0?"Regular-season series target complete":daysLeft===0?`${remaining} series still needed`:`Target ${targetRate} ${targetRate===1?"series":"series"} per week`;
- target.innerHTML=`<div class="pace-card"><div class="pace-hero"><div class="pace-main"><small>Required weekly pace</small><strong>${remaining===0?"Done":targetRate+" / week"}</strong><div>${status}</div></div><div class="pace-stat"><small>Completed</small><strong>${completed} / ${totalRequired}</strong></div><div class="pace-stat"><small>Remaining</small><strong>${remaining}</strong></div><div class="pace-stat"><small>Days to Oct 17</small><strong>${daysLeft}</strong></div></div><div class="pace-progress"><span style="width:${progress.toFixed(1)}%"></span></div><div class="pace-note">Exact pace: <strong>${exactRate.toFixed(2)} series/week</strong>. A series counts as completed only when all three games are published. The 2026 regular season needs 36 completed series by October 17.</div></div>`;
+ target.innerHTML=`<div class="pace-card"><div class="pace-hero"><div class="pace-main"><small>Required weekly pace</small><strong>${remaining===0?"Done":targetRate+" / week"}</strong><div>${status}</div></div><div class="pace-stat"><small>Completed</small><strong>${completed} / ${totalRequired}</strong></div><div class="pace-stat"><small>Remaining</small><strong>${remaining}</strong></div><div class="pace-stat"><small>Days to Oct 17</small><strong>${daysLeft}</strong></div></div><div class="pace-progress"><span style="width:${progress.toFixed(1)}%"></span></div><div class="pace-note">Exact pace: <strong>${exactRate.toFixed(2)} series/week</strong>. A series counts as completed only when all three games are published. The 2026 regular season needs 40 completed series by October 17.</div></div>`;
 }
 document.querySelectorAll("[data-home-results-tab]").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll("[data-home-results-tab]").forEach(x=>x.classList.toggle("active",x===btn));

@@ -10,7 +10,7 @@ export async function onRequestGet(context){
  if(!(await schemaReady(DB)))return json({ok:false,code:"SCHEDULE_SCHEMA_MISSING",error:"Series scheduler is not installed. Run migrations/0017_scheduled_series.sql."},503);
  const season=Number(new URL(context.request.url).searchParams.get("season")||2026);
  try{
-  const [teams,scheduled,completed]=await DB.batch([
+  const [teams,scheduled,completed,umpires]=await DB.batch([
    DB.prepare("SELECT team_id,display_name FROM teams WHERE active_2026=1 ORDER BY display_name"),
    DB.prepare(`
     SELECT ss.*,ta.display_name AS team_a,tb.display_name AS team_b
@@ -23,6 +23,12 @@ export async function onRequestGet(context){
    DB.prepare(`
     SELECT series_id,series_date,away_team_id,home_team_id
     FROM series WHERE season=? ORDER BY series_date,series_id
+   `).bind(season),
+   DB.prepare(`
+    SELECT DISTINCT p.player_id,p.name,tr.team_id
+    FROM team_rosters tr JOIN players p ON p.player_id=tr.player_id
+    WHERE tr.season=? AND COALESCE(p.retired,0)=0
+    ORDER BY p.name
    `).bind(season)
   ]);
   let captain_availability=[];
@@ -36,7 +42,7 @@ export async function onRequestGet(context){
     `).bind(season).all();
     captain_availability=ar.results||[];
   }catch{}
-  return json({ok:true,build:"v80",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v88",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],umpires:umpires.results||[],captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
@@ -53,21 +59,27 @@ export async function onRequestPost(context){
  }
  if(action!=="save")return json({ok:false,error:"Unsupported action."},400);
  const a=clean(body.team_a_id),b=clean(body.team_b_id),date=clean(body.series_date),time=clean(body.series_time),
-       location=clean(body.location),notes=clean(body.notes);
+       location=clean(body.location),notes=clean(body.notes),umpire_player_id=clean(body.umpire_player_id),umpire_name=clean(body.umpire_name);
  if(!a||!b||a===b)return json({ok:false,error:"Choose two different teams."},422);
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return json({ok:false,error:"A valid series date is required."},422);
  if(time&&!/^\d{2}:\d{2}$/.test(time))return json({ok:false,error:"Time must use HH:MM format."},422);
  const teamRows=await DB.prepare("SELECT team_id FROM teams WHERE team_id IN (?,?) AND active_2026=1").bind(a,b).all();
  if((teamRows.results||[]).length!==2)return json({ok:false,error:"Unknown or inactive team."},422);
+ let verifiedUmpireName=umpire_name;
+ if(umpire_player_id){
+   const ur=await DB.prepare("SELECT name FROM players WHERE player_id=?").bind(umpire_player_id).first();
+   if(!ur)return json({ok:false,error:"Selected umpire was not found."},422);
+   verifiedUmpireName=ur.name;
+ }
  const key=pairKey(a,b),ids=[a,b].sort();
  await DB.prepare(`
-  INSERT INTO scheduled_series(season,pair_key,team_a_id,team_b_id,series_date,series_time,location,notes,updated_by)
-  VALUES(?,?,?,?,?,?,?,?,?)
+  INSERT INTO scheduled_series(season,pair_key,team_a_id,team_b_id,series_date,series_time,location,notes,updated_by,umpire_player_id,umpire_name)
+  VALUES(?,?,?,?,?,?,?,?,?,?,?)
   ON CONFLICT(season,pair_key) DO UPDATE SET
     team_a_id=excluded.team_a_id,team_b_id=excluded.team_b_id,
     series_date=excluded.series_date,series_time=excluded.series_time,
-    location=excluded.location,notes=excluded.notes,
+    location=excluded.location,notes=excluded.notes,umpire_player_id=excluded.umpire_player_id,umpire_name=excluded.umpire_name,
     updated_at=CURRENT_TIMESTAMP,updated_by=excluded.updated_by
- `).bind(season,key,ids[0],ids[1],date,time||null,location||null,notes||null,actor).run();
+ `).bind(season,key,ids[0],ids[1],date,time||null,location||null,notes||null,actor,umpire_player_id||null,verifiedUmpireName||null).run();
  return json({ok:true,action:"saved",season,pair_key:key});
 }

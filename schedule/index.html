@@ -142,7 +142,8 @@ function seriesWins(games){
   }
   return {away,home};
 }
-const DEFAULT_CALENDAR_WEEK=new Date(2026,8,13,12,0,0,0);
+function leagueToday(){const now=new Date();now.setHours(12,0,0,0);const floor=new Date(2026,8,15,12,0,0,0);return now<floor?floor:now}
+const DEFAULT_CALENDAR_WEEK=startOfWeek(leagueToday());
 let calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
 function scheduledUpcomingRows(team=""){
  return STATIC_SCHEDULE.map((base,index)=>{const item=scheduledItem(base),result=resultsByPair.get(pairKey(base.away_id,base.home_id)),isFinal=!!result&&(result.games||[]).length===3,isScheduled=!isFinal&&item.date&&item.date!=="TBD";return {base,item,index,isFinal,isScheduled}}).filter(x=>x.isScheduled&&(!team||x.base.away_id===team||x.base.home_id===team));
