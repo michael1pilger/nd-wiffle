@@ -77,11 +77,18 @@ function metricValue(r,id){
  return num(r[id]);
 }
 function leaderThreshold(type){
- const source=type==="bat"?(DATA.batting||[]).filter(r=>num(r.PAs)>0):(DATA.pitching||[]).filter(r=>num(r.Outs)>0);
+ const source=type==="bat"
+   ?(DATA.batting||[]).filter(r=>num(r.PAs)>0)
+   :(DATA.pitching||[]).filter(r=>num(r.Outs)>0);
  if(!source.length)return 0;
- if(type==="bat"){const avg=source.reduce((a,r)=>a+num(r.PAs),0)/source.length;return Math.max(0,Math.ceil(avg-5))}
+
+ if(type==="bat"){
+   const avgPA=source.reduce((a,r)=>a+num(r.PAs),0)/source.length;
+   return Math.ceil(avgPA);
+ }
+
  const avgOuts=source.reduce((a,r)=>a+num(r.Outs),0)/source.length;
- return Math.max(0,Math.ceil(avgOuts-9));
+ return Math.ceil(avgOuts);
 }
 function playerPool(rows,type){const team=document.getElementById("teamFilter").value;const threshold=leaderThreshold(type);return rows.filter(r=>{if(team&&r.Team?.id!==team)return false;if(!qualified)return true;return type==="bat"?num(r.PAs)>=threshold:num(r.Outs)>=threshold})}
 function sorted(rows,metric,type){const meta=(type==="bat"?BAT_METRICS:PIT_METRICS).find(x=>x.id===metric);return [...rows].sort((a,b)=>{const av=metricValue(a,metric),bv=metricValue(b,metric);if(["ERA","WHIP"].includes(metric)){const am=av===null,bm=bv===null;if(am!==bm)return am?1:-1;}if(av!==bv)return meta.higher?bv-av:av-bv;return type==="bat"?num(b.PAs)-num(a.PAs):num(b.Outs)-num(a.Outs)||a.Name.localeCompare(b.Name)})}
@@ -140,7 +147,7 @@ function render(){
  document.getElementById("batLeaders").innerHTML=leaderRows(DATA.batting,batMetric,"bat");document.getElementById("pitLeaders").innerHTML=leaderRows(DATA.pitching,pitMetric,"pit");
  document.getElementById("batCount").textContent=`${playerPool(DATA.batting,"bat").length} hitters`;document.getElementById("pitCount").textContent=`${playerPool(DATA.pitching,"pit").length} pitchers`;
  const paQ=leaderThreshold("bat"),outQ=leaderThreshold("pit"),ipQ=`${Math.floor(outQ/3)}.${outQ%3}`;
- document.getElementById("qualNote").innerHTML=`Qualified leader threshold: <strong>${paQ}+ PA</strong> for batting (5 below current league-average PA) and <strong>${ipQ}+ IP</strong> for pitching (3 IP below current league-average IP). Stats-page qualification remains 50 PA / 18 IP. Fantasy points use the league's post-series formulas: batting = total bases + RBI + BB − K; pitching = outs − 2×ER + K − H − BB.`;
+ document.getElementById("qualNote").innerHTML=`Qualified leader threshold: <strong>${paQ}+ PA</strong> for batting (rounded up from current league-average PA) and <strong>${ipQ}+ IP</strong> for pitching (rounded up to the next recorded out / nearest 1⁄3 inning from current league-average IP). Stats-page qualification remains 50 PA / 18 IP. Fantasy points use the league's post-series formulas: batting = total bases + RBI + BB − K; pitching = outs − 2×ER + K − H − BB.`;
  document.getElementById("tableStatus").textContent=qualified?`Qualified only · ${paQ}+ PA / ${ipQ}+ IP · sorted by total points`:"All published player totals · sorted by batting + pitching points";renderTable();renderAwardTracker();
 }
 document.getElementById("allBtn").addEventListener("click",()=>{qualified=false;document.getElementById("allBtn").classList.add("active");document.getElementById("qualBtn").classList.remove("active");render()});
