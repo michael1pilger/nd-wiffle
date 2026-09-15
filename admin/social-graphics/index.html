@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Social Graphics | ND Wiffle</title>
+<link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.sg{padding:24px 0 50px}
+.sg-head{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}
+.sg-head h1{margin:4px 0 5px;font-size:34px}
+.sg-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.sg-controls label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900;margin-bottom:5px}
+.sg-controls select{min-width:160px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 10px;font-weight:800}
+.sg-section{margin-top:18px;border:1px solid var(--border);border-radius:15px;background:#0b1525;padding:14px}
+.sg-section h2{margin:0 0 4px;font-size:18px}
+.sg-section .hint{font-size:10px;color:var(--muted);margin-bottom:12px}
+.sg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sg-field{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#08111f;padding:10px}
+.sg-field.wide{grid-column:1/-1}
+.sg-field-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:7px}
+.sg-field-head strong{font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.copy-btn{border:1px solid var(--border);border-radius:8px;background:#13213a;color:#fff;font-size:9px;font-weight:900;padding:6px 8px;cursor:pointer}
+.copy-btn.ok{border-color:#58b680;color:#87e0aa}
+.sg-field textarea,.sg-field input{width:100%;box-sizing:border-box;background:#050b13;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px;font:700 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
+.sg-field textarea{min-height:118px}
+.sg-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:10px}
+.person{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#091424;padding:7px;text-align:center;min-width:0}
+.person img{width:58px;height:58px;object-fit:contain;margin:auto;display:block}
+.person strong{display:block;font-size:9px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person small{font-size:8px;color:var(--muted)}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+@media(max-width:760px){.sg-grid{grid-template-columns:1fr}.sg-field.wide{grid-column:auto}.sg-preview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main class="sg">
+<div class="container">
+  <div class="sg-head">
+    <div>
+      <div class="eyebrow">Series Hub · Social Graphics · BUILD v92</div>
+      <h1>Stat Lists Copy Center</h1>
+      <div class="muted">Pick a played date, then copy each complete column directly into Stat Lists.</div>
+    </div>
+    <div class="sg-controls">
+      <div><label>Series Date</label><select id="dateSelect"></select></div>
+    </div>
+  </div>
+
+  <div id="status" class="muted" style="margin-top:10px">Loading...</div>
+
+  <section class="sg-section">
+    <h2>Batting Leaders</h2>
+    <div class="hint">Top 5 batters on the selected date by batting fantasy points.</div>
+    <div class="sg-grid" id="batGrid"></div>
+    <div class="sg-preview" id="batPreview"></div>
+  </section>
+
+  <section class="sg-section">
+    <h2>Pitching Leaders</h2>
+    <div class="hint">Top 5 pitchers on the selected date by pitching fantasy points.</div>
+    <div class="sg-grid" id="pitGrid"></div>
+    <div class="sg-preview" id="pitPreview"></div>
+  </section>
+
+  <section class="sg-section">
+    <h2>Series Recap</h2>
+    <div class="hint">Every game played on the selected date. Pitcher records reflect the record immediately after that game. Saves are omitted.</div>
+    <div class="sg-grid" id="recapGrid"></div>
+  </section>
+</div>
+</main>
+<script>
+let DATA=null,HEADSHOTS={};
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lines=a=>(a||[]).join("\n");
+
+function field(label,value,multiline=true,wide=false){
+  const id="f_"+Math.random().toString(36).slice(2);
+  return `<div class="sg-field ${wide?"wide":""}">
+    <div class="sg-field-head"><strong>${esc(label)}</strong><button class="copy-btn" data-copy="${id}">Copy</button></div>
+    ${multiline?`<textarea id="${id}" readonly>${esc(value)}</textarea>`:`<input id="${id}" value="${esc(value)}" readonly>`}
+  </div>`;
+}
+
+function headshotUrl(playerId){
+  const path=HEADSHOTS[playerId];
+  return path?`${location.origin}${path}`:"";
+}
+
+function renderLeaders(type,rows){
+  const label=type==="bat"?"Batting":"Pitching";
+  const grid=document.getElementById(type==="bat"?"batGrid":"pitGrid");
+  const title=`${label} Leaders - ${DATA.date_label}`;
+  const teams=lines(rows.map(x=>x.team));
+  const names=lines(rows.map(x=>x.name));
+  const stats=lines(rows.map(x=>x.stats));
+  const imgs=lines(rows.map(x=>headshotUrl(x.player_id)));
+  const points=lines(rows.map(x=>String(x.points)));
+  const ranks=lines(rows.map(()=> ""));
+  grid.innerHTML=
+    field("Title",title,false,true)+
+    field("Teams",teams)+
+    field("Names",names)+
+    field("Stats",stats)+
+    field("Player ID/Image URL",imgs)+
+    field("Ranks",ranks)+
+    field("Points",points);
+
+  const prev=document.getElementById(type==="bat"?"batPreview":"pitPreview");
+  prev.innerHTML=rows.map(r=>{
+    const u=headshotUrl(r.player_id);
+    return `<div class="person">${u?`<img src="${esc(u)}" alt="">`:""}<strong>${esc(r.name)}</strong><small>${esc(r.team)} · ${r.points} pts</small></div>`;
+  }).join("")||'<div class="empty">No leaders for this date.</div>';
+}
+
+function renderRecap(){
+  const games=DATA.recap?.games||[];
+  const teams=[],scores=[],extra=[];
+  for(const g of games){
+    teams.push(g.away_team,g.home_team);
+    scores.push(String(g.away_score),String(g.home_score));
+    extra.push(g.decision);
+  }
+  recapGrid.innerHTML=
+    field("Title",`${DATA.date_label} Series Recap(s)`,false,true)+
+    field("Teams",lines(teams))+
+    field("Scores",lines(scores))+
+    field("Extra Info",lines(extra))+
+    field("Ranks",lines(games.map(()=> "")));
+}
+
+function bindCopy(){
+  document.querySelectorAll("[data-copy]").forEach(btn=>{
+    btn.onclick=async()=>{
+      const el=document.getElementById(btn.dataset.copy);
+      try{
+        await navigator.clipboard.writeText(el.value);
+        btn.textContent="Copied";
+        btn.classList.add("ok");
+        setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok")},1100);
+      }catch{
+        el.focus();el.select();document.execCommand("copy");
+      }
+    };
+  });
+}
+
+function render(){
+  renderLeaders("bat",DATA.batting||[]);
+  renderLeaders("pit",DATA.pitching||[]);
+  renderRecap();
+  bindCopy();
+  status.textContent=`Loaded ${DATA.date_label}: ${(DATA.recap?.games||[]).length} games.`;
+}
+
+async function load(date=""){
+  status.textContent="Loading...";
+  const q=new URLSearchParams({season:"2026"});
+  if(date)q.set("date",date);
+  const r=await fetch(`/api/admin/social-graphics?${q}`,{cache:"no-store"});
+  const j=await r.json();
+  if(!r.ok||!j.ok)throw new Error(j.error||"Could not load social graphics.");
+  DATA=j;
+  dateSelect.innerHTML=(j.available_dates||[]).map(d=>`<option value="${d}" ${d===j.date?"selected":""}>${d}</option>`).join("");
+  render();
+}
+
+dateSelect.onchange=()=>load(dateSelect.value).catch(e=>status.textContent=e.message);
+
+Promise.all([
+  fetch("/assets/headshots/manifest.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).catch(()=>({})),
+  Promise.resolve()
+]).then(([m])=>{
+  HEADSHOTS=m||{};
+  return load();
+}).catch(e=>status.textContent=e.message);
+</script>
+</body>
+</html>

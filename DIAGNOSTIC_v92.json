@@ -1,0 +1,25 @@
+{
+  "pitcher_decision_surname_only": true,
+  "headshot_cors_headers": true,
+  "new_grid_pool_index": 26,
+  "new_grid": {
+    "rows": [
+      "award_all_star",
+      "team_stiffies",
+      "season_pit_era_lte_4_0"
+    ],
+    "cols": [
+      "career_pit_w_gte_5",
+      "season_bat_hits_gte_20",
+      "team_goobers"
+    ]
+  },
+  "war_model": {
+    "batting": "Runs Created vs 80% league-average replacement",
+    "pitching": "regressed ER prevention vs 125% league-average replacement",
+    "pitching_prior_outs": 27,
+    "career_method": "sum of season-specific WAR",
+    "runs_per_win": "season offense-scaled, bounded 4.0 to 9.0"
+  },
+  "syntax_checks": "PASS"
+}

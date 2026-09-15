@@ -44,7 +44,14 @@
  </div>
  <div id="qualifierHint" class="qualifier-hint">Qualification filter: career/historical views use 50+ PA for batters and 18+ IP for pitchers. The 2026 view prorates those requirements by each player's team games played.</div>
  <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
- <div id="table"></div>
+ 
+<div class="qualifier-hint" id="warHint">
+  ND WAR is a league-specific estimate. It values offense with a Runs Created model,
+  pitching with regressed earned-run prevention, compares both to replacement level,
+  converts runs to wins using the league scoring environment, and sums season-specific
+  WAR for career totals.
+</div>
+<div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
@@ -147,6 +154,104 @@ function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
 
 
 function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:0}
+
+function runsCreatedRow(r){
+ const h=num(r.Hits),bb=num(r.BB),hbp=num(r.HBP),ab=num(r.ABs);
+ const tb=num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs);
+ const denom=ab+bb+hbp;
+ return denom>0?((h+bb+hbp)*tb)/denom:0;
+}
+function seasonWarMap(batRows,pitRows){
+ const bats=(batRows||[]).filter(r=>num(r.PAs)>0);
+ const pits=(pitRows||[]).filter(r=>{
+   const outs=(r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP);
+   return outs>0;
+ });
+
+ const lgPA=bats.reduce((a,r)=>a+num(r.PAs),0);
+ const lgRC=bats.reduce((a,r)=>a+runsCreatedRow(r),0);
+ const lgRcPerPa=lgPA>0?lgRC/lgPA:0;
+ const replacementBatRate=lgRcPerPa*.80;
+
+ const lgOuts=pits.reduce((a,r)=>a+((r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP)),0);
+ const lgER=pits.reduce((a,r)=>a+num(r.ER),0);
+ const lgErPerOut=lgOuts>0?lgER/lgOuts:0;
+ const replacementPitchRate=lgErPerOut*1.25;
+
+ // 3-inning wiffle environment. Runs/win is scaled from league offense,
+ // with sensible bounds so tiny-sample seasons do not explode.
+ const approxTeamPA=12;
+ const runsPerWin=Math.max(4.0,Math.min(9.0,2*lgRcPerPa*approxTeamPA || 6.0));
+
+ const map=new Map();
+
+ for(const r of bats){
+   const pa=num(r.PAs),rc=runsCreatedRow(r);
+   const rar=rc-replacementBatRate*pa;
+   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
+   x.oWAR=rar/runsPerWin;
+   x.WAR=x.oWAR+x.pWAR;
+   map.set(r.Player_ID,x);
+ }
+
+ // Regress pitching rate toward league average with a 9-IP prior.
+ // This makes single-season WAR less volatile while career WAR naturally
+ // becomes increasingly driven by the player's actual results.
+ const priorOuts=27;
+ for(const r of pits){
+   const outs=(r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP);
+   const er=num(r.ER);
+   const regRate=(er+lgErPerOut*priorOuts)/(outs+priorOuts);
+   const rar=(replacementPitchRate-regRate)*outs;
+   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
+   x.pWAR=rar/runsPerWin;
+   x.WAR=x.oWAR+x.pWAR;
+   map.set(r.Player_ID,x);
+ }
+
+ return map;
+}
+function rowsForWarSeason(year){
+ if(String(year)==="2026")return {bat:liveBat||[],pit:livePit||[]};
+ return {
+   bat:(ND_DATA.battingSeasons||[]).filter(r=>String(r.Season)===String(year)),
+   pit:(ND_DATA.pitchingSeasons||[]).filter(r=>String(r.Season)===String(year))
+ };
+}
+function warForScope(){
+ const scope=scopeSel.value;
+ if(scope!=="career"){
+   const d=rowsForWarSeason(scope);
+   return seasonWarMap(d.bat,d.pit);
+ }
+
+ const years=new Set();
+ for(const r of (ND_DATA.battingSeasons||[]))if(r.Season)years.add(String(r.Season));
+ for(const r of (ND_DATA.pitchingSeasons||[]))if(r.Season)years.add(String(r.Season));
+ if((liveBat||[]).length||(livePit||[]).length)years.add("2026");
+
+ const total=new Map();
+ for(const y of [...years].sort()){
+   const d=rowsForWarSeason(y);
+   const one=seasonWarMap(d.bat,d.pit);
+   for(const [id,w] of one){
+     const x=total.get(id)||{oWAR:0,pWAR:0,WAR:0};
+     x.oWAR+=w.oWAR||0;
+     x.pWAR+=w.pWAR||0;
+     x.WAR=x.oWAR+x.pWAR;
+     total.set(id,x);
+   }
+ }
+ return total;
+}
+function attachWar(rows){
+ const wm=warForScope();
+ return (rows||[]).map(r=>{
+   const w=wm.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
+   return {...r,oWAR:w.oWAR,pWAR:w.pWAR,WAR:w.WAR};
+ });
+}
+
 function historicalIpToOuts(v){
  const s=String(v??"").trim(); if(!s)return 0;
  const x=parseFloat(s); if(!Number.isFinite(x))return 0;
@@ -217,7 +322,7 @@ function sourceRows(){
    const src=mode==="bat"?(ND_DATA.battingSeasons||[]):(ND_DATA.pitchingSeasons||[]);
    rows=src.filter(r=>String(r.Season)===scope);
  }
- rows=rows.filter(publicVisibleStatRow);
+ rows=attachWar(rows.filter(publicVisibleStatRow));
  if(mode==="pit"){
    rows=rows.map(r=>{
      const outs=(r.Outs!==undefined&&r.Outs!==null)?num(r.Outs):historicalIpToOuts(r.IP);
@@ -228,11 +333,11 @@ function sourceRows(){
 }
 function columns(){
  if(viewMode==="standard")return mode==="bat"
-  ?["Name","Team","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
-  :["Name","Team","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP"];
+  ?["Name","Team","WAR","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
+  :["Name","Team","WAR","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP"];
  return mode==="bat"
-  ?["Name","Team","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","HBP","BA","OBP","SLG","OPS"]
-  :["Name","Team","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","HBP","WP","ERA","WHIP"];
+  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","HBP","BA","OBP","SLG","OPS"]
+  :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","HBP","WP","ERA","WHIP"];
 }
 function pctMetric(c,r){
  if(c!=="K_pct"&&c!=="BB_pct")return null;
@@ -244,6 +349,9 @@ function pctMetric(c,r){
 function displayVal(c,v,r){
  if(c==="K_pct"||c==="BB_pct"){
    const x=pctMetric(c,r);return x===null?"—":`${x.toFixed(1)}%`;
+ }
+ if(["WAR","oWAR","pWAR"].includes(c)){
+   const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"0.00";
  }
  if(c==="ERA"||c==="WHIP"){
    if(v===null||v===undefined||v==="")return "—";
@@ -264,6 +372,9 @@ function label(c){
  if(c==="Doubles")return "2B";
  if(c==="Triples")return "3B";
  if(c==="HRs")return "HR";
+ if(c==="WAR")return "WAR";
+ if(c==="oWAR")return "oWAR";
+ if(c==="pWAR")return "pWAR";
  if(c==="Walks")return "BB";
  return c;
 }
