@@ -63,7 +63,7 @@
 </div>
 <div class="schedule-note">The schedule now lists all 45 possible matchups in a true 10-team round robin. Series are claimed on a first-come, first-served basis, and four of these listed matchups will ultimately go unplayed. Series are normally completed as one three-game set.</div>
 <div id="scheduleError"></div>
-<div id="calendarPanel" class="calendar-panel" hidden><div class="calendar-toolbar"><div><div class="live-series-kicker">Scheduled Series</div><h2 id="calendarTitle">Calendar</h2></div><div class="calendar-nav"><button id="calPrev" type="button" aria-label="Previous week">‹</button><button id="calToday" type="button">This Week</button><button id="calNext" type="button" aria-label="Next week">›</button></div></div><div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="calendarGrid" class="calendar-grid"></div><div class="calendar-legend">Each calendar event is one three-game series. Team logos show the matchup; click an event for the matchup preview.</div></div>
+<div id="calendarPanel" class="calendar-panel" hidden><div class="calendar-toolbar"><div><div class="live-series-kicker">Scheduled Series</div><h2 id="calendarTitle">Calendar</h2></div><div class="calendar-nav"><button id="calPrev" type="button" aria-label="Previous week">‹</button><button id="calToday" type="button">Today</button><button id="calNext" type="button" aria-label="Next week">›</button></div></div><div class="calendar-weekdays"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div><div id="calendarGrid" class="calendar-grid"></div><div class="calendar-legend">Each calendar event is one three-game series. Team logos show the matchup; click an event for the matchup preview.</div></div>
 <div id="scheduleGrid" class="live-schedule-grid"></div>
 </div></main>
 <footer><div class="container">ND Wiffle · 2026 regular-season schedule.</div></footer>
@@ -143,7 +143,7 @@ function seriesWins(games){
   return {away,home};
 }
 function leagueToday(){const now=new Date();now.setHours(12,0,0,0);const floor=new Date(2026,8,15,12,0,0,0);return now<floor?floor:now}
-const DEFAULT_CALENDAR_WEEK=startOfWeek(leagueToday());
+const DEFAULT_CALENDAR_WEEK=leagueToday();
 let calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
 function scheduledUpcomingRows(team=""){
  return STATIC_SCHEDULE.map((base,index)=>{const item=scheduledItem(base),result=resultsByPair.get(pairKey(base.away_id,base.home_id)),isFinal=!!result&&(result.games||[]).length===3,isScheduled=!isFinal&&item.date&&item.date!=="TBD";return {base,item,index,isFinal,isScheduled}}).filter(x=>x.isScheduled&&(!team||x.base.away_id===team||x.base.home_id===team));
@@ -156,9 +156,16 @@ function renderCalendar(team=""){
  if(!rows.length){panel.hidden=true;return}panel.hidden=false;
  if(!calendarWeekStart)calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
  const weekEnd=new Date(calendarWeekStart);weekEnd.setDate(weekEnd.getDate()+6);
+ const weekdayBar=document.querySelector(".calendar-weekdays");
+ if(weekdayBar){
+   weekdayBar.innerHTML=Array.from({length:7},(_,i)=>{
+     const d=new Date(calendarWeekStart);d.setDate(d.getDate()+i);
+     return `<div>${d.toLocaleDateString(undefined,{weekday:"short"})}</div>`;
+   }).join("");
+ }
  const titleStart=calendarWeekStart.toLocaleDateString(undefined,{month:"short",day:"numeric"});
  const titleEnd=weekEnd.toLocaleDateString(undefined,{month:calendarWeekStart.getMonth()===weekEnd.getMonth()?undefined:"short",day:"numeric",year:"numeric"});
- document.getElementById("calendarTitle").textContent=`Week of ${titleStart} – ${titleEnd}`;
+ document.getElementById("calendarTitle").textContent=`${titleStart} – ${titleEnd}`;
  const byDate=new Map();for(const x of rows){if(!byDate.has(x.item.date))byDate.set(x.item.date,[]);byDate.get(x.item.date).push(x)}
  const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
  let html="";for(let n=0;n<7;n++){

@@ -24,7 +24,7 @@
 .br-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.055);text-align:right;white-space:nowrap}
 .br-table td:first-child,.br-table td:nth-child(2){text-align:left}
 .br-table tbody tr:hover{background:rgba(255,255,255,.035)}
-.br-table .career{font-weight:900;background:rgba(215,173,72,.07)}
+.br-table .career{font-weight:900;background:rgba(215,173,72,.07)}.br-table .playoff-row{background:rgba(120,145,210,.07);font-weight:800}.br-table .playoff-row td:first-child{color:#a9bced}
 .summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
 .summary div{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px;background:#08111f;text-align:center}
 .summary strong{display:block;font-size:18px}.summary span{display:block;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
@@ -47,7 +47,7 @@
     <section class="hero">
       <img id="headshot" class="headshot" alt="">
       <div>
-        <div class="eyebrow">Player Profile · BUILD v96</div>
+        <div class="eyebrow">Player Profile · BUILD v97</div>
         <h1 id="playerName"></h1>
         <div class="meta" id="playerMeta"></div>
         <div class="team-history" id="teamChips"></div>
@@ -66,12 +66,12 @@
     </section>
 
     <section class="section">
-      <h2>Batting</h2><div class="meta" style="margin:-5px 0 9px">Season rows are regular season. Career totals include the historical postseason totals contained in the 2021–2025 cumulative database.</div>
+      <h2>Batting</h2><div class="meta" style="margin:-5px 0 9px">Year rows are regular season. The Playoffs row is the inferred combined 2021–2025 postseason line (cumulative career database minus recorded regular seasons). Career includes playoffs plus live 2026.</div>
       <div class="stat-wrap"><table class="br-table" id="batTable"></table></div>
     </section>
 
     <section class="section">
-      <h2>Pitching</h2><div class="meta" style="margin:-5px 0 9px">Season rows are regular season. Career totals include the historical postseason totals contained in the 2021–2025 cumulative database.</div>
+      <h2>Pitching</h2><div class="meta" style="margin:-5px 0 9px">Year rows are regular season. The Playoffs row is the inferred combined 2021–2025 postseason line (cumulative career database minus recorded regular seasons). Career includes playoffs plus live 2026.</div>
       <div class="stat-wrap"><table class="br-table" id="pitTable"></table></div>
     </section>
   </div>
@@ -320,19 +320,129 @@ function seasonRows(){
  return {bat,pit};
 }
 
+
+function nonnegativeDiff(source,regular){
+ const a=Number(source),b=n(regular);
+ if(!Number.isFinite(a))return null;
+ return Math.max(0,a-b);
+}
+
+function playoffBatRow(rows){
+ const hist=rows.filter(r=>String(r.Season)!=="2026");
+ const reg=regularCareerBat(hist);
+ const src=CAREER_2025.batting?.[PLAYER_ID];
+ if(!src)return null;
+
+ const r={
+   Season:"Playoffs",
+   Team:"—",
+   GP:nonnegativeDiff(src.GP,reg.GP),
+   PAs:nonnegativeDiff(src.PAs,reg.PAs),
+   ABs:nonnegativeDiff(src.ABs,reg.ABs),
+   Hits:nonnegativeDiff(src.Hits,reg.Hits),
+   Singles:nonnegativeDiff(src.Singles,reg.Singles),
+   Doubles:nonnegativeDiff(src.Doubles,reg.Doubles),
+   Triples:nonnegativeDiff(src.Triples,reg.Triples),
+   HRs:nonnegativeDiff(src.HRs,reg.HRs),
+   RBI:nonnegativeDiff(src.RBI,reg.RBI),
+   BB:nonnegativeDiff(src.BB,reg.BB),
+   Ks:nonnegativeDiff(src.Ks,reg.Ks)
+ };
+
+ const ab=n(r.ABs),pa=n(r.PAs),h=n(r.Hits),bb=n(r.BB);
+ const tb=n(r.Singles)+2*n(r.Doubles)+3*n(r.Triples)+4*n(r.HRs);
+ r.BA=ab?h/ab:null;
+ r.OBP=pa?(h+bb)/pa:null;
+ r.SLG=ab?tb/ab:null;
+ r.OPS=(r.OBP!==null&&r.SLG!==null)?r.OBP+r.SLG:null;
+ return r;
+}
+
+function playoffPitRow(rows){
+ const hist=rows.filter(r=>String(r.Season)!=="2026");
+ const reg=regularCareerPit(hist);
+ const src=CAREER_2025.pitching?.[PLAYER_ID];
+ if(!src)return null;
+
+ const srcOuts=sourceIpToOuts(src.IP_source);
+ const outs=Math.max(0,srcOuts-n(reg.Outs));
+ const r={
+   Season:"Playoffs",
+   Team:"—",
+   Apps:nonnegativeDiff(src.Apps,reg.Apps),
+   Starts:nonnegativeDiff(src.Starts,reg.Starts),
+   W:nonnegativeDiff(src.W,reg.W),
+   L:nonnegativeDiff(src.L,reg.L),
+   S:nonnegativeDiff(src.S,reg.S),
+   Outs:outs,
+   IP:outsToIp(outs),
+   BF:nonnegativeDiff(src.BF,reg.BF),
+   Hits:nonnegativeDiff(src.Hits,reg.Hits),
+   ER:nonnegativeDiff(src.ER,reg.ER),
+   Walks:nonnegativeDiff(src.Walks,reg.Walks),
+   Ks:nonnegativeDiff(src.Ks,reg.Ks)
+ };
+
+ const inn=outs/3;
+ r.ERA=inn&&r.ER!==null?n(r.ER)*3/inn:null;
+ r.WHIP=inn&&r.Hits!==null&&r.Walks!==null?(n(r.Hits)+n(r.Walks))/inn:null;
+ return r;
+}
+
+function seasonSortKey(v){
+ if(String(v)==="Playoffs")return 2025.5;
+ return n(v);
+}
+
 function batTable(rows){
  const cols=[["Season","Year"],["Team","Tm"],["GP","G"],["PAs","PA"],["ABs","AB"],["Hits","H"],["Singles","1B"],["Doubles","2B"],["Triples","3B"],["HRs","HR"],["RBI","RBI"],["BB","BB"],["Ks","SO"],["BA","BA"],["OBP","OBP"],["SLG","SLG"],["OPS","OPS"]];
- const body=rows.sort((a,b)=>n(a.Season)-n(b.Season)).map(r=>`<tr>${cols.map(([k])=>`<td>${k==="Team"?esc(canonicalTeam(r[k]||"—")):(["BA","OBP","SLG","OPS"].includes(k)?rate(n(r[k])):esc(r[k]??0))}</td>`).join("")}</tr>`).join("");
+ const displayRows=[...rows];
+ const po=playoffBatRow(rows);
+ if(po)displayRows.push(po);
+
+ const val=(r,k)=>{
+   if(k==="Team")return esc(canonicalTeam(r[k]||"—"));
+   if(["BA","OBP","SLG","OPS"].includes(k)){
+     const x=r[k];
+     return x===null||x===undefined||!Number.isFinite(Number(x))?"—":rate(Number(x));
+   }
+   const x=r[k];
+   return x===null||x===undefined?"—":esc(x);
+ };
+
+ const body=displayRows
+   .sort((a,b)=>seasonSortKey(a.Season)-seasonSortKey(b.Season))
+   .map(r=>`<tr class="${String(r.Season)==="Playoffs"?"playoff-row":""}">${cols.map(([k])=>`<td>${val(r,k)}</td>`).join("")}</tr>`)
+   .join("");
+
  const c=careerBat(rows);
  const career={Season:"Career",Team:"—",...c};
- return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${k==="Team"?"—":(["BA","OBP","SLG","OPS"].includes(k)?rate(n(career[k])):esc(career[k]??0))}</td>`).join("")}</tr></tbody>`;
+ return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${val(career,k)}</td>`).join("")}</tr></tbody>`;
 }
 function pitTable(rows){
  const cols=[["Season","Year"],["Team","Tm"],["Apps","G"],["Starts","GS"],["W","W"],["L","L"],["S","SV"],["ERA","ERA"],["IP","IP"],["BF","BF"],["Hits","H"],["ER","ER"],["Walks","BB"],["Ks","SO"],["WHIP","WHIP"]];
- const body=rows.sort((a,b)=>n(a.Season)-n(b.Season)).map(r=>`<tr>${cols.map(([k])=>`<td>${k==="Team"?esc(canonicalTeam(r[k]||"—")):(k==="ERA"||k==="WHIP"?fmt(r[k]):esc(r[k]??0))}</td>`).join("")}</tr>`).join("");
+ const displayRows=[...rows];
+ const po=playoffPitRow(rows);
+ if(po)displayRows.push(po);
+
+ const val=(r,k)=>{
+   if(k==="Team")return esc(canonicalTeam(r[k]||"—"));
+   if(k==="ERA"||k==="WHIP"){
+     const x=r[k];
+     return x===null||x===undefined||!Number.isFinite(Number(x))?"—":fmt(Number(x));
+   }
+   const x=r[k];
+   return x===null||x===undefined?"—":esc(x);
+ };
+
+ const body=displayRows
+   .sort((a,b)=>seasonSortKey(a.Season)-seasonSortKey(b.Season))
+   .map(r=>`<tr class="${String(r.Season)==="Playoffs"?"playoff-row":""}">${cols.map(([k])=>`<td>${val(r,k)}</td>`).join("")}</tr>`)
+   .join("");
+
  const c=careerPit(rows);
  const career={Season:"Career",Team:"—",...c};
- return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${k==="Team"?"—":(k==="ERA"||k==="WHIP"?fmt(career[k]):esc(career[k]??0))}</td>`).join("")}</tr></tbody>`;
+ return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${val(career,k)}</td>`).join("")}</tr></tbody>`;
 }
 
 async function init(){

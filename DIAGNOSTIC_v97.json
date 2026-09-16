@@ -1,0 +1,9 @@
+{
+  "player_playoff_rows": "PASS",
+  "playoff_method": "2021-2025 cumulative career totals minus 2021-2025 regular-season rows",
+  "schedule_rolling_7_days_today_first": "PASS",
+  "schedule_dynamic_weekday_headers": "PASS",
+  "captains_today_first": "PASS",
+  "captains_no_backfill_near_end_date": "PASS",
+  "syntax": "PASS"
+}
