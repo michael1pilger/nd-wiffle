@@ -1,0 +1,40 @@
+{
+  "career_files_loaded": {
+    "batting_players_mapped": 174,
+    "pitching_players_mapped": 96,
+    "unmatched_batting": [],
+    "unmatched_pitching": []
+  },
+  "michael_pilger": {
+    "career_source_pre_2026": {
+      "PA": 537.0,
+      "H": 184.0,
+      "HR": 46.0,
+      "IP": 216.33,
+      "K": 226.0,
+      "W": 45.0,
+      "L": 32.0
+    },
+    "regular_season_2021_2025": {
+      "PA": 444.0,
+      "H": 161.0,
+      "HR": 45.0,
+      "IP_raw_sum": 181.84,
+      "K": 186.0,
+      "W": 40.0,
+      "L": 27.0
+    },
+    "inferred_postseason_gaps": {
+      "PA": 93.0,
+      "H": 23.0,
+      "HR": 1.0,
+      "IP_raw_difference": 34.49000000000001,
+      "K": 40.0,
+      "W": 5.0,
+      "L": 5.0
+    }
+  },
+  "player_page_uses_cumulative_baseline_plus_2026": true,
+  "career_rates_recomputed_from_counting_totals": true,
+  "syntax": "PASS"
+}
