@@ -1,0 +1,233 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player | ND Wiffle</title>
+<link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.profile{padding:26px 0 50px}
+.hero{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;border:1px solid var(--border);border-radius:16px;background:linear-gradient(135deg,#0c1729,#08111f);padding:18px}
+.headshot{width:140px;height:140px;object-fit:contain;border-radius:13px;background:#050a10;border:1px solid rgba(255,255,255,.08)}
+.hero h1{font-size:38px;margin:0 0 4px}.meta{color:var(--muted);font-size:11px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{border:1px solid var(--border);border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900;background:#111e32}
+.section{margin-top:18px;border:1px solid var(--border);border-radius:14px;background:#0b1525;padding:14px}
+.section h2{margin:0 0 10px;font-size:19px}
+.insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.insight{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#08111f;padding:11px}
+.insight h3{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 7px}
+.insight ul{padding-left:17px;margin:0;font-size:11px;line-height:1.7}
+.stat-wrap{overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px}
+.br-table{border-collapse:collapse;width:max-content;min-width:100%;font-size:10px}
+.br-table th{position:sticky;top:0;background:#111d2d;color:#e8edf5;border-bottom:1px solid var(--border);padding:7px 8px;text-align:right;white-space:nowrap}
+.br-table th:first-child,.br-table th:nth-child(2){text-align:left}
+.br-table td{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.055);text-align:right;white-space:nowrap}
+.br-table td:first-child,.br-table td:nth-child(2){text-align:left}
+.br-table tbody tr:hover{background:rgba(255,255,255,.035)}
+.br-table .career{font-weight:900;background:rgba(215,173,72,.07)}
+.summary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
+.summary div{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px;background:#08111f;text-align:center}
+.summary strong{display:block;font-size:18px}.summary span{display:block;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.empty{color:var(--muted);padding:13px 0;font-size:10px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}.headshot{width:110px;height:110px}.insight-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/players/">← Players</a><a href="/stats/">Stats</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a></div></div></div>
+<main class="profile"><div class="container">
+  <div id="status" class="muted">Loading player...</div>
+  <div id="content" style="display:none">
+    <section class="hero">
+      <img id="headshot" class="headshot" alt="">
+      <div>
+        <div class="eyebrow">Player Profile · BUILD v93</div>
+        <h1 id="playerName"></h1>
+        <div class="meta" id="playerMeta"></div>
+        <div class="chips" id="teamChips"></div>
+        <div class="summary" id="summary"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Streaks & Milestones</h2>
+      <div class="insight-grid">
+        <div class="insight"><h3>Batting streaks</h3><ul id="batStreaks"></ul></div>
+        <div class="insight"><h3>Pitching streaks</h3><ul id="pitStreaks"></ul></div>
+        <div class="insight"><h3>Career milestones</h3><ul id="milestones"></ul></div>
+        <div class="insight"><h3>2026 snapshot</h3><ul id="snapshot"></ul></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Batting</h2>
+      <div class="stat-wrap"><table class="br-table" id="batTable"></table></div>
+    </section>
+
+    <section class="section">
+      <h2>Pitching</h2>
+      <div class="stat-wrap"><table class="br-table" id="pitTable"></table></div>
+    </section>
+  </div>
+</div></main>
+
+<script src="/assets/data.js?v=81"></script>
+<script>
+const qs=new URLSearchParams(location.search),PLAYER_ID=qs.get("id")||"";
+let LIVE=null,HEADSHOTS={};
+
+const n=v=>Number(v||0);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const canonicalTeam=t=>({"Seven Deadly Zyns":"Zyns","South Bend Wifflers":"Zyns","Stiffies":"Stiff Wifflers","Goobers":"Goofy Goobers","Drunken Sluggers":"Twin Titans","Saudi Arabian Yard Goats":"Twin Titans","Yard Goats":"Twin Titans"}[t]||t);
+const logoMap={"Silverbacks":"/assets/logos/silverbacks.png?v=81","Storm":"/assets/logos/storm.png?v=81","Zyns":"/assets/logos/zyns.png?v=81","Dirty Dawgs":"/assets/logos/dirty-dawgs.png?v=81","Goofy Goobers":"/assets/logos/goofy-goobers.png?v=81","Midnight":"/assets/logos/midnight.png?v=81","Ball Busters":"/assets/logos/ball-busters.png?v=81","Stiff Wifflers":"/assets/logos/stiff-wifflers.png?v=81","Twin Titans":"/assets/logos/twin-titans.png?v=81","Underdawgs":"/assets/logos/underdawgs.png?v=81"};
+
+function histIpToOuts(v){
+ const s=String(v??"").trim();if(!s)return 0;const x=parseFloat(s);if(!Number.isFinite(x))return 0;
+ const w=Math.floor(x),f=s.includes(".")?s.split(".")[1].replace(/0+$/,""):"";
+ let r=0;if(["1","10","33","3"].includes(f))r=1;else if(["2","20","67","66","7"].includes(f))r=2;
+ return w*3+r;
+}
+function outsToIp(o){o=Math.round(n(o));return `${Math.floor(o/3)}${o%3?`.${o%3}`:""}`}
+
+function careerBat(rows){
+ const out={PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,HBP:0,GP:0};
+ for(const r of rows)for(const k of Object.keys(out))out[k]+=n(r[k]);
+ const tb=out.Singles+2*out.Doubles+3*out.Triples+4*out.HRs;
+ out.BA=out.ABs?out.Hits/out.ABs:0;
+ out.OBP=out.PAs?(out.Hits+out.BB+out.HBP)/out.PAs:0;
+ out.SLG=out.ABs?tb/out.ABs:0;out.OPS=out.OBP+out.SLG;return out;
+}
+function careerPit(rows){
+ const out={GP:0,Apps:0,Starts:0,W:0,L:0,S:0,Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,HBP:0,WP:0};
+ for(const r of rows){
+   for(const k of ["GP","Apps","Starts","W","L","S","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP"])out[k]+=n(r[k]);
+   out.Outs+=(r.Outs!==undefined?n(r.Outs):histIpToOuts(r.IP));
+ }
+ const inn=out.Outs/3;
+ out.IP=outsToIp(out.Outs);out.ERA=inn?out.ER*3/inn:null;out.WHIP=inn?(out.Walks+out.Hits)/inn:null;return out;
+}
+function rate(v,d=3){return Number.isFinite(v)?v.toFixed(d).replace(/^0/,""):"—"}
+function fmt(v,d=2){return Number.isFinite(Number(v))?Number(v).toFixed(d):"—"}
+
+function bestStreak(rows,test,label){
+ let best=0,cur=0;
+ for(const r of rows){if(test(r)){cur++;best=Math.max(best,cur)}else cur=0}
+ return best>=2?`${best} consecutive series ${label}`:null;
+}
+function battingStreaks(rows){
+ const c=[
+   bestStreak(rows,r=>n(r.H)>=3,"with at least 3 H"),
+   bestStreak(rows,r=>n(r.H)>=1,"with at least 1 H"),
+   bestStreak(rows,r=>n(r.HR)>=1,"with a HR"),
+   bestStreak(rows,r=>n(r.RBI)>=2,"with at least 2 RBI")
+ ].filter(Boolean);
+ return [...new Set(c)].slice(0,2);
+}
+function pitchingStreaks(rows){
+ const c=[
+   bestStreak(rows,r=>n(r.K)>=5,"with at least 5 K"),
+   bestStreak(rows,r=>n(r.K)>=3,"with at least 3 K"),
+   bestStreak(rows,r=>n(r.K)>=1,"with at least 1 K"),
+   bestStreak(rows,r=>n(r.ER)===0,"without allowing an ER")
+ ].filter(Boolean);
+ return [...new Set(c)].slice(0,2);
+}
+function milestone(current,targets,label){
+ const target=targets.find(x=>x>current);
+ return target?`${target-current} ${label} away from ${target} ${label}`:null;
+}
+function milestones(b,p){
+ const out=[
+   milestone(n(b.Hits),[25,50,75,100,125,150,175,200,225,250,300],"H"),
+   milestone(n(b.HRs),[5,10,15,20,25,30,40,50],"HR"),
+   milestone(n(p.Ks),[25,50,75,100,125,150,175,200,250],"pitching K"),
+   milestone(histIpToOuts(p.IP)/3,[25,50,75,100,125,150],"IP")
+ ].filter(Boolean);
+ return out.slice(0,3);
+}
+function putList(id,items,empty){
+ document.getElementById(id).innerHTML=items.length?items.map(x=>`<li>${esc(x)}</li>`).join(""):`<li class="muted">${esc(empty)}</li>`;
+}
+
+function seasonRows(){
+ const bat=(ND_DATA.battingSeasons||[]).filter(r=>r.Player_ID===PLAYER_ID).map(r=>({...r}));
+ const pit=(ND_DATA.pitchingSeasons||[]).filter(r=>r.Player_ID===PLAYER_ID).map(r=>({...r}));
+
+ const lb=(LIVE?.batting_series||[]);
+ if(lb.length){
+   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lb[lb.length-1].team_name,GP:0,PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,HBP:0};
+   for(const r of lb){x.GP+=n(r.GP);x.PAs+=n(r.PA);x.ABs+=n(r.AB);x.Runs+=n(r.R);x.Hits+=n(r.H);x.Singles+=n(r["1B"]);x.Doubles+=n(r["2B"]);x.Triples+=n(r["3B"]);x.HRs+=n(r.HR);x.RBI+=n(r.RBI);x.BB+=n(r.BB);x.Ks+=n(r.SO);x.HBP+=n(r.HBP)}
+   const tb=x.Singles+2*x.Doubles+3*x.Triples+4*x.HRs;x.BA=x.ABs?x.Hits/x.ABs:0;x.OBP=x.PAs?(x.Hits+x.BB+x.HBP)/x.PAs:0;x.SLG=x.ABs?tb/x.ABs:0;x.OPS=x.OBP+x.SLG;bat.push(x);
+ }
+ const lp=(LIVE?.pitching_series||[]);
+ if(lp.length){
+   const d=LIVE.decisions||{};
+   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lp[lp.length-1].team_name,GP:0,Apps:0,Starts:0,W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,HBP:0,WP:0};
+   for(const r of lp){x.GP+=n(r.GP);x.Apps+=n(r.Apps);x.Starts+=n(r.Starts);x.Outs+=n(r.Outs);x.BF+=n(r.BF);x.Runs+=n(r.R);x.ER+=n(r.ER);x.Hits+=n(r.H);x.Walks+=n(r.BB);x.Ks+=n(r.K);x.HRs+=n(r.HR);x.HBP+=n(r.HBP);x.WP+=n(r.WP)}
+   const inn=x.Outs/3;x.IP=outsToIp(x.Outs);x.ERA=inn?x.ER*3/inn:null;x.WHIP=inn?(x.Hits+x.Walks)/inn:null;pit.push(x);
+ }
+ return {bat,pit};
+}
+
+function batTable(rows){
+ const cols=[["Season","Year"],["Team","Tm"],["GP","G"],["PAs","PA"],["ABs","AB"],["Runs","R"],["Hits","H"],["Doubles","2B"],["Triples","3B"],["HRs","HR"],["RBI","RBI"],["BB","BB"],["Ks","SO"],["BA","BA"],["OBP","OBP"],["SLG","SLG"],["OPS","OPS"]];
+ const body=rows.sort((a,b)=>n(a.Season)-n(b.Season)).map(r=>`<tr>${cols.map(([k])=>`<td>${k==="Team"?esc(canonicalTeam(r[k]||"—")):(["BA","OBP","SLG","OPS"].includes(k)?rate(n(r[k])):esc(r[k]??0))}</td>`).join("")}</tr>`).join("");
+ const c=careerBat(rows);
+ const career={Season:"Career",Team:"—",...c};
+ return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${k==="Team"?"—":(["BA","OBP","SLG","OPS"].includes(k)?rate(n(career[k])):esc(career[k]??0))}</td>`).join("")}</tr></tbody>`;
+}
+function pitTable(rows){
+ const cols=[["Season","Year"],["Team","Tm"],["GP","G"],["Starts","GS"],["W","W"],["L","L"],["ERA","ERA"],["IP","IP"],["Hits","H"],["Runs","R"],["ER","ER"],["HRs","HR"],["Walks","BB"],["Ks","SO"],["WHIP","WHIP"]];
+ const body=rows.sort((a,b)=>n(a.Season)-n(b.Season)).map(r=>`<tr>${cols.map(([k])=>`<td>${k==="Team"?esc(canonicalTeam(r[k]||"—")):(k==="ERA"||k==="WHIP"?fmt(r[k]):esc(r[k]??0))}</td>`).join("")}</tr>`).join("");
+ const c=careerPit(rows);
+ const career={Season:"Career",Team:"—",...c};
+ return `<thead><tr>${cols.map(([,l])=>`<th>${l}</th>`).join("")}</tr></thead><tbody>${body}<tr class="career">${cols.map(([k])=>`<td>${k==="Team"?"—":(k==="ERA"||k==="WHIP"?fmt(career[k]):esc(career[k]??0))}</td>`).join("")}</tr></tbody>`;
+}
+
+async function init(){
+ if(!PLAYER_ID){status.textContent="No player selected.";return}
+ try{
+   const [liveRes,manifestRes]=await Promise.all([
+     fetch(`/api/public/player?id=${encodeURIComponent(PLAYER_ID)}&season=2026`,{cache:"no-store"}),
+     fetch("/assets/headshots/manifest.json",{cache:"no-store"})
+   ]);
+   const live=await liveRes.json();if(!liveRes.ok||!live.ok)throw new Error(live.error||"Player unavailable.");
+   LIVE=live;HEADSHOTS=manifestRes.ok?await manifestRes.json():{};
+
+   const staticPlayer=(ND_DATA.players||[]).find(p=>p.Player_ID===PLAYER_ID)||{};
+   const {bat,pit}=seasonRows();
+   const cb=careerBat(bat),cp=careerPit(pit);
+
+   document.title=`${live.player.name} | ND Wiffle`;
+   playerName.textContent=live.player.name;
+   playerMeta.textContent=`${live.player.class_year?`Class of ${live.player.class_year}`:"Class year unavailable"}${Number(live.player.retired)?" · Retired":" · Active"}`;
+   const hu=HEADSHOTS[PLAYER_ID];headshot.src=hu||"/assets/league-mark.png";headshot.alt=live.player.name;
+
+   const teams=[...new Set((live.rosters||[]).map(x=>canonicalTeam(x.team_name)).filter(Boolean))];
+   teamChips.innerHTML=teams.map(t=>`<span class="chip">${logoMap[t]?`<img src="${logoMap[t]}" style="width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px">`:""}${esc(t)}</span>`).join("");
+
+   summary.innerHTML=[
+     [cb.Hits,"Career H"],[cb.HRs,"Career HR"],[cb.PAs,"Career PA"],
+     [cp.Ks,"Pitching K"],[cp.IP,"Career IP"],[cp.ERA===null?"—":fmt(cp.ERA),"Career ERA"]
+   ].map(([v,l])=>`<div><strong>${v}</strong><span>${l}</span></div>`).join("");
+
+   putList("batStreaks",battingStreaks(live.batting_series||[]),"Not enough 2026 series data for a multi-series batting streak.");
+   putList("pitStreaks",pitchingStreaks(live.pitching_series||[]),"Not enough 2026 pitching-series data for a multi-series streak.");
+   putList("milestones",milestones(cb,cp),"No nearby tracked milestones.");
+
+   const b26=bat.find(x=>String(x.Season)==="2026"),p26=pit.find(x=>String(x.Season)==="2026");
+   const snap=[];
+   if(b26)snap.push(`${b26.Hits} H, ${b26.HRs} HR, ${rate(n(b26.BA))} AVG in 2026`);
+   if(p26)snap.push(`${p26.Ks} K, ${p26.IP} IP, ${fmt(p26.ERA)} ERA in 2026`);
+   putList("snapshot",snap,"No 2026 stats yet.");
+
+   batTableEl=document.getElementById("batTable");pitTableEl=document.getElementById("pitTable");
+   batTableEl.innerHTML=bat.length?batTable(bat):'<tbody><tr><td class="empty">No batting seasons recorded.</td></tr></tbody>';
+   pitTableEl.innerHTML=pit.length?pitTable(pit):'<tbody><tr><td class="empty">No pitching seasons recorded.</td></tr></tbody>';
+
+   status.style.display="none";content.style.display="";
+ }catch(e){status.textContent=e.message}
+}
+init();
+</script>
+</body>
+</html>

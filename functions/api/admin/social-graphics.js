@@ -48,19 +48,34 @@ function pitPts(r){
   return n(r.outs_recorded)-2*n(r.er)+n(r.strikeouts)-n(r.hits)-n(r.bb);
 }
 
+function statToken(value,label,{spaceMulti=false,showZero=false}={}){
+  const v=n(value);
+  if(v===0)return showZero?`0${label}`:"";
+  if(v===1)return label;
+  return spaceMulti?`${v} ${label}`:`${v}${label}`;
+}
+
 function batStats(r){
   const out=[`${n(r.hits)}/${n(r.ab)}`];
-  if(n(r.hr))out.push(`${n(r.hr)}HR`);
-  if(n(r.triples))out.push(`${n(r.triples)}3B`);
-  if(n(r.doubles))out.push(`${n(r.doubles)}2B`);
-  if(n(r.rbi))out.push(`${n(r.rbi)}RBI`);
-  if(n(r.bb))out.push(`${n(r.bb)}BB`);
-  if(n(r.so))out.push(`${n(r.so)}K`);
-  return out.join(", ");
+  const vals=[
+    statToken(r.hr,"HR"),
+    statToken(r.triples,"3B",{spaceMulti:true}),
+    statToken(r.doubles,"2B",{spaceMulti:true}),
+    statToken(r.rbi,"RBI"),
+    statToken(r.bb,"BB"),
+    statToken(r.so,"K")
+  ].filter(Boolean);
+  return out.concat(vals).join(", ");
 }
 
 function pitStats(r){
-  return `${ip(r.outs_recorded)}IP, ${n(r.er)}ER, ${n(r.strikeouts)}K, ${n(r.hits)}H, ${n(r.bb)}BB`;
+  return [
+    `${ip(r.outs_recorded)}IP`,
+    `${n(r.er)}ER`,
+    statToken(r.strikeouts,"K",{showZero:true}),
+    `${n(r.hits)}H`,
+    statToken(r.bb,"BB",{showZero:true})
+  ].join(", ");
 }
 
 export async function onRequestGet(context){
@@ -83,7 +98,7 @@ export async function onRequestGet(context){
     if(!date)date=available_dates[0]||"";
 
     if(!date){
-      return json({ok:true,build:"v92",season,available_dates,date:"",batting:[],pitching:[],recap:{games:[]}});
+      return json({ok:true,build:"v93",season,available_dates,date:"",batting:[],pitching:[],recap:{games:[]}});
     }
 
     const [batRes,pitRes,dayGamesRes,allGamesRes]=await DB.batch([
@@ -200,7 +215,7 @@ export async function onRequestGet(context){
 
     return json({
       ok:true,
-      build:"v92",
+      build:"v93",
       season,
       date,
       date_label:dateLabel(date),
