@@ -40,7 +40,7 @@
     <section class="hero">
       <img id="headshot" class="headshot" alt="">
       <div>
-        <div class="eyebrow">Player Profile · BUILD v93</div>
+        <div class="eyebrow">Player Profile · BUILD v94</div>
         <h1 id="playerName"></h1>
         <div class="meta" id="playerMeta"></div>
         <div class="chips" id="teamChips"></div>
@@ -73,7 +73,23 @@
 <script src="/assets/data.js?v=81"></script>
 <script>
 const qs=new URLSearchParams(location.search),PLAYER_ID=qs.get("id")||"";
-let LIVE=null,HEADSHOTS={};
+let LIVE=null;
+const HEADSHOTS={"adam_skrzypczyck":"/assets/headshots/adam_skrzypczyck.png","alex_rivera":"/assets/headshots/alex_rivera.png","andrew_frey":"/assets/headshots/andrew_frey.png","andrew_letherman":"/assets/headshots/andrew_letherman.png","anthony_bellone":"/assets/headshots/anthony_bellone.png","ben_meyer":"/assets/headshots/ben_meyer.png","bennett_alvarado":"/assets/headshots/bennett_alvarado.png","bennett_ruskusky":"/assets/headshots/bennett_ruskusky.png","bobby_wolff":"/assets/headshots/bobby_wolff.png","brady_cahill":"/assets/headshots/brady_cahill.png","brendan_mato":"/assets/headshots/brendan_mato.png","charlie_doherty":"/assets/headshots/charlie_doherty.png","chase_niemeyer":"/assets/headshots/chase_niemeyer.png","christopher_marvel":"/assets/headshots/christopher_marvel.png","collin_barker":"/assets/headshots/collin_barker.png","connor_savage":"/assets/headshots/connor_savage.png","dean_zervos":"/assets/headshots/dean_zervos.png","diego_alonso":"/assets/headshots/diego_alonso.png","eddie_mcgettigan":"/assets/headshots/eddie_mcgettigan.png","evan_reid":"/assets/headshots/evan_reid.png","freddy_zeckser":"/assets/headshots/freddy_zeckser.png","george_devlin":"/assets/headshots/george_devlin.png","gerard_sharkey":"/assets/headshots/gerard_sharkey.png","ian_phelps":"/assets/headshots/ian_phelps.png","isaac_oswald":"/assets/headshots/isaac_oswald.png","jack_conners":"/assets/headshots/jack_conners.png","jacob_bailey":"/assets/headshots/jacob_bailey.png","jacob_clark":"/assets/headshots/jacob_clark.png","jacob_olejnik":"/assets/headshots/jacob_olejnik.png","jaden_lukose":"/assets/headshots/jaden_lukose.png","jason_marrs":"/assets/headshots/jason_marrs.png","jeb_blanco":"/assets/headshots/jeb_blanco.png","jerry_vielhauer":"/assets/headshots/jerry_vielhauer.png","jimmy_redfern":"/assets/headshots/jimmy_redfern.png","jimmy_szpak":"/assets/headshots/jimmy_szpak.png","joe_dachnowicz":"/assets/headshots/joe_dachnowicz.png","joey_thomalla":"/assets/headshots/joey_thomalla.png","johnny_carey":"/assets/headshots/johnny_carey.png","jose_aranda":"/assets/headshots/jose_aranda.png","jt_kaiser":"/assets/headshots/jt_kaiser.png","kirby_bach":"/assets/headshots/kirby_bach.png","landon_edwards":"/assets/headshots/landon_edwards.png","logan_bettinger":"/assets/headshots/logan_bettinger.png","luke_gormsen":"/assets/headshots/luke_gormsen.png","matt_gough":"/assets/headshots/matt_gough.png","matt_schuenemann":"/assets/headshots/matt_schuenemann.png","matthew_nugent":"/assets/headshots/matthew_nugent.png","michael_camilleri":"/assets/headshots/michael_camilleri.png","michael_pilger":"/assets/headshots/michael_pilger.png","nick_hulgrave":"/assets/headshots/nick_hulgrave.png","nick_swiderski":"/assets/headshots/nick_swiderski.png","noah_adkins":"/assets/headshots/noah_adkins.png","noah_cerniglia":"/assets/headshots/noah_cerniglia.png","patrick_collins":"/assets/headshots/patrick_collins.png","peter_dolezal":"/assets/headshots/peter_dolezal.png","quinn_brown":"/assets/headshots/quinn_brown.png","ralph_gonzalez":"/assets/headshots/ralph_gonzalez.png","ryan_mccain":"/assets/headshots/ryan_mccain.png","ryan_soenen":"/assets/headshots/ryan_soenen.png","sam_spolyar":"/assets/headshots/sam_spolyar.png","sebastian_borjas":"/assets/headshots/sebastian_borjas.png","smith_mcgruder":"/assets/headshots/smith_mcgruder.png","stephen_scalfani":"/assets/headshots/stephen_scalfani.png","tad_bates":"/assets/headshots/tad_bates.png","teddy_skendzel":"/assets/headshots/teddy_skendzel.png","tim_baldwin":"/assets/headshots/tim_baldwin.png","tim_gannon":"/assets/headshots/tim_gannon.png","tommy_wollscheid":"/assets/headshots/tommy_wollscheid.png","will_carter":"/assets/headshots/will_carter.png","will_cohn":"/assets/headshots/will_cohn.png","will_stevens":"/assets/headshots/will_stevens.png","zach_zywiec":"/assets/headshots/zach_zywiec.png"};
+
+// Explicit DOM bindings. Do not rely on browser-created globals from element IDs.
+const statusEl=document.getElementById("status");
+const contentEl=document.getElementById("content");
+const headshotEl=document.getElementById("headshot");
+const playerNameEl=document.getElementById("playerName");
+const playerMetaEl=document.getElementById("playerMeta");
+const teamChipsEl=document.getElementById("teamChips");
+const summaryEl=document.getElementById("summary");
+const batStreaksEl=document.getElementById("batStreaks");
+const pitStreaksEl=document.getElementById("pitStreaks");
+const milestonesEl=document.getElementById("milestones");
+const snapshotEl=document.getElementById("snapshot");
+const batTableEl=document.getElementById("batTable");
+const pitTableEl=document.getElementById("pitTable");
 
 const n=v=>Number(v||0);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -144,8 +160,8 @@ function milestones(b,p){
  ].filter(Boolean);
  return out.slice(0,3);
 }
-function putList(id,items,empty){
- document.getElementById(id).innerHTML=items.length?items.map(x=>`<li>${esc(x)}</li>`).join(""):`<li class="muted">${esc(empty)}</li>`;
+function putList(el,items,empty){
+ el.innerHTML=items.length?items.map(x=>`<li>${esc(x)}</li>`).join(""):`<li class="muted">${esc(empty)}</li>`;
 }
 
 function seasonRows(){
@@ -184,48 +200,81 @@ function pitTable(rows){
 }
 
 async function init(){
- if(!PLAYER_ID){status.textContent="No player selected.";return}
+ if(!PLAYER_ID){
+   statusEl.textContent="No player selected. Return to the Players page and choose a player.";
+   return;
+ }
+
+ statusEl.textContent="Loading player…";
+
  try{
-   const [liveRes,manifestRes]=await Promise.all([
-     fetch(`/api/public/player?id=${encodeURIComponent(PLAYER_ID)}&season=2026`,{cache:"no-store"}),
-     fetch("/assets/headshots/manifest.json",{cache:"no-store"})
-   ]);
-   const live=await liveRes.json();if(!liveRes.ok||!live.ok)throw new Error(live.error||"Player unavailable.");
-   LIVE=live;HEADSHOTS=manifestRes.ok?await manifestRes.json():{};
+   const liveRes=await fetch(`/api/public/player?id=${encodeURIComponent(PLAYER_ID)}&season=2026`,{cache:"no-store"});
+   let live;
+   try{
+     live=await liveRes.json();
+   }catch(parseErr){
+     throw new Error(`Player API returned an unreadable response (HTTP ${liveRes.status}).`);
+   }
+
+   if(!liveRes.ok||!live.ok){
+     const detail=live?.detail?` ${live.detail}`:"";
+     throw new Error(`${live?.error||`Player API failed (HTTP ${liveRes.status}).`}${detail}`);
+   }
+
+   LIVE=live;
 
    const staticPlayer=(ND_DATA.players||[]).find(p=>p.Player_ID===PLAYER_ID)||{};
    const {bat,pit}=seasonRows();
    const cb=careerBat(bat),cp=careerPit(pit);
 
    document.title=`${live.player.name} | ND Wiffle`;
-   playerName.textContent=live.player.name;
-   playerMeta.textContent=`${live.player.class_year?`Class of ${live.player.class_year}`:"Class year unavailable"}${Number(live.player.retired)?" · Retired":" · Active"}`;
-   const hu=HEADSHOTS[PLAYER_ID];headshot.src=hu||"/assets/league-mark.png";headshot.alt=live.player.name;
+   playerNameEl.textContent=live.player.name;
+   playerMetaEl.textContent=`${live.player.class_year?`Class of ${live.player.class_year}`:"Class year unavailable"}${Number(live.player.retired)?" · Retired":" · Active"}`;
+
+   const hu=HEADSHOTS[PLAYER_ID]||"";
+   if(hu){
+     headshotEl.src=hu;
+     headshotEl.alt=`${live.player.name} headshot`;
+     headshotEl.onerror=()=>{
+       headshotEl.onerror=null;
+       headshotEl.src="/assets/league-mark.png";
+       headshotEl.alt="ND Wiffle";
+     };
+   }else{
+     headshotEl.src="/assets/league-mark.png";
+     headshotEl.alt="ND Wiffle";
+   }
 
    const teams=[...new Set((live.rosters||[]).map(x=>canonicalTeam(x.team_name)).filter(Boolean))];
-   teamChips.innerHTML=teams.map(t=>`<span class="chip">${logoMap[t]?`<img src="${logoMap[t]}" style="width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px">`:""}${esc(t)}</span>`).join("");
+   teamChipsEl.innerHTML=teams.length
+     ?teams.map(t=>`<span class="chip">${logoMap[t]?`<img src="${logoMap[t]}" style="width:15px;height:15px;object-fit:contain;vertical-align:middle;margin-right:4px">`:""}${esc(t)}</span>`).join("")
+     :'<span class="chip">Team history unavailable</span>';
 
-   summary.innerHTML=[
+   summaryEl.innerHTML=[
      [cb.Hits,"Career H"],[cb.HRs,"Career HR"],[cb.PAs,"Career PA"],
      [cp.Ks,"Pitching K"],[cp.IP,"Career IP"],[cp.ERA===null?"—":fmt(cp.ERA),"Career ERA"]
    ].map(([v,l])=>`<div><strong>${v}</strong><span>${l}</span></div>`).join("");
 
-   putList("batStreaks",battingStreaks(live.batting_series||[]),"Not enough 2026 series data for a multi-series batting streak.");
-   putList("pitStreaks",pitchingStreaks(live.pitching_series||[]),"Not enough 2026 pitching-series data for a multi-series streak.");
-   putList("milestones",milestones(cb,cp),"No nearby tracked milestones.");
+   putList(batStreaksEl,battingStreaks(live.batting_series||[]),"Not enough 2026 series data for a multi-series batting streak.");
+   putList(pitStreaksEl,pitchingStreaks(live.pitching_series||[]),"Not enough 2026 pitching-series data for a multi-series streak.");
+   putList(milestonesEl,milestones(cb,cp),"No nearby tracked milestones.");
 
    const b26=bat.find(x=>String(x.Season)==="2026"),p26=pit.find(x=>String(x.Season)==="2026");
    const snap=[];
    if(b26)snap.push(`${b26.Hits} H, ${b26.HRs} HR, ${rate(n(b26.BA))} AVG in 2026`);
    if(p26)snap.push(`${p26.Ks} K, ${p26.IP} IP, ${fmt(p26.ERA)} ERA in 2026`);
-   putList("snapshot",snap,"No 2026 stats yet.");
+   putList(snapshotEl,snap,"No 2026 stats yet.");
 
-   batTableEl=document.getElementById("batTable");pitTableEl=document.getElementById("pitTable");
    batTableEl.innerHTML=bat.length?batTable(bat):'<tbody><tr><td class="empty">No batting seasons recorded.</td></tr></tbody>';
    pitTableEl.innerHTML=pit.length?pitTable(pit):'<tbody><tr><td class="empty">No pitching seasons recorded.</td></tr></tbody>';
 
-   status.style.display="none";content.style.display="";
- }catch(e){status.textContent=e.message}
+   statusEl.style.display="none";
+   contentEl.style.display="";
+ }catch(e){
+   console.error("Player page failed:",e);
+   statusEl.innerHTML=`<strong style="color:#eb7884">Could not load this player.</strong><br><span style="color:var(--muted)">${esc(e.message||String(e))}</span><br><a href="/players/" style="display:inline-block;margin-top:10px;color:var(--gold);font-weight:900">← Back to Players</a>`;
+   contentEl.style.display="none";
+ }
 }
 init();
 </script>

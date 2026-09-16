@@ -1,0 +1,9 @@
+{
+  "player_loading_bug_fixed": true,
+  "explicit_dom_bindings": true,
+  "api_optional_queries_fault_tolerant": true,
+  "visible_api_error_messages": true,
+  "headshots_embedded_in_player_page": 72,
+  "players_directory_headshot_support": true,
+  "syntax_checks": "PASS"
+}
