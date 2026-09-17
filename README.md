@@ -540,3 +540,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Added three icon badges to the stat cards, based on the three provided icon references.
 - Tinted the icons dynamically by team so they match each preset palette.
 - Kept the simplified interface and centered three-box layout intact.
+
+
+## v110: polish pass for midnight mockup
+- Reduced the stroke weight around the player name for a cleaner jersey look.
+- Increased the size of the three stat boxes.
+- Reworked the icons with cleaner masks and higher-contrast circular badges.
+- Fixed the left/right icon clipping-formatting issue from the prior build.
