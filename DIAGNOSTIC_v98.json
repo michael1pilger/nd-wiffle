@@ -1,0 +1,9 @@
+{
+  "publish_health_preflight": "PASS",
+  "non_json_response_visibility": "PASS",
+  "server_detail_visibility": "PASS",
+  "publish_timeout": "30s",
+  "missing_payload_no_longer_silent": "PASS",
+  "sticky_publish_status": "PASS",
+  "syntax": "PASS"
+}
