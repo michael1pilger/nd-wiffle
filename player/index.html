@@ -47,7 +47,7 @@
     <section class="hero">
       <img id="headshot" class="headshot" alt="">
       <div>
-        <div class="eyebrow">Player Profile · BUILD v97</div>
+        <div class="eyebrow">Player Profile · BUILD v102</div>
         <h1 id="playerName"></h1>
         <div class="meta" id="playerMeta"></div>
         <div class="team-history" id="teamChips"></div>
@@ -113,11 +113,11 @@ function histIpToOuts(v){
 function outsToIp(o){o=Math.round(n(o));return `${Math.floor(o/3)}${o%3?`.${o%3}`:""}`}
 
 function regularCareerBat(rows){
- const out={PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,HBP:0,GP:0};
+ const out={PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,GP:0};
  for(const r of rows)for(const k of Object.keys(out))out[k]+=n(r[k]);
  const tb=out.Singles+2*out.Doubles+3*out.Triples+4*out.HRs;
  out.BA=out.ABs?out.Hits/out.ABs:0;
- out.OBP=out.PAs?(out.Hits+out.BB+out.HBP)/out.PAs:0;
+ out.OBP=out.PAs?(out.Hits+out.BB)/out.PAs:0;
  out.SLG=out.ABs?tb/out.ABs:0;out.OPS=out.OBP+out.SLG;return out;
 }
 
@@ -147,18 +147,16 @@ function careerBat(rows){
    const source=Number(src[k]);
    base[k]=Number.isFinite(source)?Math.max(source,n(regHist[k])):n(regHist[k]);
  }
- // Runs/HBP were not present in the uploaded cumulative file, so these
- // remain regular-season-only historical counts plus live 2026.
+ // Runs were not present in the uploaded cumulative file, so they remain regular-season-only historical counts plus live 2026.
  base.Runs=n(regHist.Runs);
- base.HBP=n(regHist.HBP);
 
  const out={};
- for(const k of ["PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","GP"]){
+ for(const k of ["PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","GP"]){
    out[k]=n(base[k])+n(liveTotals[k]);
  }
  const tb=out.Singles+2*out.Doubles+3*out.Triples+4*out.HRs;
  out.BA=out.ABs?out.Hits/out.ABs:0;
- out.OBP=out.PAs?(out.Hits+out.BB+out.HBP)/out.PAs:0;
+ out.OBP=out.PAs?(out.Hits+out.BB)/out.PAs:0;
  out.SLG=out.ABs?tb/out.ABs:0;
  out.OPS=out.OBP+out.SLG;
  out._careerSource=true;
@@ -166,9 +164,9 @@ function careerBat(rows){
 }
 
 function regularCareerPit(rows){
- const out={GP:0,Apps:0,Starts:0,W:0,L:0,S:0,Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,HBP:0,WP:0};
+ const out={GP:0,Apps:0,Starts:0,W:0,L:0,S:0,Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,WP:0};
  for(const r of rows){
-   for(const k of ["GP","Apps","Starts","W","L","S","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP"])out[k]+=n(r[k]);
+   for(const k of ["GP","Apps","Starts","W","L","S","BF","Runs","ER","Hits","Walks","Ks","HRs","WP"])out[k]+=n(r[k]);
    out.Outs+=(r.Outs!==undefined?n(r.Outs):histIpToOuts(r.IP));
  }
  const inn=out.Outs/3;
@@ -196,7 +194,7 @@ function careerPit(rows){
  out.IP=outsToIp(out.Outs);
 
  // These fields were not available in the cumulative source.
- for(const k of ["GP","Runs","HRs","HBP","WP"])out[k]=n(regHist[k])+n(liveTotals[k]);
+ for(const k of ["GP","Runs","HRs","WP"])out[k]=n(regHist[k])+n(liveTotals[k]);
 
  const inn=out.Outs/3;
  out.ERA=inn?out.ER*3/inn:null;
@@ -217,8 +215,8 @@ function bestStreak(rows,test,label){
 }
 
 function rateOBP(r){
- const pa=n(r.PA),h=n(r.H),bb=n(r.BB),hbp=n(r.HBP);
- return pa>0?(h+bb+hbp)/pa:0;
+ const pa=n(r.PA),h=n(r.H),bb=n(r.BB);
+ return pa>0?(h+bb)/pa:0;
 }
 
 function battingStreaks(rows){
@@ -306,15 +304,15 @@ function seasonRows(){
 
  const lb=(LIVE?.batting_series||[]);
  if(lb.length){
-   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lb[lb.length-1].team_name,GP:0,PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,HBP:0};
-   for(const r of lb){x.GP+=n(r.GP);x.PAs+=n(r.PA);x.ABs+=n(r.AB);x.Runs+=n(r.R);x.Hits+=n(r.H);x.Singles+=n(r["1B"]);x.Doubles+=n(r["2B"]);x.Triples+=n(r["3B"]);x.HRs+=n(r.HR);x.RBI+=n(r.RBI);x.BB+=n(r.BB);x.Ks+=n(r.SO);x.HBP+=n(r.HBP)}
-   const tb=x.Singles+2*x.Doubles+3*x.Triples+4*x.HRs;x.BA=x.ABs?x.Hits/x.ABs:0;x.OBP=x.PAs?(x.Hits+x.BB+x.HBP)/x.PAs:0;x.SLG=x.ABs?tb/x.ABs:0;x.OPS=x.OBP+x.SLG;bat.push(x);
+   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lb[lb.length-1].team_name,GP:0,PAs:0,ABs:0,Runs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0};
+   for(const r of lb){x.GP+=n(r.GP);x.PAs+=n(r.PA);x.ABs+=n(r.AB);x.Runs+=n(r.R);x.Hits+=n(r.H);x.Singles+=n(r["1B"]);x.Doubles+=n(r["2B"]);x.Triples+=n(r["3B"]);x.HRs+=n(r.HR);x.RBI+=n(r.RBI);x.BB+=n(r.BB);x.Ks+=n(r.SO)}
+   const tb=x.Singles+2*x.Doubles+3*x.Triples+4*x.HRs;x.BA=x.ABs?x.Hits/x.ABs:0;x.OBP=x.PAs?(x.Hits+x.BB)/x.PAs:0;x.SLG=x.ABs?tb/x.ABs:0;x.OPS=x.OBP+x.SLG;bat.push(x);
  }
  const lp=(LIVE?.pitching_series||[]);
  if(lp.length){
    const d=LIVE.decisions||{};
-   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lp[lp.length-1].team_name,GP:0,Apps:0,Starts:0,W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,HBP:0,WP:0};
-   for(const r of lp){x.GP+=n(r.GP);x.Apps+=n(r.Apps);x.Starts+=n(r.Starts);x.Outs+=n(r.Outs);x.BF+=n(r.BF);x.Runs+=n(r.R);x.ER+=n(r.ER);x.Hits+=n(r.H);x.Walks+=n(r.BB);x.Ks+=n(r.K);x.HRs+=n(r.HR);x.HBP+=n(r.HBP);x.WP+=n(r.WP)}
+   const x={Player_ID:PLAYER_ID,Season:"2026",Team:lp[lp.length-1].team_name,GP:0,Apps:0,Starts:0,W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:0,BF:0,Runs:0,ER:0,Hits:0,Walks:0,Ks:0,HRs:0,WP:0};
+   for(const r of lp){x.GP+=n(r.GP);x.Apps+=n(r.Apps);x.Starts+=n(r.Starts);x.Outs+=n(r.Outs);x.BF+=n(r.BF);x.Runs+=n(r.R);x.ER+=n(r.ER);x.Hits+=n(r.H);x.Walks+=n(r.BB);x.Ks+=n(r.K);x.HRs+=n(r.HR);x.WP+=n(r.WP)}
    const inn=x.Outs/3;x.IP=outsToIp(x.Outs);x.ERA=inn?x.ER*3/inn:null;x.WHIP=inn?(x.Hits+x.Walks)/inn:null;pit.push(x);
  }
  return {bat,pit};

@@ -136,7 +136,7 @@ function serverValidate(payload, teamIds, playerIds){
   for(const b of payload.batting||[]){
     if(!playerIds.get(norm(b.player))) errors.push(`Unknown batting player: ${b.player}`);
     if(!["away","home"].includes(b.side)) errors.push(`Invalid batting side: ${b.player}`);
-    for(const k of ["games_played","PA","AB","R","H","1B","2B","3B","HR","RBI","BB","SO","HBP"]){
+    for(const k of ["games_played","PA","AB","R","H","1B","2B","3B","HR","RBI","BB","SO"]){
       if(!nonnegInt(b[k])) errors.push(`${b.player}: batting ${k} must be a non-negative integer.`);
     }
   }
@@ -152,7 +152,7 @@ function serverValidate(payload, teamIds, playerIds){
     if(!Number.isInteger(p.appearances)||p.appearances<1||p.appearances>3) errors.push(`${p.player}: Apps must be 1-3.`);
     if(!Number.isInteger(p.starts)||p.starts<0||p.starts>3||p.starts>p.appearances) errors.push(`${p.player}: invalid Starts.`);
     starts[p.side]=(starts[p.side]||0)+Number(p.starts||0);
-    for(const k of ["games_played","outs_recorded","BF","R","ER","K","H","BB","HR","HBP","WP"]){
+    for(const k of ["games_played","outs_recorded","BF","R","ER","K","H","BB","HR","WP"]){
       if(!nonnegInt(p[k])) errors.push(`${p.player}: pitching ${k} must be a non-negative integer.`);
     }
   }
@@ -297,21 +297,21 @@ export async function onRequestPost(context) {
   for(const b of payload.batting||[]){
     statements.push(DB.prepare(`
       INSERT INTO batting_series_stats(
-        series_id,player_id,team_id,side,games_played,pa,ab,runs,hits,singles,doubles,triples,hr,rbi,bb,so,hbp
+        series_id,player_id,team_id,side,games_played,pa,ab,runs,hits,singles,doubles,triples,hr,rbi,bb,so
       ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).bind(
       payload.series_id,pId(b.player),b.side==="away"?awayTeamId:homeTeamId,b.side,b.games_played,
-      b.PA,b.AB,b.R,b.H,b["1B"],b["2B"],b["3B"],b.HR,b.RBI,b.BB,b.SO,b.HBP
+      b.PA,b.AB,b.R,b.H,b["1B"],b["2B"],b["3B"],b.HR,b.RBI,b.BB,b.SO
     ));
   }
   for(const p of payload.pitching||[]){
     statements.push(DB.prepare(`
       INSERT INTO pitching_series_stats(
-        series_id,player_id,team_id,side,games_played,appearances,starts,outs_recorded,bf,runs,er,strikeouts,hits,bb,hr,hbp,wp
+        series_id,player_id,team_id,side,games_played,appearances,starts,outs_recorded,bf,runs,er,strikeouts,hits,bb,hr,wp
       ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).bind(
       payload.series_id,pId(p.player),p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played,
-      p.appearances,p.starts,p.outs_recorded,p.BF,p.R,p.ER,p.K,p.H,p.BB,p.HR,p.HBP,p.WP
+      p.appearances,p.starts,p.outs_recorded,p.BF,p.R,p.ER,p.K,p.H,p.BB,p.HR,p.WP
     ));
   }
   for(const c of payload.manual_corrections||[]){

@@ -1,0 +1,15 @@
+{
+  "pwar_normalization_multiplier": 0.3,
+  "pwar_floor": 0,
+  "batting_war": "kept compressed model; HBP removed from formula",
+  "playoff_BA_OBP_precision": "3 decimals",
+  "hbp_tracking_removed_from_runtime": "PASS",
+  "hbp_drop_migration": "0025_remove_hbp.sql",
+  "remaining_hbp_refs_expected": [
+    "admin/series-entry/index.html (raw iScore sample only)",
+    "migrations/0001_initial.sql",
+    "migrations/0025_remove_hbp.sql"
+  ],
+  "syntax": "PASS",
+  "remaining_hbp_runtime_refs": "none; only raw iScore sample / migrations may contain source/schema text"
+}

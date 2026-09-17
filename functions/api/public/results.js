@@ -55,7 +55,7 @@ export async function onRequestGet(context){
       DB.prepare(`
         SELECT
           b.series_id,b.player_id,p.name,b.team_id,t.display_name AS team_name,b.side,
-          b.games_played,b.pa,b.ab,b.runs,b.hits,b.singles,b.doubles,b.triples,b.hr,b.rbi,b.bb,b.so,b.hbp
+          b.games_played,b.pa,b.ab,b.runs,b.hits,b.singles,b.doubles,b.triples,b.hr,b.rbi,b.bb,b.so
         FROM batting_series_stats b
         JOIN series s ON s.series_id=b.series_id
         JOIN players p ON p.player_id=b.player_id
@@ -67,7 +67,7 @@ export async function onRequestGet(context){
         SELECT
           ps.series_id,ps.player_id,p.name,ps.team_id,t.display_name AS team_name,ps.side,
           ps.games_played,ps.appearances,ps.starts,ps.outs_recorded,ps.bf,ps.runs,ps.er,
-          ps.strikeouts,ps.hits,ps.bb,ps.hr,ps.hbp,ps.wp
+          ps.strikeouts,ps.hits,ps.bb,ps.hr,ps.wp
         FROM pitching_series_stats ps
         JOIN series s ON s.series_id=ps.series_id
         JOIN players p ON p.player_id=ps.player_id
@@ -123,14 +123,14 @@ export async function onRequestGet(context){
     const batBySeries=new Map();
     for(const b of batRes.results||[]){
       if(!batBySeries.has(b.series_id))batBySeries.set(b.series_id,[]);
-      const ab=n(b.ab),hits=n(b.hits),pa=n(b.pa),bb=n(b.bb),hbp=n(b.hbp);
+      const ab=n(b.ab),hits=n(b.hits),pa=n(b.pa),bb=n(b.bb);
       const tb=n(b.singles)+2*n(b.doubles)+3*n(b.triples)+4*n(b.hr);
-      const obpDen=pa||(ab+bb+hbp);
-      const ba=ab?hits/ab:0,obp=obpDen?(hits+bb+hbp)/obpDen:0,slg=ab?tb/ab:0;
+      const obpDen=pa||(ab+bb);
+      const ba=ab?hits/ab:0,obp=obpDen?(hits+bb)/obpDen:0,slg=ab?tb/ab:0;
       batBySeries.get(b.series_id).push({
         player_id:b.player_id,name:b.name,team_id:b.team_id,team_name:b.team_name,side:b.side,
         GP:n(b.games_played),PA:pa,AB:ab,R:n(b.runs),H:hits,"1B":n(b.singles),"2B":n(b.doubles),
-        "3B":n(b.triples),HR:n(b.hr),RBI:n(b.rbi),BB:bb,SO:n(b.so),HBP:hbp,
+        "3B":n(b.triples),HR:n(b.hr),RBI:n(b.rbi),BB:bb,SO:n(b.so),
         BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)
       });
     }
@@ -155,7 +155,7 @@ export async function onRequestGet(context){
       pitBySeries.get(p.series_id).push({
         player_id:p.player_id,name:p.name,team_id:p.team_id,team_name:p.team_name,side:p.side,
         GP:n(p.games_played),Apps:n(p.appearances),Starts:n(p.starts),Outs:outs,IP:ipDisplay(outs),
-        BF:n(p.bf),R:n(p.runs),ER:er,K:n(p.strikeouts),H:hits,BB:walks,HR:n(p.hr),HBP:n(p.hbp),WP:n(p.wp),
+        BF:n(p.bf),R:n(p.runs),ER:er,K:n(p.strikeouts),H:hits,BB:walks,HR:n(p.hr),WP:n(p.wp),
         W:n(d.W),L:n(d.L),S:n(d.S),
         ERA:outs>0?((er*3)/innings).toFixed(2):null,
         WHIP:outs>0?((walks+hits)/innings).toFixed(2):null

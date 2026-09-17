@@ -39,6 +39,39 @@ const batSeasonsById={}; for(const r of (ND_DATA.battingSeasons||[])){(batSeason
 
 const pitSeasonsById={}; for(const r of (ND_DATA.pitchingSeasons||[])){(pitSeasonsById[r.Player_ID]??=[]).push(r);}
 
+// Historical data.js supplies the league archive, but the current D1 roster is
+// authoritative for active 2026 players. This merged directory lets rookies
+// and newly-added players appear even if they are absent from static data.js.
+let DIRECTORY_PLAYERS=(ND_DATA.players||[]).map(p=>({...p}));
+const directoryById=new Map(DIRECTORY_PLAYERS.map(p=>[p.Player_ID,p]));
+
+function upsertDirectoryPlayer(x){
+ const id=x.player_id||x.Player_ID;
+ if(!id)return;
+ let p=directoryById.get(id);
+ if(!p){
+   p={
+     Player_ID:id,
+     Name:x.name||x.Name||id,
+     Class_Year:x.class_year??x.Class_Year??"",
+     Retired:x.retired??x.Retired??0,
+     Teams_Played:x.team_name||x.Team||""
+   };
+   DIRECTORY_PLAYERS.push(p);
+   directoryById.set(id,p);
+ }else{
+   // Let live D1 fix stale spelling/class/status without erasing history.
+   if(x.name)p.Name=x.name;
+   if(x.class_year!==null&&x.class_year!==undefined&&x.class_year!=="")p.Class_Year=String(x.class_year);
+   if(x.retired!==null&&x.retired!==undefined)p.Retired=x.retired;
+   const liveTeam=x.team_name||x.Team;
+   if(liveTeam){
+     const hist=String(p.Teams_Played||"").split(";").map(v=>v.trim()).filter(Boolean);
+     if(!hist.includes(liveTeam))p.Teams_Played=[...hist,liveTeam].join(";");
+   }
+ }
+}
+
 function liveHistIpToOuts(v){
  const s=String(v??"").trim(); if(!s)return 0;
  const x=parseFloat(s); if(!Number.isFinite(x))return 0;
@@ -53,10 +86,10 @@ function liveOutsToIp(o){
 }
 function mergeLiveBatCareer(base,l){
  const h={...(base||{})},out={...h,Player_ID:l.Player_ID,Name:l.Name};
- for(const k of ["PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","GP"])out[k]=num(h[k])+num(l[k]);
- const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB),hbp=num(out.HBP),tb=num(out.Singles)+2*num(out.Doubles)+3*num(out.Triples)+4*num(out.HRs);
+ for(const k of ["PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","GP"])out[k]=num(h[k])+num(l[k]);
+ const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB),tb=num(out.Singles)+2*num(out.Doubles)+3*num(out.Triples)+4*num(out.HRs);
  out.BA=ab?(hits/ab).toFixed(3):"0.000";
- out.OBP=(pa||ab+bb+hbp)?((hits+bb+hbp)/(pa||ab+bb+hbp)).toFixed(3):"0.000";
+ out.OBP=(pa||ab+bb)?((hits+bb)/(pa||ab+bb)).toFixed(3):"0.000";
  out.SLG=ab?(tb/ab).toFixed(3):"0.000";
  out.OPS=(num(out.OBP)+num(out.SLG)).toFixed(3);
  return out;
@@ -82,14 +115,20 @@ async function loadLivePlayerData(){
      (pitSeasonsById[l.Player_ID]??=[]).push(l);
    }
    for(const r of (j.participants||[])){
+     if(r.name)upsertDirectoryPlayer(r);
      const arr=(rostersById[r.player_id]??=[]);
-     if(!arr.some(x=>String(x.Season)==="2026"&&canonicalTeam(x.Team)===canonicalTeam(r.team_name)))arr.push({Player_ID:r.player_id,Season:"2026",Team:r.team_name});
+     if(!arr.some(x=>String(x.Season)==="2026"&&canonicalTeam(x.Team)===canonicalTeam(r.team_name))){
+       arr.push({Player_ID:r.player_id,Season:"2026",Team:r.team_name});
+     }
    }
    try{
      const rr=await fetch("/api/public/rosters?season=2026",{cache:"no-store"}),rj=await rr.json();
      for(const x of (rj.rosters||[])){
+       upsertDirectoryPlayer(x);
        const arr=(rostersById[x.player_id]??=[]);
-       if(!arr.some(y=>String(y.Season)==="2026"&&canonicalTeam(y.Team)===canonicalTeam(x.team_name)))arr.push({Player_ID:x.player_id,Season:"2026",Team:x.team_name});
+       if(!arr.some(y=>String(y.Season)==="2026"&&canonicalTeam(y.Team)===canonicalTeam(x.team_name))){
+         arr.push({Player_ID:x.player_id,Season:"2026",Team:x.team_name});
+       }
      }
    }catch(rosterErr){console.error(rosterErr)}
    populateFilters();renderPlayers();
@@ -149,7 +188,7 @@ const PUBLIC_HIDDEN_PLAYER_NAMES=new Set(["max partovi"]);
 function publicVisiblePlayer(p){return !PUBLIC_HIDDEN_PLAYER_NAMES.has(String(p?.Name||"").trim().toLowerCase())}
 function populateFilters(){
  const teams=new Set(),classes=new Set();
- for(const p of (ND_DATA.players||[]).filter(publicVisiblePlayer)){const b=batById[p.Player_ID]||{},pit=pitById[p.Player_ID]||{};playerTeams(p).forEach(t=>teams.add(t));const c=playerClass(p,b,pit);if(c)classes.add(c)}
+ for(const p of DIRECTORY_PLAYERS.filter(publicVisiblePlayer)){const b=batById[p.Player_ID]||{},pit=pitById[p.Player_ID]||{};playerTeams(p).forEach(t=>teams.add(t));const c=playerClass(p,b,pit);if(c)classes.add(c)}
  teamSel.innerHTML='<option value="">All teams</option>'+[...teams].sort().map(t=>`<option>${t}</option>`).join("");
  classSel.innerHTML='<option value="">All classes</option>'+[...classes].sort().map(c=>`<option value="${c}">Class of '${c.slice(-2)}</option>`).join("");
 }
@@ -161,7 +200,7 @@ function sortRows(rows){
 }
 function renderPlayers(){
  const q=(pq.value||"").trim().toLowerCase();
- let rows=(ND_DATA.players||[]).filter(publicVisiblePlayer).map(p=>[p,batById[p.Player_ID]||{},pitById[p.Player_ID]||{}]).filter(([p,b,pit])=>{
+ let rows=DIRECTORY_PLAYERS.filter(publicVisiblePlayer).map(p=>[p,batById[p.Player_ID]||{},pitById[p.Player_ID]||{}]).filter(([p,b,pit])=>{
   if(q&&!(p.Name||"").toLowerCase().includes(q))return false;const teams=playerTeams(p);if(teamSel.value&&!teams.includes(teamSel.value))return false;
   const c=playerClass(p,b,pit);if(classSel.value&&c!==classSel.value)return false;const r=isRetired(p,b,pit);if(statusSel.value==="active"&&r)return false;if(statusSel.value==="retired"&&!r)return false;return true});
  rows=sortRows(rows);playerCount.textContent=`${rows.length} players`;
@@ -170,5 +209,9 @@ function renderPlayers(){
  return `<a class="card playercard playercard-link" href="/player/?id=${encodeURIComponent(p.Player_ID)}" aria-label="View ${p.Name} player page"><div class="player-card-top"><div class="player-card-ident">${PLAYER_HEADSHOTS[p.Player_ID]?`<img class="player-thumb" src="${PLAYER_HEADSHOTS[p.Player_ID]}" alt="${p.Name}" onerror="this.style.display='none'">`:""}<div><div class="player-name">${p.Name}${ret?'<span class="retired-badge">Retired</span>':""}</div><div class="player-meta">${c?`Class '${c.slice(-2)}`:"Class —"}</div></div></div><div class="player-team-logos">${logos}</div></div>
  <div class="player-statline"><span class="tag">${b.Hits??0} H</span><span class="tag">${b.HRs??0} HR</span><span class="tag">${pit.Ks??0} Pitching K</span>${num(pit.IP)>0?`<span class="tag">${fmt2(pit.ERA)} ERA</span>`:""}</div>${accoladeHTML(p.Player_ID)}${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}<div class="player-open">View player page →</div></a>`}).join("")
 }
-[pq,teamSel,classSel,statusSel,sortSel].forEach(el=>el.addEventListener(el===pq?"input":"change",renderPlayers));populateFilters();renderPlayers();loadLivePlayerData();
+[pq,teamSel,classSel,statusSel,sortSel].forEach(el=>el.addEventListener(el===pq?"input":"change",renderPlayers));
+populateFilters();
+renderPlayers();
+playerCount.textContent+=" · loading 2026 roster…";
+loadLivePlayerData();
 </script></body></html>

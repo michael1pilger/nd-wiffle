@@ -475,7 +475,6 @@ const CORRECTION_FIELDS=[
   ["BB","Walks"],
   ["HR","Home Runs Allowed"],
   ["BF","Batters Faced"],
-  ["HBP","Hit Batters"],
   ["WP","Wild Pitches"],
   ["outs_recorded","Outs Recorded"]
 ];
@@ -489,7 +488,7 @@ function basePitchingRows(gpMap={}){
     starts:meta[r.Name]?.starts??null,
     outs_recorded:ipToOuts(r.IP),
     BF:n(r.BF),R:n(r.R),ER:n(r.ER),K:n(r.K),H:n(r.H),BB:n(r.BB),HR:n(r.HR),
-    HBP:n(r.HB),WP:n(r.WP)
+    WP:n(r.WP)
   }));
   return [...make(parsed.AP,away,"away"),...make(parsed.HP,home,"home")];
 }
@@ -583,7 +582,7 @@ function normalizedBatting(rows,team,side,gpMap){
     player:r.Name,team,side,games_played:gpMap[r.Name]||3,
     PA:n(r.PA),AB:n(r.AB),R:n(r.R),H:n(r.H),
     "1B":n(r["1B"]),"2B":n(r["2B"]),"3B":n(r["3B"]),HR:n(r.HR),
-    RBI:n(r.RBI),BB:n(r.BB),SO:n(r.SO),HBP:n(r.HBP)
+    RBI:n(r.RBI),BB:n(r.BB),SO:n(r.SO)
   }));
 }
 function readCorrections(baseRows){

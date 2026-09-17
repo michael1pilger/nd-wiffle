@@ -27,12 +27,12 @@ export async function onRequestGet(context){
    const q=await DB.prepare(`
     SELECT s.season,s.series_date,b.series_id,b.team_id,t.display_name AS team,p.name,b.player_id,
       b.side,b.games_played AS GP,b.pa AS PA,b.ab AS AB,b.runs AS R,b.hits AS H,b.singles AS "1B",
-      b.doubles AS "2B",b.triples AS "3B",b.hr AS HR,b.rbi AS RBI,b.bb AS BB,b.so AS K,b.hbp AS HBP
+      b.doubles AS "2B",b.triples AS "3B",b.hr AS HR,b.rbi AS RBI,b.bb AS BB,b.so AS K
     FROM batting_series_stats b JOIN series s ON s.series_id=b.series_id
     JOIN players p ON p.player_id=b.player_id JOIN teams t ON t.team_id=b.team_id
     WHERE s.season=? ORDER BY s.series_date,b.series_id,t.display_name,p.name
    `).bind(season).all();
-   const cols=[["Season","season"],["Date","series_date"],["Series_ID","series_id"],["Team","team"],["Team_ID","team_id"],["Player","name"],["Player_ID","player_id"],["Side","side"],["GP","GP"],["PA","PA"],["AB","AB"],["R","R"],["H","H"],["1B","1B"],["2B","2B"],["3B","3B"],["HR","HR"],["RBI","RBI"],["BB","BB"],["K","K"],["HBP","HBP"]];
+   const cols=[["Season","season"],["Date","series_date"],["Series_ID","series_id"],["Team","team"],["Team_ID","team_id"],["Player","name"],["Player_ID","player_id"],["Side","side"],["GP","GP"],["PA","PA"],["AB","AB"],["R","R"],["H","H"],["1B","1B"],["2B","2B"],["3B","3B"],["HR","HR"],["RBI","RBI"],["BB","BB"],["K","K"]];
    return response(csv(q.results||[],cols),`${season}_Batting_By_Series.csv`);
   }
   if(type==="pitching_series"){
@@ -40,12 +40,12 @@ export async function onRequestGet(context){
     SELECT s.season,s.series_date,ps.series_id,ps.team_id,t.display_name AS team,p.name,ps.player_id,
       ps.side,ps.games_played AS GP,ps.appearances AS Apps,ps.starts AS Starts,ps.outs_recorded AS Outs,
       ps.bf AS BF,ps.runs AS R,ps.er AS ER,ps.strikeouts AS K,ps.hits AS H,ps.bb AS BB,ps.hr AS HR,
-      ps.hbp AS HBP,ps.wp AS WP
+      ps.wp AS WP
     FROM pitching_series_stats ps JOIN series s ON s.series_id=ps.series_id
     JOIN players p ON p.player_id=ps.player_id JOIN teams t ON t.team_id=ps.team_id
     WHERE s.season=? ORDER BY s.series_date,ps.series_id,t.display_name,p.name
    `).bind(season).all();
-   const cols=[["Season","season"],["Date","series_date"],["Series_ID","series_id"],["Team","team"],["Team_ID","team_id"],["Player","name"],["Player_ID","player_id"],["Side","side"],["GP","GP"],["Apps","Apps"],["Starts","Starts"],["Outs","Outs"],["BF","BF"],["R","R"],["ER","ER"],["K","K"],["H","H"],["BB","BB"],["HR","HR"],["HBP","HBP"],["WP","WP"]];
+   const cols=[["Season","season"],["Date","series_date"],["Series_ID","series_id"],["Team","team"],["Team_ID","team_id"],["Player","name"],["Player_ID","player_id"],["Side","side"],["GP","GP"],["Apps","Apps"],["Starts","Starts"],["Outs","Outs"],["BF","BF"],["R","R"],["ER","ER"],["K","K"],["H","H"],["BB","BB"],["HR","HR"],["WP","WP"]];
    return response(csv(q.results||[],cols),`${season}_Pitching_By_Series.csv`);
   }
   if(type==="games"){

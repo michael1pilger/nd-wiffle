@@ -34,13 +34,13 @@
 const escCsv=v=>{if(v==null)return "";const s=String(v);return /[",\r\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
 function rowsCsv(rows,cols){return cols.join(",")+"\n"+rows.map(r=>cols.map(c=>escCsv(r[c])).join(",")).join("\n")+"\n"}
 function dl(name,text,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-const histBatCols=["Season","Team","Name","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS","GP"];
-const histPitCols=["Season","Team","Name","Apps","Starts","W","L","S","IP","BF","Walks","Hits","Ks","ER","ERA","WHIP","HRs","HBP","WP"];
+const histBatCols=["Season","Team","Name","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","BA","OBP","SLG","OPS","GP"];
+const histPitCols=["Season","Team","Name","Apps","Starts","W","L","S","IP","BF","Walks","Hits","Ks","ER","ERA","WHIP","HRs","WP"];
 function histRows(kind){return (kind==="bat"?ND_DATA.battingSeasons:ND_DATA.pitchingSeasons).filter(r=>Number(r.Season)>=2021&&Number(r.Season)<=2025)}
 function downloadHist(kind){const rows=histRows(kind),cols=kind==="bat"?histBatCols:histPitCols;dl(`2021-2025_${kind==="bat"?"Batting":"Pitching"}_By_Season.csv`,rowsCsv(rows,cols))}
 async function liveLeague(){const r=await fetch("/api/public/league?season=2026",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Live league data unavailable");return j}
-const batCols=["Season","Team","Name","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","HBP","BA","OBP","SLG","OPS"];
-const pitCols=["Season","Team","Name","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","Ks","HRs","HBP","WP","ERA","WHIP"];
+const batCols=["Season","Team","Name","Class_Year","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","BA","OBP","SLG","OPS"];
+const pitCols=["Season","Team","Name","Class_Year","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","Ks","HRs","WP","ERA","WHIP"];
 async function downloadAgg(kind){const j=await liveLeague(),rows=kind==="bat"?j.batting:j.pitching,cols=kind==="bat"?batCols:pitCols;dl(`2026_${kind==="bat"?"Batting":"Pitching"}_Cumulative.csv`,rowsCsv(rows,cols))}
 async function fetchText(url){const r=await fetch(url,{cache:"no-store"});if(!r.ok)throw new Error(`Export failed: ${url}`);return r.text()}
 

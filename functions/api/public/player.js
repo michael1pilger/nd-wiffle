@@ -69,7 +69,7 @@ export async function onRequestGet(context){
       SELECT
         b.series_id,s.series_date,b.team_id,t.display_name AS team_name,
         b.games_played,b.pa,b.ab,b.runs,b.hits,b.singles,b.doubles,b.triples,
-        b.hr,b.rbi,b.bb,b.so,b.hbp
+        b.hr,b.rbi,b.bb,b.so
       FROM batting_series_stats b
       JOIN series s ON s.series_id=b.series_id
       JOIN teams t ON t.team_id=b.team_id
@@ -81,7 +81,7 @@ export async function onRequestGet(context){
       SELECT
         ps.series_id,s.series_date,ps.team_id,t.display_name AS team_name,
         ps.games_played,ps.appearances,ps.starts,ps.outs_recorded,ps.bf,
-        ps.runs,ps.er,ps.strikeouts,ps.hits,ps.bb,ps.hr,ps.hbp,ps.wp
+        ps.runs,ps.er,ps.strikeouts,ps.hits,ps.bb,ps.hr,ps.wp
       FROM pitching_series_stats ps
       JOIN series s ON s.series_id=ps.series_id
       JOIN teams t ON t.team_id=ps.team_id
@@ -103,7 +103,7 @@ export async function onRequestGet(context){
       series_id:r.series_id,date:r.series_date,team_id:r.team_id,team_name:r.team_name,
       GP:n(r.games_played),PA:n(r.pa),AB:n(r.ab),R:n(r.runs),H:n(r.hits),
       "1B":n(r.singles),"2B":n(r.doubles),"3B":n(r.triples),HR:n(r.hr),
-      RBI:n(r.rbi),BB:n(r.bb),SO:n(r.so),HBP:n(r.hbp)
+      RBI:n(r.rbi),BB:n(r.bb),SO:n(r.so)
     }));
 
     const pitching=pitRows.map(r=>({
@@ -111,7 +111,7 @@ export async function onRequestGet(context){
       GP:n(r.games_played),Apps:n(r.appearances),Starts:n(r.starts),
       Outs:n(r.outs_recorded),IP:ipDisplay(r.outs_recorded),BF:n(r.bf),
       R:n(r.runs),ER:n(r.er),K:n(r.strikeouts),H:n(r.hits),BB:n(r.bb),
-      HR:n(r.hr),HBP:n(r.hbp),WP:n(r.wp)
+      HR:n(r.hr),WP:n(r.wp)
     }));
 
     return json({

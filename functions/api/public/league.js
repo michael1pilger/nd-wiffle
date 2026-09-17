@@ -61,7 +61,7 @@ export async function onRequestGet(context){
           SUM(b.pa) AS pa,SUM(b.ab) AS ab,SUM(b.runs) AS runs,
           SUM(b.hits) AS hits,SUM(b.singles) AS singles,
           SUM(b.doubles) AS doubles,SUM(b.triples) AS triples,SUM(b.hr) AS hr,
-          SUM(b.rbi) AS rbi,SUM(b.bb) AS bb,SUM(b.so) AS so,SUM(b.hbp) AS hbp
+          SUM(b.rbi) AS rbi,SUM(b.bb) AS bb,SUM(b.so) AS so
         FROM batting_series_stats b
         JOIN series s ON s.series_id=b.series_id
         JOIN players p ON p.player_id=b.player_id
@@ -77,7 +77,7 @@ export async function onRequestGet(context){
           SUM(ps.outs_recorded) AS outs_recorded,SUM(ps.bf) AS bf,
           SUM(ps.runs) AS runs,SUM(ps.er) AS er,SUM(ps.strikeouts) AS strikeouts,
           SUM(ps.hits) AS hits,SUM(ps.bb) AS bb,SUM(ps.hr) AS hr,
-          SUM(ps.hbp) AS hbp,SUM(ps.wp) AS wp
+          SUM(ps.wp) AS wp
         FROM pitching_series_stats ps
         JOIN series s ON s.series_id=ps.series_id
         JOIN players p ON p.player_id=ps.player_id
@@ -159,16 +159,16 @@ export async function onRequestGet(context){
     const decisions=new Map((decisionsRes.results||[]).map(r=>[r.player_id,r]));
     const rosterTeams=new Map((rosterRes.results||[]).map(r=>[r.player_id,r]));
     const batting=(batRes.results||[]).map(r=>{
-      const pa=n(r.pa),ab=n(r.ab),hits=n(r.hits),bb=n(r.bb),hbp=n(r.hbp);
+      const pa=n(r.pa),ab=n(r.ab),hits=n(r.hits),bb=n(r.bb);
       const tb=n(r.singles)+2*n(r.doubles)+3*n(r.triples)+4*n(r.hr);
-      const obpDen=pa || (ab+bb+hbp);
-      const ba=ab?hits/ab:0,obp=obpDen?(hits+bb+hbp)/obpDen:0,slg=ab?tb/ab:0;
+      const obpDen=pa || (ab+bb);
+      const ba=ab?hits/ab:0,obp=obpDen?(hits+bb)/obpDen:0,slg=ab?tb/ab:0;
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
         Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
         GP:n(r.gp),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
         Singles:n(r.singles),Doubles:n(r.doubles),Triples:n(r.triples),HRs:n(r.hr),
-        RBI:n(r.rbi),BB:bb,Ks:n(r.so),HBP:hbp,
+        RBI:n(r.rbi),BB:bb,Ks:n(r.so),
         BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)
       };
     });
@@ -181,7 +181,7 @@ export async function onRequestGet(context){
         GP:n(r.gp),Apps:n(r.apps),Starts:n(r.starts),
         W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:outs,IP:ipDisplay(outs),
         BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
-        HRs:n(r.hr),HBP:n(r.hbp),WP:n(r.wp),
+        HRs:n(r.hr),WP:n(r.wp),
         ERA:outs>0?((er*3)/ip).toFixed(2):null,
         WHIP:outs>0?((walks+hits)/ip).toFixed(2):null
       };

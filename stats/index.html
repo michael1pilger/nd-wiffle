@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=100"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=102"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -47,14 +47,14 @@
  <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
  
 <div class="qualifier-hint" id="warHint">
-  ND WAR uses league-specific replacement levels. Batting WAR is intentionally compressed relative to the earlier model. Pitching WAR treats the replacement option as soft toss rather than another competent pitcher: real innings carry workload value, with additional credit for run prevention. Career WAR sums regular-season, inferred playoff, and live 2026 value.
+  ND WAR uses league-specific replacement levels. Batting WAR is intentionally compressed relative to the earlier model. Pitching WAR treats the replacement option as soft toss rather than another competent pitcher, but pWAR is normalized to the short ND Wiffle season. Real innings still provide positive value, poor pitching bottoms out at 0 pWAR, and run-prevention value is compressed to prevent MLB-scale career totals. Career WAR sums regular-season, inferred playoff, and live 2026 value.
 </div>
 <div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=100"></script>
-<script src="/assets/career-baseline.js?v=100"></script>
+<script src="/assets/data.js?v=102"></script>
+<script src="/assets/career-baseline.js?v=102"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveStandings=[],liveLoaded=false;
@@ -155,10 +155,10 @@ function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
 function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:0}
 
 function runsCreatedRow(r){
- const h=num(r.Hits),bb=num(r.BB),hbp=num(r.HBP),ab=num(r.ABs);
+ const h=num(r.Hits),bb=num(r.BB),ab=num(r.ABs);
  const tb=num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs);
- const denom=ab+bb+hbp;
- return denom>0?((h+bb+hbp)*tb)/denom:0;
+ const denom=ab+bb;
+ return denom>0?((h+bb)*tb)/denom:0;
 }
 function seasonWarMap(batRows,pitRows){
  const bats=(batRows||[]).filter(r=>num(r.PAs)>0);
@@ -185,8 +185,9 @@ function seasonWarMap(batRows,pitRows){
  // Use a deliberately poor soft-toss run rate and separately reward workload.
  const softTossErPerOut=Math.max(.60,lgErPerOut*1.65);
  const priorOuts=27;                 // stabilize small pitching samples
- const workloadWarPerIP=.035;        // simply supplying real pitching has roster value
- const preventionShare=.70;          // dampens ERA-driven extremes
+ const workloadWarPerIP=.035;        // supplying real pitching has roster value
+ const preventionShare=.70;          // run-prevention component before league normalization
+ const pitchingWarNormalization=.30; // compress pWAR to ND Wiffle's short-season scale
 
  const approxTeamPA=12;
  const runsPerWin=Math.max(4.5,Math.min(9.0,2*lgRcPerPa*approxTeamPA || 6.0));
@@ -207,7 +208,8 @@ function seasonWarMap(batRows,pitRows){
    const prevented=Math.max(0,(softTossErPerOut-regRate)*outs);
    const workload=(outs/3)*workloadWarPerIP;
    const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
-   x.pWAR=workload+(prevented/runsPerWin)*preventionShare;
+   const rawPWar=workload+(prevented/runsPerWin)*preventionShare;
+   x.pWAR=Math.max(0,rawPWar*pitchingWarNormalization);
    x.WAR=x.oWAR+x.pWAR;map.set(r.Player_ID,x);
  }
  return map;
@@ -306,7 +308,7 @@ function playoffBatRows(){
    const reg=REG_BAT_2021_25.get(id)||{};const meta=playerMetaById[id]||{};
    const r={Player_ID:id,Name:meta.Name||src.Name||id,Season:"Playoffs",Retired:meta.Retired,Class_Year:meta.Class_Year};
    for(const k of ["PAs","ABs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","GP"])r[k]=nonneg(src[k],reg[k]);
-   r.Runs=null;r.HBP=null;
+   r.Runs=null;
    const ab=num(r.ABs),pa=num(r.PAs),h=num(r.Hits),bb=num(r.BB),tb=num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs);
    r.BA=ab?h/ab:null;r.OBP=pa?(h+bb)/pa:null;r.SLG=ab?tb/ab:null;r.OPS=(r.OBP!==null&&r.SLG!==null)?r.OBP+r.SLG:null;
    const tid=CAREER_PRIMARY_TEAM_BY_PLAYER[id]||null;r.Team_ID=tid;r.Team=TEAM_BY_ID[tid]?.name||"";
@@ -321,7 +323,7 @@ function playoffPitRows(){
    const r={Player_ID:id,Name:meta.Name||src.Name||id,Season:"Playoffs",Retired:meta.Retired,Class_Year:meta.Class_Year};
    for(const k of ["Apps","Starts","W","L","S","BF","Walks","Hits","Ks","ER"])r[k]=nonneg(src[k],reg[k]);
    r.Outs=Math.max(0,sourceIpToOuts(src.IP_source)-num(reg.Outs));r.IP=outsToIp(r.Outs);
-   r.GP=null;r.Runs=null;r.HRs=null;r.HBP=null;r.WP=null;
+   r.GP=null;r.Runs=null;r.HRs=null;r.WP=null;
    const inn=r.Outs/3;r.ERA=inn?num(r.ER)*3/inn:null;r.WHIP=inn?(num(r.Walks)+num(r.Hits))/inn:null;
    const tid=CAREER_PRIMARY_TEAM_BY_PLAYER[id]||null;r.Team_ID=tid;r.Team=TEAM_BY_ID[tid]?.name||"";
    if(r.Outs>0||num(r.Apps)>0)out.push(r);
@@ -336,11 +338,11 @@ function mergeCareerBat(){
  for(const l of liveBat){
    const h=map.get(l.Player_ID)||{Player_ID:l.Player_ID,Name:l.Name,Retired:l.Retired,Class_Year:l.Class_Year};
    const out={...h,Team:l.Team||h.Team,Team_ID:l.Team_ID||h.Team_ID};
-   const fields=[["PAs","PAs"],["ABs","ABs"],["Runs","Runs"],["Hits","Hits"],["Singles","Singles"],["Doubles","Doubles"],["Triples","Triples"],["HRs","HRs"],["RBI","RBI"],["BB","BB"],["Ks","Ks"],["HBP","HBP"],["GP","GP"]];
+   const fields=[["PAs","PAs"],["ABs","ABs"],["Runs","Runs"],["Hits","Hits"],["Singles","Singles"],["Doubles","Doubles"],["Triples","Triples"],["HRs","HRs"],["RBI","RBI"],["BB","BB"],["Ks","Ks"],["GP","GP"]];
    for(const [k] of fields)out[k]=num(h[k])+num(l[k]);
-   const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB),hbp=num(out.HBP);
+   const ab=num(out.ABs),hits=num(out.Hits),pa=num(out.PAs),bb=num(out.BB);
    const tb=num(out.Singles)+2*num(out.Doubles)+3*num(out.Triples)+4*num(out.HRs);
-   out.BA=rate(hits,ab);out.OBP=rate(hits+bb+hbp,pa||ab+bb+hbp);out.SLG=rate(tb,ab);
+   out.BA=rate(hits,ab);out.OBP=rate(hits+bb,pa||ab+bb);out.SLG=rate(tb,ab);
    out.OPS=(num(out.OBP)+num(out.SLG)).toFixed(3);
    map.set(l.Player_ID,out);
  }
@@ -402,8 +404,8 @@ function columns(){
   ?["Name","Team","WAR","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
   :["Name","Team","WAR","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP"];
  return mode==="bat"
-  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","HBP","BA","OBP","SLG","OPS"]
-  :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","HBP","WP","ERA","WHIP"];
+  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","BA","OBP","SLG","OPS"]
+  :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","WP","ERA","WHIP"];
 }
 function pctMetric(c,r){
  if(c!=="K_pct"&&c!=="BB_pct")return null;
@@ -422,6 +424,10 @@ function displayVal(c,v,r){
  if(c==="ERA"||c==="WHIP"){
    if(v===null||v===undefined||v==="")return "—";
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"—";
+ }
+ if(["BA","OBP","SLG","OPS"].includes(c)){
+   if(v===null||v===undefined||v==="")return "—";
+   const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(3):"—";
  }
  return v??"";
 }
@@ -546,4 +552,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=100"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script></body></html>
