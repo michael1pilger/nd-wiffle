@@ -519,3 +519,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Removed icon controls and replaced the circular icon section with four compact stat cards.
 - Reduced the name weight for a lighter headline treatment.
 - Deepened the team presets for Storm, Zyns, Ball Busters, Dirty Dawgs, Goofy Goobers, Midnight, Stiff Wifflers, Twin Titans, and Underdawgs.
+
+
+## v107: polished three-panel player card
+- Polished the player stat graphic with cleaner spacing and a more refined three-card lower layout.
+- Reduced the bottom stat presentation from four boxes to three centered boxes with symmetric left/right placement around the middle card.
+- Added the team name below the jersey number on the jersey body.
+- Made the player name lighter in weight while increasing the prominence of its outline.
