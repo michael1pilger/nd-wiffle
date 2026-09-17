@@ -512,3 +512,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Added curated color presets for the 10 league teams based on `/assets/logos`, plus a reference navy/gold preset and optional custom colors.
 - Rebuilt the jersey silhouette with wide shoulders/sleeves and a long body matching the supplied reference.
 - Added one-click 1080×1080 PNG export and reset.
+
+
+## v106: cleaner stat-card presentation
+- Outlined the jersey in black for every team palette.
+- Removed icon controls and replaced the circular icon section with four compact stat cards.
+- Reduced the name weight for a lighter headline treatment.
+- Deepened the team presets for Storm, Zyns, Ball Busters, Dirty Dawgs, Goofy Goobers, Midnight, Stiff Wifflers, Twin Titans, and Underdawgs.
