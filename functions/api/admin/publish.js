@@ -298,7 +298,7 @@ export async function onRequestPost(context) {
     statements.push(DB.prepare(`
       INSERT INTO batting_series_stats(
         series_id,player_id,team_id,side,games_played,pa,ab,runs,hits,singles,doubles,triples,hr,rbi,bb,so
-      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).bind(
       payload.series_id,pId(b.player),b.side==="away"?awayTeamId:homeTeamId,b.side,b.games_played,
       b.PA,b.AB,b.R,b.H,b["1B"],b["2B"],b["3B"],b.HR,b.RBI,b.BB,b.SO
@@ -308,7 +308,7 @@ export async function onRequestPost(context) {
     statements.push(DB.prepare(`
       INSERT INTO pitching_series_stats(
         series_id,player_id,team_id,side,games_played,appearances,starts,outs_recorded,bf,runs,er,strikeouts,hits,bb,hr,wp
-      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).bind(
       payload.series_id,pId(p.player),p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played,
       p.appearances,p.starts,p.outs_recorded,p.BF,p.R,p.ER,p.K,p.H,p.BB,p.HR,p.WP

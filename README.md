@@ -553,3 +553,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Fixed the mismatch between the on-page Graphics Studio preview and downloaded PNG.
 - The old exporter serialized the SVG into a standalone image, which lost the page-level Jersey M54 font context and caused fallback serif typography plus shifted sizing.
 - PNG export now draws the same layout directly to a 1080×1080 canvas after Jersey M54 is loaded, preserving the intended font, scale, outlines, boxes, and icon positions.
+
+
+## v112: series publish SQL fix
+- Fixed the batting and pitching series publish INSERT statements to use 16 SQL placeholders for 16 columns.
+- Resolves the D1 error: `17 values for 16 columns: SQLITE_ERROR`.
+- No database migration is required.
