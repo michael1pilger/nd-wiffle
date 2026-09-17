@@ -504,3 +504,11 @@ The current static historical database is treated as the authoritative 2021–20
 - Added editable Ballfield, Running Shoe, and Jersey Panel vector elements used by the default design.
 - `New Default` restores the Sharkey-style template; `Blank` still starts from an empty 1080×1080 canvas.
 - No new D1 migration is required beyond `0026_graphic_templates.sql` from v103.
+
+
+## v105 — Simplified Player Graphic Builder
+- Replaced the freeform Graphics Studio editor with a fixed stat-card builder matching the supplied Sharkey reference.
+- Controls are limited to Team, Name, Number, four icon selectors, and four stat-line inputs.
+- Added curated color presets for the 10 league teams based on `/assets/logos`, plus a reference navy/gold preset and optional custom colors.
+- Rebuilt the jersey silhouette with wide shoulders/sleeves and a long body matching the supplied reference.
+- Added one-click 1080×1080 PNG export and reset.
