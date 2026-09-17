@@ -35,7 +35,7 @@ body{background:#05080d;color:#fff}
 
 <main class="builder"><div class="builder-shell">
   <div class="builder-head">
-    <div><div class="eyebrow">Commissioner Tools · BUILD v110</div><h1>Player Graphic Builder</h1><p>Refined stat-card layout with jersey font, bigger boxes, and improved icon contrast.</p></div>
+    <div><div class="eyebrow">Commissioner Tools · BUILD v111</div><h1>Player Graphic Builder</h1><p>Refined stat-card layout with export-safe Jersey M54 rendering.</p></div>
     <div class="muted" id="saveState">Changes save automatically in this browser.</div>
   </div>
 
@@ -182,10 +182,10 @@ function render(){
   state.stats.forEach((v,i)=>$("#stat"+(i+1)).value=v);
   $("#primaryColor").value=state.custom.primary; $("#accentColor").value=state.custom.accent; $("#backgroundColor").value=state.custom.background;
 }
-function save(){try{localStorage.setItem("ndwiffle_simple_graphic_v110",JSON.stringify(state)); $("#saveState").textContent="Saved automatically in this browser.";}catch{}}
+function save(){try{localStorage.setItem("ndwiffle_simple_graphic_v111",JSON.stringify(state)); $("#saveState").textContent="Saved automatically in this browser.";}catch{}}
 function load(){
   try{
-    const raw=localStorage.getItem("ndwiffle_simple_graphic_v110")||localStorage.getItem("ndwiffle_simple_graphic_v109")||localStorage.getItem("ndwiffle_simple_graphic_v108")||localStorage.getItem("ndwiffle_simple_graphic_v107")||localStorage.getItem("ndwiffle_simple_graphic_v106")||localStorage.getItem("ndwiffle_simple_graphic_v105")||"null";
+    const raw=localStorage.getItem("ndwiffle_simple_graphic_v111")||localStorage.getItem("ndwiffle_simple_graphic_v110")||localStorage.getItem("ndwiffle_simple_graphic_v109")||localStorage.getItem("ndwiffle_simple_graphic_v108")||localStorage.getItem("ndwiffle_simple_graphic_v107")||localStorage.getItem("ndwiffle_simple_graphic_v106")||localStorage.getItem("ndwiffle_simple_graphic_v105")||"null";
     const s=JSON.parse(raw);
     if(s){
       const stats=Array.isArray(s.stats)?s.stats.slice(0,3):DEFAULT.stats;
@@ -204,15 +204,107 @@ function bind(){
   $("#resetBtn").onclick=()=>{state=structuredClone(DEFAULT); save(); buildTeamOptions(); render(); toast("Graphic reset");};
   $("#downloadBtn").onclick=downloadPNG;
 }
+function roundedRectPath(ctx,x,y,w,h,r){
+  const rr=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+}
+function drawCenteredText(ctx,text,x,y,size,fill,stroke=null,strokeWidth=0,spacing=0){
+  text=String(text??"");
+  ctx.save();
+  ctx.font=`${size}px "Jersey M54", "Arial Black", Impact, sans-serif`;
+  ctx.textBaseline="alphabetic";
+  ctx.lineJoin="miter";
+  ctx.miterLimit=2;
+  if(!spacing){
+    ctx.textAlign="center";
+    if(stroke&&strokeWidth){ctx.strokeStyle=stroke;ctx.lineWidth=strokeWidth;ctx.strokeText(text,x,y);}
+    ctx.fillStyle=fill;ctx.fillText(text,x,y);
+    ctx.restore();return;
+  }
+  ctx.textAlign="left";
+  const widths=[...text].map(ch=>ctx.measureText(ch).width);
+  const total=widths.reduce((a,b)=>a+b,0)+Math.max(0,text.length-1)*spacing;
+  let px=x-total/2;
+  [...text].forEach((ch,i)=>{
+    if(stroke&&strokeWidth){ctx.strokeStyle=stroke;ctx.lineWidth=strokeWidth;ctx.strokeText(ch,px,y);}
+    ctx.fillStyle=fill;ctx.fillText(ch,px,y);
+    px+=widths[i]+spacing;
+  });
+  ctx.restore();
+}
+async function loadIconImage(src){
+  return await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
+}
+function drawTintedIcon(ctx,img,cx,cy,size,bg,fg){
+  const r=size/2;
+  ctx.save();
+  ctx.fillStyle=bg;ctx.strokeStyle="#ffffff";ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  const d=size*.64,x=cx-d/2,y=cy-d/2;
+  const off=document.createElement("canvas");off.width=Math.ceil(d);off.height=Math.ceil(d);
+  const oc=off.getContext("2d");
+  oc.drawImage(img,0,0,off.width,off.height);
+  oc.globalCompositeOperation="source-in";oc.fillStyle=fg;oc.fillRect(0,0,off.width,off.height);
+  ctx.drawImage(off,x,y,d,d);
+  ctx.restore();
+}
+function drawStatCardCanvas(ctx,i,x,y,w,h,value,label,t,iconImg){
+  const cx=x+w/2,badgeY=y-20;
+  ctx.save();
+  roundedRectPath(ctx,x,y,w,h,18);ctx.fillStyle="#ffffff";ctx.fill();ctx.strokeStyle=t.boxStroke;ctx.lineWidth=5;ctx.stroke();
+  roundedRectPath(ctx,x+14,y+14,16,16,4);ctx.globalAlpha=.85;ctx.fillStyle=t.boxStroke;ctx.fill();ctx.globalAlpha=1;
+  roundedRectPath(ctx,x+w-30,y+14,16,16,4);ctx.globalAlpha=.18;ctx.fillStyle=t.boxStroke;ctx.fill();ctx.globalAlpha=1;
+  ctx.strokeStyle=t.boxStroke;ctx.globalAlpha=.35;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+22,y+46);ctx.lineTo(x+w-22,y+46);ctx.stroke();ctx.globalAlpha=1;
+  drawTintedIcon(ctx,iconImg,cx,badgeY,72,t.iconBg,t.iconColor);
+  drawCenteredText(ctx,value,cx,y+94,40,t.boxValue,null,0,1);
+  drawCenteredText(ctx,String(label||"").toUpperCase(),cx,y+131,23,t.boxLabel,null,0,1.2);
+  ctx.restore();
+}
 async function downloadPNG(){
-  const svg=$("#graphic");
-  const clone=svg.cloneNode(true); clone.setAttribute("width","1080"); clone.setAttribute("height","1080"); clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
-  const data=new XMLSerializer().serializeToString(clone);
-  const blob=new Blob([data],{type:"image/svg+xml;charset=utf-8"});
-  const url=URL.createObjectURL(blob), img=new Image();
-  img.onload=()=>{const c=document.createElement("canvas"); c.width=1080; c.height=1080; const ctx=c.getContext("2d"); ctx.drawImage(img,0,0,1080,1080); URL.revokeObjectURL(url); c.toBlob(png=>{const a=document.createElement("a"); const safe=(state.name||"player").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"player"; a.href=URL.createObjectURL(png); a.download=`${safe}-stat-graphic.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast("PNG downloaded");},"image/png")};
-  img.onerror=()=>{URL.revokeObjectURL(url); toast("Could not export PNG")};
-  img.src=url;
+  try{
+    // The live SVG inherits Jersey M54 from the page CSS. Serializing that SVG into an
+    // <img> loses the page font context, so export is drawn directly on canvas instead.
+    if(document.fonts?.load){
+      await document.fonts.load('112px "Jersey M54"');
+      await document.fonts.ready;
+    }
+    const t=theme();
+    const stats=state.stats.map(splitStat);
+    const c=document.createElement("canvas");c.width=1080;c.height=1080;
+    const ctx=c.getContext("2d");
+    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,1080,1080);
+
+    const jp=new Path2D(jerseyPath());
+    ctx.fillStyle=t.jersey;ctx.fill(jp);ctx.strokeStyle="#000";ctx.lineWidth=4;ctx.stroke(jp);
+
+    const name=String(state.name||"").toUpperCase();
+    const num=String(state.number||"");
+    const team=teamLabel();
+    drawCenteredText(ctx,name,540,236,112,t.textFill,t.textStroke,9,1.3);
+    drawCenteredText(ctx,num,540,638,382,t.textFill,t.textStroke,8,-1);
+    drawCenteredText(ctx,team,540,739,54,t.textFill,t.textStroke,3,2);
+
+    const icons=await Promise.all(ICONS.map(loadIconImage));
+    const w=236,h=164,y=804,centers=[282,540,798];
+    centers.forEach((cx,i)=>{
+      const x=cx-w/2;
+      drawStatCardCanvas(ctx,i,x,y,w,h,stats[i][0],stats[i][1],t,icons[i]);
+    });
+
+    c.toBlob(png=>{
+      if(!png){toast("Could not export PNG");return;}
+      const a=document.createElement("a");
+      const safe=(state.name||"player").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"player";
+      a.href=URL.createObjectURL(png);a.download=`${safe}-stat-graphic.png`;a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast("PNG downloaded");
+    },"image/png");
+  }catch(err){console.error(err);toast("Could not export PNG");}
 }
 load(); buildTeamOptions(); bind(); render();
 </script>

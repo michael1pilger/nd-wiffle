@@ -547,3 +547,9 @@ The current static historical database is treated as the authoritative 2021–20
 - Increased the size of the three stat boxes.
 - Reworked the icons with cleaner masks and higher-contrast circular badges.
 - Fixed the left/right icon clipping-formatting issue from the prior build.
+
+
+## v111: export fidelity fix
+- Fixed the mismatch between the on-page Graphics Studio preview and downloaded PNG.
+- The old exporter serialized the SVG into a standalone image, which lost the page-level Jersey M54 font context and caused fallback serif typography plus shifted sizing.
+- PNG export now draws the same layout directly to a 1080×1080 canvas after Jersey M54 is loaded, preserving the intended font, scale, outlines, boxes, and icon positions.
