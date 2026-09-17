@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=84"><style>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stats | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=100"><style>
 .view-toggle{display:flex;gap:6px}.view-toggle .btn{padding:8px 10px}
 .stats-team{display:flex;align-items:center;gap:7px;white-space:nowrap}.stats-team img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
 .stats-team-dot{width:9px;height:9px;border-radius:50%;background:rgb(var(--team-rgb,90,98,110));box-shadow:0 0 0 2px rgba(var(--team-rgb,90,98,110),.16)}
@@ -12,7 +12,7 @@
 <div class="container pagehead">
  <div class="eyebrow">League Database</div>
  <h1>Stats</h1>
- <p class="muted">Explore career or single-season batting and pitching statistics. Click any column header to sort.</p>
+ <p class="muted">Explore career, inferred postseason, or single-season batting and pitching statistics. Click any column header to sort.</p>
 </div>
 <div class="container">
  <div class="stats-controls">
@@ -21,6 +21,7 @@
   <div class="view-toggle"><button class="btn gold" id="standardBtn" onclick="setView('standard')">Standard</button><button class="btn" id="fullBtn" onclick="setView('full')">Full Stats</button></div>
   <select id="scopeSel" onchange="render()">
    <option value="career">Career</option>
+   <option value="playoffs">Playoffs (2021–25)</option>
    <option value="2026">2026</option>
    <option value="2025">2025</option>
    <option value="2024">2024</option>
@@ -42,20 +43,18 @@
   <input id="q" placeholder="Search player..." oninput="render()">
   <div id="statsCount" class="stats-count"></div>
  </div>
- <div id="qualifierHint" class="qualifier-hint">Qualification filter: career/historical views use 50+ PA for batters and 18+ IP for pitchers. The 2026 view prorates those requirements by each player's team games played.</div>
+ <div id="qualifierHint" class="qualifier-hint">Qualification filter: career, playoffs, and historical season views use 50+ PA for batters and 18+ IP for pitchers. The 2026 view prorates those requirements by each player's team games played.</div>
  <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
  
 <div class="qualifier-hint" id="warHint">
-  ND WAR is a league-specific estimate. It values offense with a Runs Created model,
-  pitching with regressed earned-run prevention, compares both to replacement level,
-  converts runs to wins using the league scoring environment, and sums season-specific
-  WAR for career totals.
+  ND WAR uses league-specific replacement levels. Batting WAR is intentionally compressed relative to the earlier model. Pitching WAR treats the replacement option as soft toss rather than another competent pitcher: real innings carry workload value, with additional credit for run prevention. Career WAR sums regular-season, inferred playoff, and live 2026 value.
 </div>
 <div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
-<script src="/assets/data.js?v=84"></script>
+<script src="/assets/data.js?v=100"></script>
+<script src="/assets/career-baseline.js?v=100"></script>
 <script>
 let mode="bat",viewMode="standard",sortKey=null,sortDir=-1;
 let liveBat=[],livePit=[],liveStandings=[],liveLoaded=false;
@@ -132,9 +131,9 @@ const CURRENT_ROSTER_TEAM_BY_NAME={};
 
 function teamInfo(r){
  let id=r.Team_ID||r.team_id||null,name=r.Team||r.team_name||"";
- if(scopeSel.value==="career"&&r.Player_ID&&CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID]){id=CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID];name=TEAM_BY_ID[id]?.name||name;}
+ if(["career","playoffs"].includes(scopeSel.value)&&r.Player_ID&&CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID]){id=CAREER_PRIMARY_TEAM_BY_PLAYER[r.Player_ID];name=TEAM_BY_ID[id]?.name||name;}
  if(!id&&name)id=TEAM_NAME_TO_ID[name]||null;
- if(!id && ["2026","career"].includes(scopeSel.value))id=CURRENT_ROSTER_TEAM_BY_NAME[String(r.Name||"").toLowerCase()]||null;
+ if(!id && ["2026","career","playoffs"].includes(scopeSel.value))id=CURRENT_ROSTER_TEAM_BY_NAME[String(r.Name||"").toLowerCase()]||null;
  if(!name&&id)name=TEAM_BY_ID[id]?.name||"";
  if(!id&&!name&&r.Player_ID){
    const seasons=(mode==="bat"?ND_DATA.battingSeasons:ND_DATA.pitchingSeasons)||[];
@@ -171,48 +170,51 @@ function seasonWarMap(batRows,pitRows){
  const lgPA=bats.reduce((a,r)=>a+num(r.PAs),0);
  const lgRC=bats.reduce((a,r)=>a+runsCreatedRow(r),0);
  const lgRcPerPa=lgPA>0?lgRC/lgPA:0;
- const replacementBatRate=lgRcPerPa*.80;
+
+ // Batting replacement is deliberately closer to average than before and
+ // the resulting RAR is compressed. This keeps elite bats valuable without
+ // producing implausibly large WAR totals in a short 24-game season.
+ const replacementBatRate=lgRcPerPa*.90;
+ const battingCompression=.72;
 
  const lgOuts=pits.reduce((a,r)=>a+((r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP)),0);
  const lgER=pits.reduce((a,r)=>a+num(r.ER),0);
  const lgErPerOut=lgOuts>0?lgER/lgOuts:0;
- const replacementPitchRate=lgErPerOut*1.25;
 
- // 3-inning wiffle environment. Runs/win is scaled from league offense,
- // with sensible bounds so tiny-sample seasons do not explode.
+ // ND Wiffle replacement pitching is soft toss, not another ordinary pitcher.
+ // Use a deliberately poor soft-toss run rate and separately reward workload.
+ const softTossErPerOut=Math.max(.60,lgErPerOut*1.65);
+ const priorOuts=27;                 // stabilize small pitching samples
+ const workloadWarPerIP=.035;        // simply supplying real pitching has roster value
+ const preventionShare=.70;          // dampens ERA-driven extremes
+
  const approxTeamPA=12;
- const runsPerWin=Math.max(4.0,Math.min(9.0,2*lgRcPerPa*approxTeamPA || 6.0));
-
+ const runsPerWin=Math.max(4.5,Math.min(9.0,2*lgRcPerPa*approxTeamPA || 6.0));
  const map=new Map();
 
  for(const r of bats){
    const pa=num(r.PAs),rc=runsCreatedRow(r);
-   const rar=rc-replacementBatRate*pa;
+   const rar=(rc-replacementBatRate*pa)*battingCompression;
    const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
    x.oWAR=rar/runsPerWin;
-   x.WAR=x.oWAR+x.pWAR;
-   map.set(r.Player_ID,x);
+   x.WAR=x.oWAR+x.pWAR;map.set(r.Player_ID,x);
  }
 
- // Regress pitching rate toward league average with a 9-IP prior.
- // This makes single-season WAR less volatile while career WAR naturally
- // becomes increasingly driven by the player's actual results.
- const priorOuts=27;
  for(const r of pits){
    const outs=(r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP);
    const er=num(r.ER);
    const regRate=(er+lgErPerOut*priorOuts)/(outs+priorOuts);
-   const rar=(replacementPitchRate-regRate)*outs;
+   const prevented=Math.max(0,(softTossErPerOut-regRate)*outs);
+   const workload=(outs/3)*workloadWarPerIP;
    const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
-   x.pWAR=rar/runsPerWin;
-   x.WAR=x.oWAR+x.pWAR;
-   map.set(r.Player_ID,x);
+   x.pWAR=workload+(prevented/runsPerWin)*preventionShare;
+   x.WAR=x.oWAR+x.pWAR;map.set(r.Player_ID,x);
  }
-
  return map;
 }
 function rowsForWarSeason(year){
  if(String(year)==="2026")return {bat:liveBat||[],pit:livePit||[]};
+ if(String(year)==="playoffs")return {bat:PLAYOFF_BAT,pit:PLAYOFF_PIT};
  return {
    bat:(ND_DATA.battingSeasons||[]).filter(r=>String(r.Season)===String(year)),
    pit:(ND_DATA.pitchingSeasons||[]).filter(r=>String(r.Season)===String(year))
@@ -228,10 +230,11 @@ function warForScope(){
  const years=new Set();
  for(const r of (ND_DATA.battingSeasons||[]))if(r.Season)years.add(String(r.Season));
  for(const r of (ND_DATA.pitchingSeasons||[]))if(r.Season)years.add(String(r.Season));
+ years.add("playoffs");
  if((liveBat||[]).length||(livePit||[]).length)years.add("2026");
 
  const total=new Map();
- for(const y of [...years].sort()){
+ for(const y of [...years].sort((a,b)=>{const rank=x=>x==="playoffs"?2025.5:Number(x);return rank(a)-rank(b)})){
    const d=rowsForWarSeason(y);
    const one=seasonWarMap(d.bat,d.pit);
    for(const [id,w] of one){
@@ -265,6 +268,68 @@ function outsToIp(outs){
  const o=Math.round(num(outs)),w=Math.floor(o/3),r=o%3;
  return r?`${w}.${r}`:String(w);
 }
+
+function sourceIpToOuts(v){
+ const x=Number(v);if(!Number.isFinite(x))return 0;
+ const w=Math.floor(x),f=Math.round((x-w)*100);
+ if(f===33||f===34)return w*3+1;
+ if(f===66||f===67)return w*3+2;
+ return Math.round(x*3);
+}
+function nonneg(source,regular){
+ const a=Number(source);if(!Number.isFinite(a))return null;
+ return Math.max(0,a-num(regular));
+}
+function regularBatByPlayer(){
+ const map=new Map();
+ for(const r of (ND_DATA.battingSeasons||[])){
+   if(!r.Player_ID||Number(r.Season)>2025)continue;
+   const x=map.get(r.Player_ID)||{PAs:0,ABs:0,Hits:0,Singles:0,Doubles:0,Triples:0,HRs:0,RBI:0,BB:0,Ks:0,GP:0};
+   for(const k of Object.keys(x))x[k]+=num(r[k]);map.set(r.Player_ID,x);
+ }
+ return map;
+}
+function regularPitByPlayer(){
+ const map=new Map();
+ for(const r of (ND_DATA.pitchingSeasons||[])){
+   if(!r.Player_ID||Number(r.Season)>2025)continue;
+   const x=map.get(r.Player_ID)||{Apps:0,Starts:0,W:0,L:0,S:0,Outs:0,BF:0,Walks:0,Hits:0,Ks:0,ER:0};
+   for(const k of ["Apps","Starts","W","L","S","BF","Walks","Hits","Ks","ER"])x[k]+=num(r[k]);
+   x.Outs+=historicalIpToOuts(r.IP);map.set(r.Player_ID,x);
+ }
+ return map;
+}
+const REG_BAT_2021_25=regularBatByPlayer(),REG_PIT_2021_25=regularPitByPlayer();
+function playoffBatRows(){
+ const out=[];
+ for(const [id,src] of Object.entries(window.CAREER_2025?.batting||{})){
+   const reg=REG_BAT_2021_25.get(id)||{};const meta=playerMetaById[id]||{};
+   const r={Player_ID:id,Name:meta.Name||src.Name||id,Season:"Playoffs",Retired:meta.Retired,Class_Year:meta.Class_Year};
+   for(const k of ["PAs","ABs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","Ks","GP"])r[k]=nonneg(src[k],reg[k]);
+   r.Runs=null;r.HBP=null;
+   const ab=num(r.ABs),pa=num(r.PAs),h=num(r.Hits),bb=num(r.BB),tb=num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs);
+   r.BA=ab?h/ab:null;r.OBP=pa?(h+bb)/pa:null;r.SLG=ab?tb/ab:null;r.OPS=(r.OBP!==null&&r.SLG!==null)?r.OBP+r.SLG:null;
+   const tid=CAREER_PRIMARY_TEAM_BY_PLAYER[id]||null;r.Team_ID=tid;r.Team=TEAM_BY_ID[tid]?.name||"";
+   if(num(r.PAs)>0||num(r.Hits)>0)out.push(r);
+ }
+ return out;
+}
+function playoffPitRows(){
+ const out=[];
+ for(const [id,src] of Object.entries(window.CAREER_2025?.pitching||{})){
+   const reg=REG_PIT_2021_25.get(id)||{};const meta=playerMetaById[id]||{};
+   const r={Player_ID:id,Name:meta.Name||src.Name||id,Season:"Playoffs",Retired:meta.Retired,Class_Year:meta.Class_Year};
+   for(const k of ["Apps","Starts","W","L","S","BF","Walks","Hits","Ks","ER"])r[k]=nonneg(src[k],reg[k]);
+   r.Outs=Math.max(0,sourceIpToOuts(src.IP_source)-num(reg.Outs));r.IP=outsToIp(r.Outs);
+   r.GP=null;r.Runs=null;r.HRs=null;r.HBP=null;r.WP=null;
+   const inn=r.Outs/3;r.ERA=inn?num(r.ER)*3/inn:null;r.WHIP=inn?(num(r.Walks)+num(r.Hits))/inn:null;
+   const tid=CAREER_PRIMARY_TEAM_BY_PLAYER[id]||null;r.Team_ID=tid;r.Team=TEAM_BY_ID[tid]?.name||"";
+   if(r.Outs>0||num(r.Apps)>0)out.push(r);
+ }
+ return out;
+}
+const PLAYOFF_BAT=playoffBatRows(),PLAYOFF_PIT=playoffPitRows();
+
 function rate(v,d,digits=3){return d>0?(v/d).toFixed(digits):(0).toFixed(digits)}
 function mergeCareerBat(){
  const map=new Map(historicalCareerBat.map(r=>[r.Player_ID,{...r}]));
@@ -317,6 +382,7 @@ function sourceRows(){
  const scope=scopeSel.value;
  let rows;
  if(scope==="career")rows=mode==="bat"?mergeCareerBat():mergeCareerPit();
+ else if(scope==="playoffs")rows=mode==="bat"?PLAYOFF_BAT:PLAYOFF_PIT;
  else if(scope==="2026")rows=mode==="bat"?liveBat:livePit;
  else {
    const src=mode==="bat"?(ND_DATA.battingSeasons||[]):(ND_DATA.pitchingSeasons||[]);
@@ -399,7 +465,7 @@ function updateQualifierText(){
  const label=document.getElementById("qualLabel"),hint=document.getElementById("qualifierHint");
  if(scopeSel.value!=="2026"){
    label.textContent=mode==="bat"?"Qualified only (50+ PA)":"Qualified only (18+ IP)";
-   hint.textContent="Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.";
+   hint.textContent=scopeSel.value==="playoffs"?"Combined inferred 2021–2025 playoffs: qualification filter uses 50+ PA or 18+ IP. Leave it off to display every postseason player.":"Qualification filter: batters require 50+ PA; pitchers require 18+ IP. Leave it off to display every player.";
    return;
  }
  const selectedTeam=teamSel.value;
@@ -480,4 +546,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical stats plus live 2026 results.</div></footer><script src="/assets/table-tools.js?v=84"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=100"></script></body></html>

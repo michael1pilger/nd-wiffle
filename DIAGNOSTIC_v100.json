@@ -1,0 +1,14 @@
+{
+  "playoffs_stats_scope": "PASS",
+  "playoff_source": "authoritative 2021-2025 cumulative minus regular-season rows",
+  "career_war_includes_playoffs": "PASS",
+  "war_v2": {
+    "batting_replacement": "90% of league-average Runs Created per PA",
+    "batting_compression": 0.72,
+    "pitching_replacement": "soft toss = max(0.60 ER/out, 1.65x league ER/out)",
+    "pitching_workload_credit": "0.035 WAR per IP",
+    "pitching_run_prevention_share": 0.7,
+    "pitching_negative_prevention_floor": 0
+  },
+  "syntax": "PASS"
+}
