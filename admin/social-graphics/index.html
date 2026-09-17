@@ -6,7 +6,9 @@
 <title>Player Graphic Builder | ND Wiffle</title>
 <link rel="stylesheet" href="/assets/styles.css?v=81">
 <style>
+@import url('https://fonts.cdnfonts.com/css/jersey-m54');
 *{box-sizing:border-box}
+:root{--jersey-font:'Jersey M54','Arial Black',Impact,Haettenschweiler,sans-serif;}
 body{background:#05080d;color:#fff}
 .builder{padding:22px 0 52px}
 .builder-shell{max-width:1500px;margin:0 auto;padding:0 18px}
@@ -33,7 +35,7 @@ body{background:#05080d;color:#fff}
 
 <main class="builder"><div class="builder-shell">
   <div class="builder-head">
-    <div><div class="eyebrow">Commissioner Tools · BUILD v108</div><h1>Player Graphic Builder</h1><p>Polished fixed stat-card layout. Change the team, player, number, and three stat lines.</p></div>
+    <div><div class="eyebrow">Commissioner Tools · BUILD v109</div><h1>Player Graphic Builder</h1><p>Fixed stat-card layout with jersey font, team-based colors, and three preset icons.</p></div>
     <div class="muted" id="saveState">Changes save automatically in this browser.</div>
   </div>
 
@@ -45,9 +47,9 @@ body{background:#05080d;color:#fff}
     </div>
 
     <div class="custom-colors" id="customColors">
-      <label class="color-mini"><input id="primaryColor" type="color" value="#19355f"><span>Primary</span></label>
-      <label class="color-mini"><input id="accentColor" type="color" value="#d13a4f"><span>Accent</span></label>
-      <label class="color-mini"><input id="backgroundColor" type="color" value="#d9d0bf"><span>Background</span></label>
+      <label class="color-mini"><input id="primaryColor" type="color" value="#5f31a6"><span>Jersey</span></label>
+      <label class="color-mini"><input id="accentColor" type="color" value="#ffffff"><span>Letters</span></label>
+      <label class="color-mini"><input id="backgroundColor" type="color" value="#f0c419"><span>Outline</span></label>
     </div>
 
     <div class="stat-row">
@@ -72,53 +74,42 @@ body{background:#05080d;color:#fff}
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ICONS=[`data:image/png;base64,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`,`data:image/png;base64,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`,`data:image/png;base64,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`];
 
 const THEMES={
-  reference:{name:"Reference (Storm)",teamLabel:"STORM",jersey:"#5f31a6",textFill:"#ffffff",textStroke:"#f0c419",boxValue:"#5f31a6",boxLabel:"#f0c419",boxStroke:"#f0c419"},
-  storm:{name:"Storm",teamLabel:"STORM",jersey:"#5f31a6",textFill:"#ffffff",textStroke:"#f0c419",boxValue:"#5f31a6",boxLabel:"#f0c419",boxStroke:"#f0c419"},
-  zyns:{name:"Zyns",teamLabel:"ZYNS",jersey:"#a5d5ee",textFill:"#ffffff",textStroke:"#77808a",boxValue:"#6c7480",boxLabel:"#97c5e3",boxStroke:"#77808a"},
-  "goofy-goobers":{name:"Goofy Goobers",teamLabel:"GOOFY GOOBERS",jersey:"#111111",textFill:"#d56e24",textStroke:"#ffffff",boxValue:"#111111",boxLabel:"#d56e24",boxStroke:"#d56e24"},
-  "ball-busters":{name:"Ball Busters",teamLabel:"BALL BUSTERS",jersey:"#ffffff",textFill:"#b4202d",textStroke:"#111111",boxValue:"#b4202d",boxLabel:"#111111",boxStroke:"#b4202d"},
-  "stiff-wifflers":{name:"Stiff Wifflers",teamLabel:"STIFF WIFFLERS",jersey:"#17345f",textFill:"#ffffff",textStroke:"#1f6c4c",boxValue:"#17345f",boxLabel:"#1f6c4c",boxStroke:"#1f6c4c"},
-  underdawgs:{name:"Underdawgs",teamLabel:"UNDERDAWGS",jersey:"#6d48a9",textFill:"#8fbee6",textStroke:"#ffffff",boxValue:"#6d48a9",boxLabel:"#8fbee6",boxStroke:"#8fbee6"},
-  silverbacks:{name:"Silverbacks",teamLabel:"SILVERBACKS",jersey:"#111111",textFill:"#c9a446",textStroke:"#ffffff",boxValue:"#111111",boxLabel:"#c9a446",boxStroke:"#c9a446"},
-  "dirty-dawgs":{name:"Dirty Dawgs",teamLabel:"DIRTY DAWGS",jersey:"#6b2438",textFill:"#b78a35",textStroke:"#ffffff",boxValue:"#6b2438",boxLabel:"#b78a35",boxStroke:"#b78a35"},
-  "twin-titans":{name:"Twin Titans",teamLabel:"TWIN TITANS",jersey:"#ffffff",textFill:"#c1272d",textStroke:"#2454c6",boxValue:"#c1272d",boxLabel:"#2454c6",boxStroke:"#2454c6"},
-  midnight:{name:"Midnight",teamLabel:"MIDNIGHT",jersey:"#111111",textFill:"#ffffff",textStroke:"#7b828a",boxValue:"#111111",boxLabel:"#7b828a",boxStroke:"#7b828a"},
-  custom:{name:"Custom colors…",teamLabel:"TEAM NAME",jersey:"#5f31a6",textFill:"#ffffff",textStroke:"#f0c419",boxValue:"#5f31a6",boxLabel:"#f0c419",boxStroke:"#f0c419"}
+  storm:{name:"Storm",teamLabel:"STORM",jersey:"#5f31a6",textFill:"#ffffff",textStroke:"#f1c232",boxValue:"#5f31a6",boxLabel:"#f1c232",boxStroke:"#f1c232",iconColor:"#f1c232"},
+  zyns:{name:"Zyns",teamLabel:"ZYNS",jersey:"#a5d5ee",textFill:"#ffffff",textStroke:"#6f7782",boxValue:"#6f7782",boxLabel:"#9dcceb",boxStroke:"#6f7782",iconColor:"#9dcceb"},
+  "goofy-goobers":{name:"Goofy Goobers",teamLabel:"GOOFY GOOBERS",jersey:"#111111",textFill:"#d56e24",textStroke:"#ffffff",boxValue:"#111111",boxLabel:"#d56e24",boxStroke:"#d56e24",iconColor:"#d56e24"},
+  "ball-busters":{name:"Ball Busters",teamLabel:"BALL BUSTERS",jersey:"#ffffff",textFill:"#b4202d",textStroke:"#111111",boxValue:"#b4202d",boxLabel:"#111111",boxStroke:"#b4202d",iconColor:"#b4202d"},
+  "stiff-wifflers":{name:"Stiff Wifflers",teamLabel:"STIFF WIFFLERS",jersey:"#17345f",textFill:"#ffffff",textStroke:"#1f6c4c",boxValue:"#17345f",boxLabel:"#1f6c4c",boxStroke:"#1f6c4c",iconColor:"#1f6c4c"},
+  underdawgs:{name:"Underdawgs",teamLabel:"UNDERDAWGS",jersey:"#6d48a9",textFill:"#8fbee6",textStroke:"#ffffff",boxValue:"#6d48a9",boxLabel:"#8fbee6",boxStroke:"#8fbee6",iconColor:"#8fbee6"},
+  silverbacks:{name:"Silverbacks",teamLabel:"SILVERBACKS",jersey:"#111111",textFill:"#c9a446",textStroke:"#ffffff",boxValue:"#111111",boxLabel:"#c9a446",boxStroke:"#c9a446",iconColor:"#c9a446"},
+  "dirty-dawgs":{name:"Dirty Dawgs",teamLabel:"DIRTY DAWGS",jersey:"#6b2438",textFill:"#b78a35",textStroke:"#ffffff",boxValue:"#6b2438",boxLabel:"#b78a35",boxStroke:"#b78a35",iconColor:"#b78a35"},
+  "twin-titans":{name:"Twin Titans",teamLabel:"TWIN TITANS",jersey:"#ffffff",textFill:"#c1272d",textStroke:"#2454c6",boxValue:"#c1272d",boxLabel:"#2454c6",boxStroke:"#2454c6",iconColor:"#2454c6"},
+  midnight:{name:"Midnight",teamLabel:"MIDNIGHT",jersey:"#111111",textFill:"#ffffff",textStroke:"#7b828a",boxValue:"#111111",boxLabel:"#7b828a",boxStroke:"#7b828a",iconColor:"#7b828a"},
+  custom:{name:"Custom colors…",teamLabel:"TEAM NAME",jersey:"#5f31a6",textFill:"#ffffff",textStroke:"#f1c232",boxValue:"#5f31a6",boxLabel:"#f1c232",boxStroke:"#f1c232",iconColor:"#f1c232"}
 };
-
-const DEFAULT={team:"storm",name:"SHARKEY",number:"17",stats:["6/6 H/AB","3 HOME RUNS","10 RBIs"],custom:{primary:"#5f31a6",accent:"#ffffff",background:"#f0c419"}};
+const DEFAULT={team:"storm",name:"SHARKEY",number:"17",stats:["6/6 H/AB","3 HOME RUNS","10 RBIs"],custom:{primary:"#5f31a6",accent:"#ffffff",background:"#f1c232"}};
 let state=structuredClone(DEFAULT);
 
 function theme(){
   if(state.team==="custom"){
-    return {
-      name:"Custom colors…",
-      teamLabel:"TEAM NAME",
-      jersey:state.custom.primary,
-      textFill:state.custom.accent,
-      textStroke:state.custom.background,
-      boxValue:state.custom.primary,
-      boxLabel:state.custom.background,
-      boxStroke:state.custom.background
-    };
+    return {name:"Custom colors…",teamLabel:"TEAM NAME",jersey:state.custom.primary,textFill:state.custom.accent,textStroke:state.custom.background,boxValue:state.custom.primary,boxLabel:state.custom.background,boxStroke:state.custom.background,iconColor:state.custom.background};
   }
   return THEMES[state.team]||THEMES.storm;
 }
-function teamLabel(){return (theme().teamLabel||THEMES.reference.teamLabel).toUpperCase()}
+function teamLabel(){return (theme().teamLabel||"TEAM").toUpperCase()}
 function splitStat(raw){
   const s=String(raw||"").trim();
   if(!s)return ["",""];
   const parts=s.split(/\s+/);
-  if(parts.length===1)return [parts[0],""];
-  return [parts[0],parts.slice(1).join(" ")];
+  return parts.length===1?[parts[0],""]:[parts[0],parts.slice(1).join(" ")];
 }
 function buildTeamOptions(){
-  const sel=$("#team");
   const order=["storm","zyns","goofy-goobers","ball-busters","stiff-wifflers","underdawgs","silverbacks","dirty-dawgs","twin-titans","midnight","custom"];
+  const sel=$("#team");
   sel.innerHTML=order.map(id=>`<option value="${id}">${esc(THEMES[id].name.toUpperCase())}</option>`).join("");
-  sel.value=state.team==="reference"?"storm":state.team;
+  sel.value=state.team;
 }
 function jerseyPath(){
   return `M 146 145
@@ -141,20 +132,27 @@ function jerseyPath(){
     L 126 181
     C 132 165 139 153 146 145 Z`;
 }
-function statCard(x,y,w,h,value,label,t){
+function iconMarkup(i,cx,cy,size,color){
+  const x=cx-size/2,y=cy-size/2;
+  return `<defs><mask id="iconmask${i}"><image href="${ICONS[i]}" x="${x}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/></mask></defs><rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${color}" mask="url(#iconmask${i})"/>`;
+}
+function statCard(i,x,y,w,h,value,label,t){
+  const cx=x+w/2;
+  const badgeY=y-36;
   return `<g>
     <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="#ffffff" stroke="${t.boxStroke}" stroke-width="5"/>
     <rect x="${x+16}" y="${y+16}" width="18" height="18" rx="4" fill="${t.boxStroke}"/>
     <rect x="${x+w-34}" y="${y+16}" width="18" height="18" rx="4" fill="${t.boxStroke}" opacity=".18"/>
     <line x1="${x+24}" y1="${y+48}" x2="${x+w-24}" y2="${y+48}" stroke="${t.boxStroke}" stroke-width="2" opacity=".35"/>
-    <text x="${x+w/2}" y="${y+86}" fill="${t.boxValue}" text-anchor="middle" font-family="'Arial Black', Impact, Haettenschweiler, sans-serif" font-size="38" font-weight="400">${esc(value||"")}</text>
-    <text x="${x+w/2}" y="${y+121}" fill="${t.boxLabel}" text-anchor="middle" font-family="'Arial Black', Impact, Haettenschweiler, sans-serif" font-size="23" font-weight="400" letter-spacing="1">${esc(String(label||"").toUpperCase())}</text>
+    ${iconMarkup(i,cx,badgeY,92,t.iconColor)}
+    <text x="${cx}" y="${y+92}" fill="${t.boxValue}" text-anchor="middle" font-family="var(--jersey-font)" font-size="38" letter-spacing="1">${esc(value||"")}</text>
+    <text x="${cx}" y="${y+125}" fill="${t.boxLabel}" text-anchor="middle" font-family="var(--jersey-font)" font-size="21" letter-spacing="1.2">${esc(String(label||"").toUpperCase())}</text>
   </g>`;
 }
 function render(){
   const t=theme();
   const stats=state.stats.map(splitStat);
-  const w=214,h=146,y=816;
+  const w=214,h=150,y=816;
   const boxCenters=[282,540,798];
   const xs=boxCenters.map(c=>c-w/2);
   const name=String(state.name||"").toUpperCase();
@@ -165,25 +163,23 @@ function render(){
     <rect width="1080" height="1080" fill="#ffffff"/>
     <path d="${jerseyPath()}" fill="${t.jersey}" stroke="#000" stroke-width="4"/>
 
-    <text x="540" y="240" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="12" paint-order="stroke fill" text-anchor="middle" font-family="'Arial Black', Impact, Haettenschweiler, sans-serif" font-size="100" font-weight="400" letter-spacing="1">${esc(name)}</text>
-    <text x="540" y="640" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="8" paint-order="stroke fill" text-anchor="middle" font-family="'Arial Black', Impact, Haettenschweiler, sans-serif" font-size="372" font-weight="400" letter-spacing="-4">${esc(num)}</text>
-    <text x="540" y="740" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="3" paint-order="stroke fill" text-anchor="middle" font-family="'Arial Black', Impact, Haettenschweiler, sans-serif" font-size="50" font-weight="400" letter-spacing="2">${esc(team)}</text>
+    <text x="540" y="236" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="12" paint-order="stroke fill" text-anchor="middle" font-family="var(--jersey-font)" font-size="112" letter-spacing="1.3">${esc(name)}</text>
+    <text x="540" y="638" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="8" paint-order="stroke fill" text-anchor="middle" font-family="var(--jersey-font)" font-size="382" letter-spacing="-1">${esc(num)}</text>
+    <text x="540" y="739" fill="${t.textFill}" stroke="${t.textStroke}" stroke-width="3" paint-order="stroke fill" text-anchor="middle" font-family="var(--jersey-font)" font-size="54" letter-spacing="2">${esc(team)}</text>
 
-    ${statCard(xs[0],y,w,h,stats[0][0],stats[0][1],t)}
-    ${statCard(xs[1],y,w,h,stats[1][0],stats[1][1],t)}
-    ${statCard(xs[2],y,w,h,stats[2][0],stats[2][1],t)}
+    ${statCard(0,xs[0],y,w,h,stats[0][0],stats[0][1],t)}
+    ${statCard(1,xs[1],y,w,h,stats[1][0],stats[1][1],t)}
+    ${statCard(2,xs[2],y,w,h,stats[2][0],stats[2][1],t)}
   `;
   $("#customColors").classList.toggle("show",state.team==="custom");
-  $("#team").value=state.team;
-  $("#playerName").value=state.name;
-  $("#number").value=state.number;
+  $("#team").value=state.team; $("#playerName").value=state.name; $("#number").value=state.number;
   state.stats.forEach((v,i)=>$("#stat"+(i+1)).value=v);
-  $("#primaryColor").value=state.custom.primary;$("#accentColor").value=state.custom.accent;$("#backgroundColor").value=state.custom.background;
+  $("#primaryColor").value=state.custom.primary; $("#accentColor").value=state.custom.accent; $("#backgroundColor").value=state.custom.background;
 }
-function save(){try{localStorage.setItem("ndwiffle_simple_graphic_v108",JSON.stringify(state));$("#saveState").textContent="Saved automatically in this browser."}catch{}}
+function save(){try{localStorage.setItem("ndwiffle_simple_graphic_v109",JSON.stringify(state)); $("#saveState").textContent="Saved automatically in this browser.";}catch{}}
 function load(){
   try{
-    const raw=localStorage.getItem("ndwiffle_simple_graphic_v108")||localStorage.getItem("ndwiffle_simple_graphic_v107")||localStorage.getItem("ndwiffle_simple_graphic_v106")||localStorage.getItem("ndwiffle_simple_graphic_v105")||"null";
+    const raw=localStorage.getItem("ndwiffle_simple_graphic_v109")||localStorage.getItem("ndwiffle_simple_graphic_v108")||localStorage.getItem("ndwiffle_simple_graphic_v107")||localStorage.getItem("ndwiffle_simple_graphic_v106")||localStorage.getItem("ndwiffle_simple_graphic_v105")||"null";
     const s=JSON.parse(raw);
     if(s){
       const stats=Array.isArray(s.stats)?s.stats.slice(0,3):DEFAULT.stats;
@@ -192,27 +188,27 @@ function load(){
     }
   }catch{}
 }
-function toast(msg){const el=$("#toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),1700)}
+function toast(msg){const el=$("#toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("show"),1700)}
 function bind(){
-  $("#team").onchange=e=>{state.team=e.target.value;save();render()};
-  $("#playerName").oninput=e=>{state.name=e.target.value;save();render()};
-  $("#number").oninput=e=>{state.number=e.target.value;save();render()};
-  for(let i=0;i<3;i++)$("#stat"+(i+1)).oninput=e=>{state.stats[i]=e.target.value;save();render()};
-  [["primaryColor","primary"],["accentColor","accent"],["backgroundColor","background"]].forEach(([id,key])=>$("#"+id).oninput=e=>{state.custom[key]=e.target.value;save();render()});
-  $("#resetBtn").onclick=()=>{state=structuredClone(DEFAULT);save();buildTeamOptions();render();toast("Graphic reset")};
+  $("#team").onchange=e=>{state.team=e.target.value; save(); render();};
+  $("#playerName").oninput=e=>{state.name=e.target.value; save(); render();};
+  $("#number").oninput=e=>{state.number=e.target.value; save(); render();};
+  for(let i=0;i<3;i++) $("#stat"+(i+1)).oninput=e=>{state.stats[i]=e.target.value; save(); render();};
+  [["primaryColor","primary"],["accentColor","accent"],["backgroundColor","background"]].forEach(([id,key])=>$("#"+id).oninput=e=>{state.custom[key]=e.target.value; save(); render();});
+  $("#resetBtn").onclick=()=>{state=structuredClone(DEFAULT); save(); buildTeamOptions(); render(); toast("Graphic reset");};
   $("#downloadBtn").onclick=downloadPNG;
 }
 async function downloadPNG(){
   const svg=$("#graphic");
-  const clone=svg.cloneNode(true); clone.setAttribute("width","1080");clone.setAttribute("height","1080");clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  const clone=svg.cloneNode(true); clone.setAttribute("width","1080"); clone.setAttribute("height","1080"); clone.setAttribute("xmlns","http://www.w3.org/2000/svg");
   const data=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([data],{type:"image/svg+xml;charset=utf-8"});
   const url=URL.createObjectURL(blob), img=new Image();
-  img.onload=()=>{const c=document.createElement("canvas");c.width=1080;c.height=1080;const ctx=c.getContext("2d");ctx.drawImage(img,0,0,1080,1080);URL.revokeObjectURL(url);c.toBlob(png=>{const a=document.createElement("a");const safe=(state.name||"player").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"player";a.href=URL.createObjectURL(png);a.download=`${safe}-stat-graphic.png`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast("PNG downloaded")},"image/png")};
-  img.onerror=()=>{URL.revokeObjectURL(url);toast("Could not export PNG")};
+  img.onload=()=>{const c=document.createElement("canvas"); c.width=1080; c.height=1080; const ctx=c.getContext("2d"); ctx.drawImage(img,0,0,1080,1080); URL.revokeObjectURL(url); c.toBlob(png=>{const a=document.createElement("a"); const safe=(state.name||"player").trim().replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"player"; a.href=URL.createObjectURL(png); a.download=`${safe}-stat-graphic.png`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast("PNG downloaded");},"image/png")};
+  img.onerror=()=>{URL.revokeObjectURL(url); toast("Could not export PNG")};
   img.src=url;
 }
-load();buildTeamOptions();bind();render();
+load(); buildTeamOptions(); bind(); render();
 </script>
 </body>
 </html>

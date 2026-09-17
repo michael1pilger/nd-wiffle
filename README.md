@@ -533,3 +533,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Applied team-specific jersey fills, lettering colors, and outline colors for Storm, Zyns, Goofy Goobers, Ball Busters, Stiff Wifflers, Underdawgs, Silverbacks, Dirty Dawgs, Twin Titans, and Midnight.
 - Updated the player name to use a blockier jersey-style type treatment with a stronger outline.
 - Tuned the three stat boxes so their lettering complements each team palette.
+
+
+## v109: jersey M54 font and team-tinted icon badges
+- Switched the jersey name, number, team label, and stat text to Jersey M54 with fallbacks.
+- Added three icon badges to the stat cards, based on the three provided icon references.
+- Tinted the icons dynamically by team so they match each preset palette.
+- Kept the simplified interface and centered three-box layout intact.
