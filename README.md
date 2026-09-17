@@ -526,3 +526,10 @@ The current static historical database is treated as the authoritative 2021–20
 - Reduced the bottom stat presentation from four boxes to three centered boxes with symmetric left/right placement around the middle card.
 - Added the team name below the jersey number on the jersey body.
 - Made the player name lighter in weight while increasing the prominence of its outline.
+
+
+## v108: team-specific jersey treatments
+- Switched the graphic background to white for all team presets.
+- Applied team-specific jersey fills, lettering colors, and outline colors for Storm, Zyns, Goofy Goobers, Ball Busters, Stiff Wifflers, Underdawgs, Silverbacks, Dirty Dawgs, Twin Titans, and Midnight.
+- Updated the player name to use a blockier jersey-style type treatment with a stronger outline.
+- Tuned the three stat boxes so their lettering complements each team palette.
