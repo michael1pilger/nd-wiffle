@@ -203,13 +203,52 @@ export async function onRequestPost(context) {
   if(validation.errors.length){
     return json({ok:false,error:"Server validation failed.",errors:validation.errors,warnings:validation.warnings},422);
   }
-  const participantIds=new Map();
+  // Different source files can use different spellings for the same player
+  // (e.g. "joe melv" in one export and "Joe O'Melveny" in another).
+  // That is safe across batting vs pitching, but duplicate rows inside the
+  // same stat table would double-count and must still be blocked.
+  function duplicateResolvedIds(rows,nameGetter,label){
+    const seen=new Map(),errors=[];
+    for(const row of rows||[]){
+      const raw=nameGetter(row);
+      const id=playerIds.get(norm(raw));
+      if(!id)continue;
+      if(seen.has(id) && seen.get(id)!==norm(raw)){
+        errors.push(`${label}: ${seen.get(id)} and ${raw} both resolve to ${id}. These are two rows in the same ${label.toLowerCase()} table and could double-count stats.`);
+      }else{
+        seen.set(id,norm(raw));
+      }
+    }
+    return errors;
+  }
+
+  const duplicateStatErrors=[
+    ...duplicateResolvedIds(payload.batting,r=>r.player,"Batting"),
+    ...duplicateResolvedIds(payload.pitching,r=>r.player,"Pitching")
+  ];
+  if(duplicateStatErrors.length){
+    return json({ok:false,error:"Duplicate stat rows resolve to the same player.",errors:duplicateStatErrors},422);
+  }
+
+  // Collapse participant aliases to one database participant row per player.
+  // Use the largest GP reported across aliases; side must agree.
+  const canonicalParticipants=new Map();
   for(const part of payload.participants||[]){
     const id=playerIds.get(norm(part.name));
-    if(participantIds.has(id) && participantIds.get(id)!==norm(part.name)){
-      return json({ok:false,error:"Two uploaded names resolve to the same player.",errors:[`${participantIds.get(id)} and ${part.name} resolve to ${id}. Correct the source name or resolution before publishing.`]},422);
+    if(!id)continue;
+    const existingPart=canonicalParticipants.get(id);
+    if(existingPart && existingPart.side!==part.side){
+      return json({
+        ok:false,
+        error:"Player alias resolves to conflicting teams/sides.",
+        errors:[`${existingPart.name} and ${part.name} both resolve to ${id}, but one is listed as ${existingPart.side} and the other as ${part.side}.`]
+      },422);
     }
-    participantIds.set(id,norm(part.name));
+    if(!existingPart){
+      canonicalParticipants.set(id,{...part,player_id:id});
+    }else{
+      existingPart.games_played=Math.max(Number(existingPart.games_played||0),Number(part.games_played||0));
+    }
   }
 
   const existing=await DB.prepare("SELECT series_id,published_at,commissioner_email FROM series WHERE series_id=?").bind(payload.series_id).first();
@@ -240,7 +279,7 @@ export async function onRequestPost(context) {
     ) VALUES(?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
   `).bind(
     payload.series_id,payload.series.season,payload.series.date,awayTeamId,homeTeamId,
-    payload.schema_version,payload.source||"ndwiffle_admin_v24",actor,payload.commissioner_notes||null,
+    payload.schema_version,payload.source||"ndwiffle_admin_v99",actor,payload.commissioner_notes||null,
     Number(payload.validation?.warning_count||0),JSON.stringify(payload)
   ));
 
@@ -250,10 +289,10 @@ export async function onRequestPost(context) {
       VALUES(?,?,?,?,?,?,?)
     `).bind(payload.series_id,g.game,g.away_score,g.home_score,pId(g.winning_pitcher),pId(g.losing_pitcher),g.save_pitcher?pId(g.save_pitcher):null));
   }
-  for(const p of payload.participants||[]){
+  for(const p of canonicalParticipants.values()){
     statements.push(DB.prepare(`
       INSERT INTO series_participants(series_id,player_id,team_id,side,games_played) VALUES(?,?,?,?,?)
-    `).bind(payload.series_id,pId(p.name),p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played));
+    `).bind(payload.series_id,p.player_id,p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played));
   }
   for(const b of payload.batting||[]){
     statements.push(DB.prepare(`
@@ -305,7 +344,7 @@ export async function onRequestPost(context) {
       new_players:resolved.newPlayers,
       rows:{
         games:(payload.games||[]).length,
-        participants:(payload.participants||[]).length,
+        participants:canonicalParticipants.size,
         batting:(payload.batting||[]).length,
         pitching:(payload.pitching||[]).length,
         corrections:(payload.manual_corrections||[]).length

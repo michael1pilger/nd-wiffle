@@ -1,0 +1,10 @@
+{
+  "alias_collision_fix": "PASS",
+  "cross_table_aliases": "allowed",
+  "same_batting_table_duplicate_aliases": "blocked",
+  "same_pitching_table_duplicate_aliases": "blocked",
+  "participant_aliases": "collapsed to one player_id row",
+  "participant_games_played": "maximum across aliases",
+  "conflicting_side_aliases": "blocked",
+  "syntax": "PASS"
+}
