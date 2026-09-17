@@ -1,0 +1,14 @@
+{
+  "build": "v104",
+  "graphics_studio": "PASS",
+  "default_template": "Sharkey-style editable player stat card",
+  "team_color_presets": 10,
+  "team_palette_source": "Curated from current assets/logos PNG files",
+  "theme_linked_layers": true,
+  "blank_canvas_preserved": true,
+  "template_persistence": "D1 via /api/admin/graphic-templates",
+  "migration_required": "0026_graphic_templates.sql (unchanged from v103)",
+  "statlists_copy_center_preserved": true,
+  "exports": ["PNG", "SVG"],
+  "javascript_syntax": "PASS"
+}

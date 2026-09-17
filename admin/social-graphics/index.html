@@ -25,7 +25,7 @@ body{background:#060d17;color:var(--sg-text)}
 .artboard-wrap{height:690px;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto;background-color:#050a11;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:20px 20px}
 #artboard{width:min(68vw,660px);height:auto;aspect-ratio:1/1;display:block;background:#ddd;box-shadow:0 16px 55px rgba(0,0,0,.48);touch-action:none;user-select:none}.sel-box{fill:none;stroke:#38a8ff;stroke-width:3;stroke-dasharray:10 7;pointer-events:none}.handle{fill:#fff;stroke:#1689dd;stroke-width:3;cursor:nwse-resize}.handle.ne,.handle.sw{cursor:nesw-resize}.element-hit{cursor:move}.element-hit.locked{cursor:not-allowed}
 .layers{max-height:250px;overflow:auto;border:1px solid var(--sg-line);border-radius:8px}.layer{display:grid;grid-template-columns:1fr auto;gap:5px;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);padding:6px}.layer:last-child{border-bottom:0}.layer.active{background:#14243a}.layer-main{min-width:0;cursor:pointer}.layer-name{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.layer-meta{font-size:8px;color:var(--sg-muted)}.layer-actions{display:flex;gap:3px}.mini{border:1px solid var(--sg-line);background:#07111e;color:#cbd5e3;border-radius:6px;padding:4px 5px;font-size:8px;cursor:pointer}.mini:hover{border-color:#5d7695}
-.palette{display:flex;flex-wrap:wrap;gap:5px}.swatch{width:25px;height:25px;border-radius:6px;border:2px solid rgba(255,255,255,.2);cursor:pointer}.swatch:hover{transform:scale(1.06)}
+.palette{display:flex;flex-wrap:wrap;gap:5px}.swatch{width:25px;height:25px;border-radius:6px;border:2px solid rgba(255,255,255,.2);cursor:pointer}.swatch:hover{transform:scale(1.06)}.team-theme{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}.team-theme select{width:100%;background:#07111e;color:#fff;border:1px solid var(--sg-line);border-radius:8px;padding:7px 8px;font:750 10px/1.35 inherit}.team-theme-preview{display:grid;grid-template-columns:42px 1fr;gap:8px;align-items:center;margin-top:7px;border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:7px;background:#07111e}.team-theme-preview img{width:38px;height:38px;object-fit:contain}.team-theme-preview img[src=""]{visibility:hidden}.theme-chips{display:flex;gap:5px;align-items:center;flex-wrap:wrap}.theme-chip{width:26px;height:26px;border-radius:6px;border:1px solid rgba(255,255,255,.24)}.theme-note{font-size:8px;color:var(--sg-muted);margin-top:4px;line-height:1.35}.theme-apply{border:1px solid var(--sg-line);background:#122039;color:#fff;border-radius:8px;padding:7px 9px;font:900 9px/1.2 inherit;cursor:pointer}.theme-apply:hover{border-color:var(--sg-gold)}
 .quick-tokens{display:flex;flex-wrap:wrap;gap:4px}.token-btn{border:1px solid var(--sg-line);background:#081321;color:#cbd5e3;border-radius:999px;padding:4px 6px;font-size:8px;cursor:pointer}.token-btn:hover{border-color:var(--sg-gold)}
 .vars{display:grid;grid-template-columns:1fr;gap:5px}.var-row{display:grid;grid-template-columns:90px 1fr;gap:5px;align-items:center}.var-row label{font-size:8px;color:var(--sg-muted);overflow:hidden;text-overflow:ellipsis}.var-row input{background:#07111e;color:#fff;border:1px solid var(--sg-line);border-radius:7px;padding:6px;font-size:9px;width:100%}
 .statusline{font-size:9px;color:var(--sg-muted);min-height:14px}.statusline.ok{color:#7ed69f}.statusline.err{color:#ff8c98}
@@ -39,7 +39,7 @@ body{background:#060d17;color:var(--sg-text)}
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a class="active" href="/admin/social-graphics/">Graphics Studio</a></div></div></div>
 <main class="sg-page"><div class="sg-shell">
   <div class="sg-top">
-    <div><div class="eyebrow">Commissioner Tools · Social Graphics · BUILD v103</div><h1>Graphics Studio</h1><div class="muted">Build reusable 1080×1080 templates with editable text, shapes, colors, icons, logos, and headshots.</div></div>
+    <div><div class="eyebrow">Commissioner Tools · Social Graphics · BUILD v104</div><h1>Graphics Studio</h1><div class="muted">Build reusable 1080×1080 templates with editable text, shapes, colors, icons, logos, and headshots.</div></div>
     <div id="studioStatus" class="statusline">Ready.</div>
   </div>
   <div class="sg-tabs"><button class="sg-tab active" data-view="builder">Template Builder</button><button class="sg-tab" data-view="copy">Stat Lists Copy Center</button></div>
@@ -48,7 +48,7 @@ body{background:#060d17;color:var(--sg-text)}
     <div class="studio-toolbar">
       <select id="templateSelect"><option value="">New / unsaved template</option></select>
       <input class="template-name" id="templateName" value="Untitled Template" aria-label="Template name">
-      <button id="newBtn">New</button><button class="primary" id="saveBtn">Save</button><button id="saveAsBtn">Save As</button><button class="danger" id="deleteTemplateBtn">Delete</button>
+      <button id="newBtn">New Default</button><button id="blankBtn">Blank</button><button class="primary" id="saveBtn">Save</button><button id="saveAsBtn">Save As</button><button class="danger" id="deleteTemplateBtn">Delete</button>
       <div class="spacer"></div>
       <button id="undoBtn" title="Undo (Ctrl+Z)">↶ Undo</button><button id="redoBtn" title="Redo (Ctrl+Y)">↷ Redo</button>
       <button id="exportSvgBtn">SVG</button><button class="primary" id="exportPngBtn">Download PNG</button>
@@ -69,6 +69,9 @@ body{background:#060d17;color:var(--sg-text)}
             <button class="tool-btn" data-add="batball"><span class="ico">⌁</span>Bat + Ball</button>
             <button class="tool-btn" data-add="plate"><span class="ico">⌂</span>Home Plate</button>
             <button class="tool-btn" data-add="trophy"><span class="ico">♜</span>Trophy</button>
+            <button class="tool-btn" data-add="field"><span class="ico">◇</span>Ballfield</button>
+            <button class="tool-btn" data-add="shoe"><span class="ico">⌁</span>Running Shoe</button>
+            <button class="tool-btn" data-add="statjersey"><span class="ico">♙</span>Jersey Panel</button>
           </div>
           <div class="panel-sub">Images</div>
           <div class="tool-grid">
@@ -83,6 +86,9 @@ body{background:#060d17;color:var(--sg-text)}
           </div>
           <label class="check"><input type="checkbox" id="snapToggle" checked> Snap movement to 5 px</label>
           <label class="check" style="margin-top:6px"><input type="checkbox" id="gridToggle" checked> Show editor grid</label>
+          <div class="panel-sub">Team Color Preset</div>
+          <div class="team-theme"><select id="teamThemeSelect" aria-label="Team color preset"></select><button class="theme-apply" id="applyThemeBtn">Apply</button></div>
+          <div class="team-theme-preview"><img id="teamThemeLogo" alt=""><div><div class="theme-chips" id="teamThemeChips"></div><div class="theme-note" id="teamThemeNote">Logo-based primary, secondary, accent, and background colors.</div></div></div>
           <div class="panel-sub">Common Colors</div>
           <div class="palette" id="palette"></div>
           <div class="panel-sub">Template Variables</div>
@@ -133,26 +139,45 @@ const deep=x=>JSON.parse(JSON.stringify(x));
 
 const ICONS={
   jersey:`<path d="M18 14 34 5c8 8 24 8 32 0l16 9 15 25-17 10v46H20V49L3 39z"/><path d="M34 5c3 13 29 13 32 0" fill="none"/>`,
+  statjersey:`<path d="M37 2c5 3 21 4 27 0 6 2 12 5 18 8l8 4c4 2 7 5 9 9l1 2v39L83 74v26H17V74L0 64V39l11-17c2-4 5-7 9-9l10-4c3-2 5-4 7-7z"/>`,
   wiffle:`<circle cx="50" cy="50" r="43"/><g fill="currentColor" stroke="none"><ellipse cx="35" cy="26" rx="5" ry="10"/><ellipse cx="50" cy="22" rx="5" ry="10"/><ellipse cx="64" cy="27" rx="5" ry="10"/><ellipse cx="27" cy="39" rx="5" ry="10" transform="rotate(-22 27 39)"/><ellipse cx="73" cy="39" rx="5" ry="10" transform="rotate(22 73 39)"/></g>`,
   baseball:`<circle cx="50" cy="50" r="43"/><path d="M28 15c7 8 10 18 9 29s-5 22-13 31M72 15c-7 8-10 18-9 29s5 22 13 31" fill="none"/><path d="m31 28 8 3m-10 8 8 2m-9 10 8 0m33-23-8 3m10 8-8 2m9 10-8 0" fill="none"/>`,
   plate:`<path d="M14 18h72v42L50 91 14 60z"/><path d="M24 28h52v26L50 77 24 54z" fill="none"/>`,
   trophy:`<path d="M30 12h40v18c0 18-8 29-20 34-12-5-20-16-20-34z"/><path d="M30 20H15c0 18 8 27 22 28M70 20h15c0 18-8 27-22 28M50 64v13M35 87h30M40 77h20" fill="none"/>`,
-  batball:`<path d="M18 82 63 29c5-6 14-7 19-1 5 5 4 14-2 19L29 89c-5 4-15-2-11-7z"/><path d="M19 76 31 88M24 69l13 13M30 63l13 12" fill="none"/><circle cx="72" cy="72" r="15"/><path d="M65 60c5 4 6 8 4 13s-1 9 4 13M79 61c-4 4-5 8-3 12s1 8-3 13" fill="none"/>`
+  batball:`<path d="M18 82 63 29c5-6 14-7 19-1 5 5 4 14-2 19L29 89c-5 4-15-2-11-7z"/><path d="M19 76 31 88M24 69l13 13M30 63l13 12" fill="none"/><circle cx="72" cy="72" r="15"/><path d="M65 60c5 4 6 8 4 13s-1 9 4 13M79 61c-4 4-5 8-3 12s1 8-3 13" fill="none"/>`,
+  field:`<path d="M15 60 50 28l35 32-35 31z"/><path d="M28 59 50 43l22 16-22 19zM50 43v35M28 59h44" fill="none"/><path d="M60 18 48 67" fill="none" stroke-width="6"/><circle cx="63" cy="18" r="7"/>`,
+  shoe:`<path d="M13 66c14 2 25-1 37-13l8-18 13 4 3 16c2 10 8 16 17 22 4 3 2 10-4 11H31c-12 0-18-6-18-15z"/><path d="M56 47l16 4M53 55l19 4M49 63l19 4M12 78H3M18 86H7" fill="none"/>`
 };
 
+const TEAM_THEMES={
+  reference:{name:"Sharkey Reference",primary:"#26477f",secondary:"#d13a4f",tertiary:"#92a3bf",panel:"#ffffff",background:"#e6e6e6",logo:"",note:"Matches the blue, red, white, and gray from the Sharkey reference graphic."},
+  "ball-busters":{name:"Ball Busters",primary:"#08112a",secondary:"#8b2a2a",tertiary:"#c9c1c4",panel:"#ffffff",background:"#e5e8ef",logo:"/assets/logos/ball-busters.png"},
+  "dirty-dawgs":{name:"Dirty Dawgs",primary:"#330c12",secondary:"#b2853c",tertiary:"#d5b779",panel:"#ffffff",background:"#eee7e2",logo:"/assets/logos/dirty-dawgs.png"},
+  "goofy-goobers":{name:"Goofy Goobers",primary:"#06070c",secondary:"#cc633a",tertiary:"#e1dedb",panel:"#ffffff",background:"#eae8e7",logo:"/assets/logos/goofy-goobers.png"},
+  midnight:{name:"Midnight",primary:"#202121",secondary:"#74797c",tertiary:"#dfe2e3",panel:"#ffffff",background:"#e9eaeb",logo:"/assets/logos/midnight.png"},
+  silverbacks:{name:"Silverbacks",primary:"#000000",secondary:"#c6a85e",tertiary:"#e4cf8e",panel:"#ffffff",background:"#e8e3d8",logo:"/assets/logos/silverbacks.png"},
+  "stiff-wifflers":{name:"Stiff Wifflers",primary:"#15284d",secondary:"#37614b",tertiary:"#e0e8e6",panel:"#ffffff",background:"#e7ebea",logo:"/assets/logos/stiff-wifflers.png"},
+  storm:{name:"Storm",primary:"#60099f",secondary:"#b18424",tertiary:"#beb5b1",panel:"#ffffff",background:"#eae5ef",logo:"/assets/logos/storm.png"},
+  "twin-titans":{name:"Twin Titans",primary:"#34445f",secondary:"#9a2024",tertiary:"#aaabb7",panel:"#ffffff",background:"#e5e7eb",logo:"/assets/logos/twin-titans.png"},
+  underdawgs:{name:"Underdawgs",primary:"#3e2565",secondary:"#7c7b7c",tertiary:"#c7c6c8",panel:"#ffffff",background:"#e8e5ec",logo:"/assets/logos/underdawgs.png"},
+  zyns:{name:"Zyns",primary:"#011423",secondary:"#85e1e6",tertiary:"#67a5ae",panel:"#ffffff",background:"#fffced",logo:"/assets/logos/zyns.png"}
+};
+const THEME_ROLE_LABELS={primary:"Primary",secondary:"Secondary",tertiary:"Accent",panel:"Panel / white"};
 const DEFAULT_VARS={PLAYER_NAME:"PLAYER NAME",NUMBER:"12",STAT1_VALUE:"6/6",STAT1_LABEL:"H/AB",STAT2_VALUE:"3",STAT2_LABEL:"HOME RUNS",STAT3_VALUE:"10",STAT3_LABEL:"RBIs",STAT4_VALUE:"2",STAT4_LABEL:"STOLEN BASES"};
-const state={templateId:null,name:"Untitled Template",canvas:{width:1080,height:1080,background:"#e6e6e6"},elements:[],variables:deep(DEFAULT_VARS),selected:null,snap:true,history:[],future:[],dirty:false};
+const state={templateId:null,name:"Untitled Template",canvas:{width:1080,height:1080,background:"#e6e6e6"},elements:[],variables:deep(DEFAULT_VARS),teamTheme:"reference",selected:null,snap:true,history:[],future:[],dirty:false};
 let drag=null, templateList=[], headshots={}, rosterData=null, copyData=null;
 
-function baseDoc(){return {version:1,canvas:deep(state.canvas),elements:deep(state.elements),variables:deep(state.variables)}}
+function baseDoc(){return {version:2,canvas:deep(state.canvas),elements:deep(state.elements),variables:deep(state.variables),teamTheme:state.teamTheme||"custom"}}
 function loadDoc(doc){
   state.canvas={width:num(doc?.canvas?.width,1080),height:num(doc?.canvas?.height,1080),background:doc?.canvas?.background||"#e6e6e6"};
   state.elements=Array.isArray(doc?.elements)?deep(doc.elements):[];
-  state.variables={...DEFAULT_VARS,...(doc?.variables||{})}; state.selected=null; state.history=[]; state.future=[]; state.dirty=false;
+  state.variables={...DEFAULT_VARS,...(doc?.variables||{})};
+  state.teamTheme=doc?.teamTheme||"custom";
+  state.selected=null; state.history=[]; state.future=[]; state.dirty=false;
   syncControls(); renderAll();
 }
 function snapshot(){return JSON.stringify(baseDoc())}
-function restore(s){const d=JSON.parse(s);state.canvas=d.canvas;state.elements=d.elements;state.variables=d.variables||deep(DEFAULT_VARS);state.selected=null;syncControls();renderAll()}
+function restore(s){const d=JSON.parse(s);state.canvas=d.canvas;state.elements=d.elements;state.variables=d.variables||deep(DEFAULT_VARS);state.teamTheme=d.teamTheme||"custom";state.selected=null;syncControls();renderAll()}
 function pushHistory(){const s=snapshot();if(state.history[state.history.length-1]!==s)state.history.push(s);if(state.history.length>80)state.history.shift();state.future=[]}
 function undo(){if(!state.history.length)return;state.future.push(snapshot());restore(state.history.pop());markDirty(true)}
 function redo(){if(!state.future.length)return;state.history.push(snapshot());restore(state.future.pop());markDirty(true)}
@@ -163,14 +188,45 @@ function tokenText(s){return String(s??"").replace(/\{\{\s*([A-Z0-9_]+)\s*\}\}/g
 function elementName(e){if(e.name)return e.name;if(e.type==="text")return (e.content||"Text").slice(0,24);if(e.type==="icon")return e.icon.replace(/^./,c=>c.toUpperCase());return e.type.replace(/^./,c=>c.toUpperCase())}
 function selected(){return state.elements.find(e=>e.id===state.selected)||null}
 function defaultElement(type){
-  const common={id:uid(),name:"",x:340,y:340,w:400,h:180,rotation:0,opacity:1,fill:"#28508a",stroke:"#28508a",strokeWidth:0,locked:false,hidden:false,includeInExport:true};
+  const common={id:uid(),name:"",x:340,y:340,w:400,h:180,rotation:0,opacity:1,fill:"#28508a",stroke:"#28508a",strokeWidth:0,themeFill:"",themeStroke:"",locked:false,hidden:false,includeInExport:true};
   if(type==="text")return {...common,x:290,y:120,w:500,h:100,content:"DOUBLE CLICK / EDIT TEXT",fill:"#28508a",stroke:"#000000",strokeWidth:0,fontFamily:"Impact",fontSize:70,fontWeight:700,fontStyle:"normal",textAlign:"center",letterSpacing:2};
   if(type==="rect")return {...common,x:290,y:300,w:500,h:260,fill:"#ffffff",stroke:"#28508a",strokeWidth:4,radius:0};
   if(type==="circle")return {...common,x:390,y:390,w:300,h:300,fill:"#ffffff",stroke:"#28508a",strokeWidth:8};
   if(type==="line")return {...common,x:250,y:520,w:580,h:2,fill:"none",stroke:"#28508a",strokeWidth:8};
-  if(["jersey","wiffle","baseball","batball","plate","trophy"].includes(type))return {...common,type:"icon",icon:type,x:365,y:330,w:350,h:350,fill:type==="jersey"?"#ffffff":"none",stroke:"#28508a",strokeWidth:type==="jersey"?0:5};
+  if(["jersey","statjersey","wiffle","baseball","batball","plate","trophy","field","shoe"].includes(type)){
+    const panel=type==="jersey"||type==="statjersey";
+    return {...common,type:"icon",icon:type,x:365,y:330,w:350,h:350,fill:panel?"#ffffff":"none",stroke:panel?"none":"#28508a",strokeWidth:panel?0:5};
+  }
   return common;
 }
+function sharkeyDefaultDoc(){
+  const P=TEAM_THEMES.reference;
+  const e=(type,props)=>({...defaultElement(type),...props,id:uid()});
+  const elements=[
+    e("statjersey",{name:"White jersey panel",x:0,y:0,w:1080,h:1110,fill:P.panel,stroke:"none",strokeWidth:0,themeFill:"panel",themeStroke:"",locked:false}),
+    e("text",{name:"Player name",x:278,y:142,w:524,h:128,content:"{{PLAYER_NAME}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",themeStroke:"",fontFamily:"Impact",fontSize:116,fontWeight:900,textAlign:"center",letterSpacing:4}),
+    e("text",{name:"Jersey number",x:350,y:300,w:380,h:405,content:"{{NUMBER}}",fill:P.primary,stroke:P.secondary,strokeWidth:7,themeFill:"primary",themeStroke:"secondary",fontFamily:"Impact",fontSize:414,fontWeight:900,textAlign:"center",letterSpacing:0}),
+    e("circle",{name:"Stat 1 circle",x:37,y:802,w:207,h:209,fill:P.panel,stroke:P.primary,strokeWidth:5,themeFill:"panel",themeStroke:"primary"}),
+    e("circle",{name:"Stat 2 circle",x:305,y:802,w:207,h:209,fill:P.panel,stroke:P.primary,strokeWidth:5,themeFill:"panel",themeStroke:"primary"}),
+    e("circle",{name:"Stat 3 circle",x:573,y:802,w:207,h:209,fill:P.panel,stroke:P.primary,strokeWidth:5,themeFill:"panel",themeStroke:"primary"}),
+    e("circle",{name:"Stat 4 circle",x:841,y:802,w:207,h:209,fill:P.panel,stroke:P.primary,strokeWidth:5,themeFill:"panel",themeStroke:"primary"}),
+    e("batball",{name:"H / AB icon",x:68,y:831,w:150,h:150,fill:"none",stroke:P.primary,strokeWidth:4,themeFill:"",themeStroke:"primary"}),
+    e("field",{name:"Home run icon",x:334,y:829,w:150,h:150,fill:"none",stroke:P.primary,strokeWidth:4,themeFill:"",themeStroke:"primary"}),
+    e("shoe",{name:"RBI icon",x:598,y:832,w:160,h:160,fill:"none",stroke:P.primary,strokeWidth:4,themeFill:"",themeStroke:"primary"}),
+    e("plate",{name:"Stolen base icon",x:873,y:835,w:143,h:143,fill:"none",stroke:P.primary,strokeWidth:4,themeFill:"",themeStroke:"primary"}),
+    e("text",{name:"Stat 1 value",x:37,y:1010,w:207,h:29,content:"{{STAT1_VALUE}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:25,fontWeight:800,textAlign:"center",letterSpacing:.2}),
+    e("text",{name:"Stat 1 label",x:27,y:1036,w:227,h:39,content:"{{STAT1_LABEL}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:20,fontWeight:800,textAlign:"center",letterSpacing:.3}),
+    e("text",{name:"Stat 2 value",x:305,y:1010,w:207,h:29,content:"{{STAT2_VALUE}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:25,fontWeight:800,textAlign:"center",letterSpacing:.2}),
+    e("text",{name:"Stat 2 label",x:290,y:1036,w:237,h:39,content:"{{STAT2_LABEL}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:18,fontWeight:800,textAlign:"center",letterSpacing:.25}),
+    e("text",{name:"Stat 3 value",x:573,y:1010,w:207,h:29,content:"{{STAT3_VALUE}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:25,fontWeight:800,textAlign:"center",letterSpacing:.2}),
+    e("text",{name:"Stat 3 label",x:563,y:1036,w:227,h:39,content:"{{STAT3_LABEL}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:20,fontWeight:800,textAlign:"center",letterSpacing:.3}),
+    e("text",{name:"Stat 4 value",x:841,y:1010,w:207,h:29,content:"{{STAT4_VALUE}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:25,fontWeight:800,textAlign:"center",letterSpacing:.2}),
+    e("text",{name:"Stat 4 label",x:823,y:1036,w:243,h:39,content:"{{STAT4_LABEL}}",fill:P.primary,stroke:"none",strokeWidth:0,themeFill:"primary",fontFamily:"Impact",fontSize:17,fontWeight:800,textAlign:"center",letterSpacing:.2})
+  ];
+  return {version:2,teamTheme:"reference",canvas:{width:1080,height:1080,background:P.background},elements,variables:{...DEFAULT_VARS,PLAYER_NAME:"SHARKEY",NUMBER:"12",STAT1_VALUE:"6/6",STAT1_LABEL:"H/AB",STAT2_VALUE:"3",STAT2_LABEL:"HOME RUNS",STAT3_VALUE:"10",STAT3_LABEL:"RBIs",STAT4_VALUE:"2",STAT4_LABEL:"STOLEN BASES"}};
+}
+function blankDoc(){return {version:2,teamTheme:"custom",canvas:{width:1080,height:1080,background:"#e6e6e6"},elements:[],variables:deep(DEFAULT_VARS)}}
+
 function addElement(type,custom={}){pushHistory();const e={...defaultElement(type),...custom,id:custom.id||uid()};state.elements.push(e);state.selected=e.id;markDirty();renderAll()}
 function removeSelected(){if(!selected())return;pushHistory();state.elements=state.elements.filter(e=>e.id!==state.selected);state.selected=null;markDirty();renderAll()}
 function duplicateSelected(){const e=selected();if(!e)return;pushHistory();const c={...deep(e),id:uid(),x:e.x+25,y:e.y+25,name:e.name?e.name+" copy":""};state.elements.push(c);state.selected=c.id;markDirty();renderAll()}
@@ -220,24 +276,49 @@ function renderLayers(){
   });
 }
 function colorField(label,key,value){return `<div class="field"><label>${label}</label><div class="frow"><input type="color" data-prop="${key}" value="${/^#[0-9a-f]{6}$/i.test(value||"")?value:"#000000"}"><input data-prop="${key}" value="${esc(value||"")}"></div></div>`}
+function themeRoleField(label,key,value){return `<div class="field"><label>${label}</label><select data-theme-prop="${key}"><option value="">Manual / fixed</option>${Object.entries(THEME_ROLE_LABELS).map(([k,v])=>`<option value="${k}" ${value===k?"selected":""}>${v}</option>`).join("")}</select></div>`}
 function renderProperties(){
   const e=selected(),box=$("#properties"),none=$("#noSelection"); if(!e){box.hidden=true;none.hidden=false;$("#selectionReadout").textContent="Nothing selected";return} box.hidden=false;none.hidden=true;$("#selectionReadout").textContent=`${elementName(e)} · ${Math.round(e.w)}×${Math.round(e.h)}`;
   const textSpecific=e.type==="text"?`<div class="field"><label>Text</label><textarea data-prop="content">${esc(e.content)}</textarea></div><div class="quick-tokens">${Object.keys(state.variables).map(k=>`<button class="token-btn" data-insert-token="${k}">{{${k}}}</button>`).join("")}</div><div class="panel-sub">Typography</div><div class="field"><label>Font</label><select data-prop="fontFamily">${["Impact","Arial Black","Arial","Trebuchet MS","Verdana","Georgia","Courier New"].map(f=>`<option ${e.fontFamily===f?"selected":""}>${f}</option>`).join("")}</select></div><div class="frow"><div class="field"><label>Font size</label><input type="number" data-prop="fontSize" value="${num(e.fontSize,60)}"></div><div class="field"><label>Weight</label><select data-prop="fontWeight">${[400,600,700,800,900].map(w=>`<option value="${w}" ${num(e.fontWeight)===w?"selected":""}>${w}</option>`).join("")}</select></div></div><div class="frow"><div class="field"><label>Align</label><select data-prop="textAlign"><option ${e.textAlign==="left"?"selected":""}>left</option><option ${e.textAlign==="center"?"selected":""}>center</option><option ${e.textAlign==="right"?"selected":""}>right</option></select></div><div class="field"><label>Letter spacing</label><input type="number" data-prop="letterSpacing" value="${num(e.letterSpacing)}"></div></div>`:"";
   const radiusSpecific=e.type==="rect"?`<div class="field"><label>Corner radius</label><input type="number" data-prop="radius" value="${num(e.radius)}"></div>`:"";
   const imageSpecific=e.type==="image"?`<div class="field"><label>Image fit</label><select data-prop="fit"><option value="contain" ${e.fit!=="cover"?"selected":""}>contain</option><option value="cover" ${e.fit==="cover"?"selected":""}>cover</option></select></div>`:"";
-  box.innerHTML=`<div class="field"><label>Layer name</label><input data-prop="name" value="${esc(e.name||"")}" placeholder="Optional"></div>${textSpecific}<div class="panel-sub">Position & Size</div><div class="frow4"><div class="field"><label>X</label><input type="number" data-prop="x" value="${Math.round(e.x)}"></div><div class="field"><label>Y</label><input type="number" data-prop="y" value="${Math.round(e.y)}"></div><div class="field"><label>W</label><input type="number" data-prop="w" value="${Math.round(e.w)}"></div><div class="field"><label>H</label><input type="number" data-prop="h" value="${Math.round(e.h)}"></div></div><div class="frow"><div class="field"><label>Rotation</label><input type="number" data-prop="rotation" value="${num(e.rotation)}"></div><div class="field"><label>Opacity</label><input type="number" min="0" max="1" step="0.05" data-prop="opacity" value="${num(e.opacity,1)}"></div></div><div class="panel-sub">Appearance</div>${e.type!=="image"&&e.type!=="line"?colorField("Fill","fill",e.fill):""}${e.type!=="image"?colorField("Stroke","stroke",e.stroke):""}${e.type!=="image"?`<div class="field"><label>Stroke width</label><input type="number" min="0" data-prop="strokeWidth" value="${num(e.strokeWidth)}"></div>`:""}${radiusSpecific}${imageSpecific}<label class="check"><input type="checkbox" data-bool="locked" ${e.locked?"checked":""}> Lock element</label><label class="check" style="margin-top:5px"><input type="checkbox" data-bool="includeInExport" ${e.includeInExport!==false?"checked":""}> Include in export</label><button class="tool-btn" id="deleteElementBtn" style="width:100%;margin-top:10px;color:#ff9ba7">Delete Element</button>`;
+  box.innerHTML=`<div class="field"><label>Layer name</label><input data-prop="name" value="${esc(e.name||"")}" placeholder="Optional"></div>${textSpecific}<div class="panel-sub">Position & Size</div><div class="frow4"><div class="field"><label>X</label><input type="number" data-prop="x" value="${Math.round(e.x)}"></div><div class="field"><label>Y</label><input type="number" data-prop="y" value="${Math.round(e.y)}"></div><div class="field"><label>W</label><input type="number" data-prop="w" value="${Math.round(e.w)}"></div><div class="field"><label>H</label><input type="number" data-prop="h" value="${Math.round(e.h)}"></div></div><div class="frow"><div class="field"><label>Rotation</label><input type="number" data-prop="rotation" value="${num(e.rotation)}"></div><div class="field"><label>Opacity</label><input type="number" min="0" max="1" step="0.05" data-prop="opacity" value="${num(e.opacity,1)}"></div></div><div class="panel-sub">Appearance</div>${e.type!=="image"&&e.type!=="line"?colorField("Fill","fill",e.fill):""}${e.type!=="image"&&e.type!=="line"?themeRoleField("Fill team role","themeFill",e.themeFill||""):""}${e.type!=="image"?colorField("Stroke","stroke",e.stroke):""}${e.type!=="image"?themeRoleField("Stroke team role","themeStroke",e.themeStroke||""):""}${e.type!=="image"?`<div class="field"><label>Stroke width</label><input type="number" min="0" data-prop="strokeWidth" value="${num(e.strokeWidth)}"></div>`:""}${radiusSpecific}${imageSpecific}<label class="check"><input type="checkbox" data-bool="locked" ${e.locked?"checked":""}> Lock element</label><label class="check" style="margin-top:5px"><input type="checkbox" data-bool="includeInExport" ${e.includeInExport!==false?"checked":""}> Include in export</label><button class="tool-btn" id="deleteElementBtn" style="width:100%;margin-top:10px;color:#ff9ba7">Delete Element</button>`;
   box.querySelectorAll("[data-prop]").forEach(inp=>{
     inp.onfocus=()=>{inp.dataset.before=snapshot()};
-    inp.oninput=()=>{const e=selected();if(!e)return;const k=inp.dataset.prop;let v=inp.value;if(["x","y","w","h","rotation","opacity","fontSize","fontWeight","letterSpacing","strokeWidth","radius"].includes(k))v=num(v);e[k]=v;if(inp.type==="color"){const pair=[...box.querySelectorAll(`[data-prop="${k}"]`)];pair.forEach(x=>{if(x!==inp)x.value=v})}markDirty();renderArtboard();renderLayers();$("#selectionReadout").textContent=`${elementName(e)} · ${Math.round(e.w)}×${Math.round(e.h)}`};
+    inp.oninput=()=>{const e=selected();if(!e)return;const k=inp.dataset.prop;let v=inp.value;if(["x","y","w","h","rotation","opacity","fontSize","fontWeight","letterSpacing","strokeWidth","radius"].includes(k))v=num(v);e[k]=v;if(k==="fill"){e.themeFill="";state.teamTheme="custom"}if(k==="stroke"){e.themeStroke="";state.teamTheme="custom"}if(inp.type==="color"){const pair=[...box.querySelectorAll(`[data-prop="${k}"]`)];pair.forEach(x=>{if(x!==inp)x.value=v})}markDirty();renderArtboard();renderLayers();if(k==="fill"||k==="stroke"){renderTeamThemeControls();renderPalette()}$("#selectionReadout").textContent=`${elementName(e)} · ${Math.round(e.w)}×${Math.round(e.h)}`};
     inp.onchange=()=>{if(inp.dataset.before){const before=inp.dataset.before;if(state.history[state.history.length-1]!==before)state.history.push(before);state.future=[];delete inp.dataset.before}renderProperties()};
   });
+  box.querySelectorAll("[data-theme-prop]").forEach(inp=>inp.onchange=()=>{const e=selected();if(!e)return;pushHistory();const prop=inp.dataset.themeProp,role=inp.value;e[prop]=role;const theme=TEAM_THEMES[state.teamTheme];if(theme&&role){if(prop==="themeFill")e.fill=theme[role];else if(prop==="themeStroke")e.stroke=theme[role]}markDirty();renderAll()});
   box.querySelectorAll("[data-bool]").forEach(inp=>inp.onchange=()=>{pushHistory();selected()[inp.dataset.bool]=inp.checked;markDirty();renderAll()});
   box.querySelectorAll("[data-insert-token]").forEach(b=>b.onclick=()=>{const ta=box.querySelector('[data-prop="content"]');if(!ta)return;pushHistory();ta.value+=(ta.value?" ":"")+`{{${b.dataset.insertToken}}}`;selected().content=ta.value;markDirty();renderAll()});
   $("#deleteElementBtn").onclick=removeSelected;
 }
 function renderVariables(){const p=$("#varsPanel");p.innerHTML=Object.keys(state.variables).map(k=>`<div class="var-row"><label title="${k}">${k}</label><input data-var="${k}" value="${esc(state.variables[k])}"></div>`).join("");p.querySelectorAll("[data-var]").forEach(i=>i.oninput=()=>{state.variables[i.dataset.var]=i.value;markDirty();renderArtboard()})}
-function renderAll(){renderArtboard();renderLayers();renderProperties();renderVariables();syncControls()}
-function syncControls(){$("#canvasColor").value=/^#[0-9a-f]{6}$/i.test(state.canvas.background)?state.canvas.background:"#e6e6e6";$("#canvasHex").value=state.canvas.background;$("#templateName").value=state.name;$("#snapToggle").checked=state.snap}
+function renderTeamThemeControls(){
+  const sel=$("#teamThemeSelect");
+  if(!sel.dataset.ready){sel.innerHTML='<option value="custom">Custom colors</option>'+Object.entries(TEAM_THEMES).map(([id,t])=>`<option value="${id}">${esc(t.name)}</option>`).join("");sel.dataset.ready="1"}
+  sel.value=TEAM_THEMES[state.teamTheme]?state.teamTheme:"custom";
+  const theme=TEAM_THEMES[state.teamTheme],logo=$("#teamThemeLogo"),chips=$("#teamThemeChips"),note=$("#teamThemeNote");
+  if(theme?.logo){logo.src=theme.logo;logo.alt=theme.name+" logo"}else{logo.removeAttribute("src");logo.alt=""}
+  const colors=theme?[theme.primary,theme.secondary,theme.tertiary,theme.background]:[selected()?.fill,selected()?.stroke,state.canvas.background].filter(c=>/^#[0-9a-f]{6}$/i.test(c||""));
+  chips.innerHTML=[...new Set(colors)].map(c=>`<div class="theme-chip" title="${c}" style="background:${c}"></div>`).join("");
+  note.textContent=theme?(theme.note||`Preset sampled and curated from the ${theme.name} logo in league assets.`):"Manual colors. Select a team to recolor theme-linked layers.";
+}
+function applyTeamTheme(id){
+  const theme=TEAM_THEMES[id];
+  if(!theme){state.teamTheme="custom";renderAll();return}
+  pushHistory();state.teamTheme=id;state.canvas.background=theme.background;
+  for(const e of state.elements){if(e.themeFill&&theme[e.themeFill])e.fill=theme[e.themeFill];if(e.themeStroke&&theme[e.themeStroke])e.stroke=theme[e.themeStroke]}
+  markDirty();renderAll();status(`${theme.name} colors applied.`,"ok");
+}
+function renderPalette(){
+  const theme=TEAM_THEMES[state.teamTheme],themeColors=theme?[theme.primary,theme.secondary,theme.tertiary,theme.panel,theme.background]:[];
+  const colors=[...new Set([...themeColors,...COMMON_COLORS])];
+  $("#palette").innerHTML=colors.map(c=>`<button class="swatch" data-color="${c}" title="${c}" style="background:${c}"></button>`).join("");
+  $$("[data-color]").forEach(b=>b.onclick=()=>{const e=selected();pushHistory();state.teamTheme="custom";if(e){if(e.type==="line"){e.stroke=b.dataset.color;e.themeStroke=""}else{e.fill=b.dataset.color;e.themeFill=""}}else state.canvas.background=b.dataset.color;markDirty();renderAll()});
+}
+function renderAll(){renderArtboard();renderLayers();renderProperties();renderVariables();syncControls();renderPalette()}
+function syncControls(){$("#canvasColor").value=/^#[0-9a-f]{6}$/i.test(state.canvas.background)?state.canvas.background:"#e6e6e6";$("#canvasHex").value=state.canvas.background;$("#templateName").value=state.name;$("#snapToggle").checked=state.snap;renderTeamThemeControls()}
 
 function svgPoint(evt){const svg=$("#artboard"),p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
 function bindArtboardPointers(){
@@ -265,7 +346,8 @@ function renderTemplateSelect(){const s=$("#templateSelect");s.innerHTML='<optio
 async function openTemplate(id){if(!id){newTemplate();return}status("Loading template…");const r=await fetch(`/api/admin/graphic-templates?id=${encodeURIComponent(id)}`,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not load template.");state.templateId=j.template.template_id;state.name=j.template.name;loadDoc(j.template.document);renderTemplateSelect();status("Template loaded.","ok")}
 async function saveTemplate(asNew=false){state.name=$("#templateName").value.trim()||"Untitled Template";const payload={action:"save",template_id:asNew?null:state.templateId,name:state.name,document:baseDoc()};status("Saving…");const r=await fetch("/api/admin/graphic-templates",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not save template.");state.templateId=j.template.template_id;state.dirty=false;await loadTemplates();renderTemplateSelect();status("Template saved.","ok")}
 async function deleteTemplate(){if(!state.templateId)return status("This template has not been saved yet.","err");if(!confirm(`Delete “${state.name}”?`))return;const r=await fetch("/api/admin/graphic-templates",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"delete",template_id:state.templateId})}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not delete template.");newTemplate();await loadTemplates();status("Template deleted.","ok")}
-function newTemplate(){state.templateId=null;state.name="Untitled Template";state.canvas={width:1080,height:1080,background:"#e6e6e6"};state.elements=[];state.variables=deep(DEFAULT_VARS);state.selected=null;state.history=[];state.future=[];state.dirty=false;renderAll();renderTemplateSelect();status("Blank template ready.")}
+function newTemplate(){state.templateId=null;state.name="Sharkey Player Stat Card";loadDoc(sharkeyDefaultDoc());state.dirty=false;renderTemplateSelect();status("Sharkey-style default loaded.","ok")}
+function blankTemplate(){state.templateId=null;state.name="Untitled Template";loadDoc(blankDoc());state.dirty=false;renderTemplateSelect();status("Blank template ready.")}
 
 async function compressImage(file){if(file.size>5000000)throw new Error("Image is too large. Use a file under 5 MB.");const data=await blobToDataUrl(file);const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=data});const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);return c.toDataURL(file.type==="image/jpeg"?"image/jpeg":"image/png",.9)}
 async function addUploadedImage(file){status("Preparing image…");const src=await compressImage(file);addElement("image",{type:"image",src,x:290,y:290,w:500,h:500,fit:"contain",fill:"none",stroke:"none",strokeWidth:0,name:file.name});status("Image added.","ok")}
@@ -274,15 +356,14 @@ async function openAssets(){try{await loadAssets();const assets=[];const teams=(
 function renderAssetGrid(items){const q=$("#assetSearch").value.trim().toLowerCase(),show=items.filter(a=>!q||a.name.toLowerCase().includes(q)||a.type.toLowerCase().includes(q));$("#assetGrid").innerHTML=show.map((a,i)=>`<div class="asset" data-asset="${i}" data-src="${esc(a.src)}" data-name="${esc(a.name)}"><img src="${esc(a.src)}" alt=""><strong>${esc(a.name)}</strong><div class="statusline">${esc(a.type)}</div></div>`).join("");$$("[data-asset]").forEach(a=>a.onclick=()=>{addElement("image",{type:"image",src:a.dataset.src,x:340,y:300,w:400,h:400,fit:"contain",fill:"none",stroke:"none",strokeWidth:0,name:a.dataset.name});$("#assetModal").classList.remove("open")});$("#assetGrid").dataset.items=JSON.stringify(items)}
 
 const COMMON_COLORS=["#ffffff","#e6e6e6","#0c2340","#28508a","#d7ad48","#d33f50","#000000","#6c757d","#8c1d40","#006747","#f05a28","#7b2cbf"];
-$("#palette").innerHTML=COMMON_COLORS.map(c=>`<button class="swatch" data-color="${c}" title="${c}" style="background:${c}"></button>`).join("");
-$$("[data-color]").forEach(b=>b.onclick=()=>{const e=selected();pushHistory();if(e){if(e.type==="line")e.stroke=b.dataset.color;else e.fill=b.dataset.color}else state.canvas.background=b.dataset.color;markDirty();renderAll()});
 
 // Top-level bindings
 $$("[data-view]").forEach(b=>b.onclick=()=>{$$("[data-view]").forEach(x=>x.classList.toggle("active",x===b));$$(".sg-view").forEach(v=>v.classList.toggle("active",v.id===`view-${b.dataset.view}`));if(b.dataset.view==="copy"&&!copyData)loadCopy().catch(e=>$("#copyStatus").textContent=e.message)});
 $$("[data-add]").forEach(b=>b.onclick=()=>addElement(b.dataset.add));
-$("#canvasColor").oninput=e=>{pushHistory();state.canvas.background=e.target.value;markDirty();renderAll()};$("#canvasHex").onchange=e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value)){pushHistory();state.canvas.background=e.target.value;markDirty();renderAll()}else syncControls()};
+$("#canvasColor").oninput=e=>{pushHistory();state.teamTheme="custom";state.canvas.background=e.target.value;markDirty();renderAll()};$("#canvasHex").onchange=e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value)){pushHistory();state.teamTheme="custom";state.canvas.background=e.target.value;markDirty();renderAll()}else syncControls()};
+$("#teamThemeSelect").onchange=e=>applyTeamTheme(e.target.value);$("#applyThemeBtn").onclick=()=>{if(TEAM_THEMES[state.teamTheme])applyTeamTheme(state.teamTheme);else status("Choose a team preset first.","err")};
 $("#snapToggle").onchange=e=>state.snap=e.target.checked;$("#gridToggle").onchange=e=>$("#artboardWrap").style.backgroundImage=e.target.checked?"":"none";
-$("#newBtn").onclick=()=>{if(state.dirty&&!confirm("Discard unsaved changes?"))return;newTemplate()};$("#saveBtn").onclick=()=>saveTemplate(false).catch(e=>status(e.message,"err"));$("#saveAsBtn").onclick=()=>{const n=prompt("Name this template:",state.name);if(!n)return;$("#templateName").value=n;state.name=n;saveTemplate(true).catch(e=>status(e.message,"err"))};$("#deleteTemplateBtn").onclick=()=>deleteTemplate().catch(e=>status(e.message,"err"));$("#templateSelect").onchange=e=>{if(state.dirty&&!confirm("Discard unsaved changes?")){renderTemplateSelect();return}openTemplate(e.target.value).catch(er=>status(er.message,"err"))};$("#templateName").oninput=e=>{state.name=e.target.value;markDirty()};
+$("#newBtn").onclick=()=>{if(state.dirty&&!confirm("Discard unsaved changes?"))return;newTemplate()};$("#blankBtn").onclick=()=>{if(state.dirty&&!confirm("Discard unsaved changes?"))return;blankTemplate()};$("#saveBtn").onclick=()=>saveTemplate(false).catch(e=>status(e.message,"err"));$("#saveAsBtn").onclick=()=>{const n=prompt("Name this template:",state.name);if(!n)return;$("#templateName").value=n;state.name=n;saveTemplate(true).catch(e=>status(e.message,"err"))};$("#deleteTemplateBtn").onclick=()=>deleteTemplate().catch(e=>status(e.message,"err"));$("#templateSelect").onchange=e=>{if(state.dirty&&!confirm("Discard unsaved changes?")){renderTemplateSelect();return}openTemplate(e.target.value).catch(er=>status(er.message,"err"))};$("#templateName").oninput=e=>{state.name=e.target.value;markDirty()};
 $("#undoBtn").onclick=undo;$("#redoBtn").onclick=redo;$("#duplicateBtn").onclick=duplicateSelected;$("#exportSvgBtn").onclick=()=>exportSvg().catch(e=>status("SVG export failed: "+e.message,"err"));$("#exportPngBtn").onclick=()=>exportPng().catch(e=>status("PNG export failed: "+e.message,"err"));
 $("#uploadImageBtn").onclick=()=>$("#imageInput").click();$("#imageInput").onchange=e=>{const f=e.target.files?.[0];if(f)addUploadedImage(f).catch(er=>status(er.message,"err"));e.target.value=""};$("#siteAssetsBtn").onclick=openAssets;$("#assetClose").onclick=()=>$("#assetModal").classList.remove("open");$("#assetModal").onclick=e=>{if(e.target===$("#assetModal"))$("#assetModal").classList.remove("open")};$("#assetSearch").oninput=()=>{try{renderAssetGrid(JSON.parse($("#assetGrid").dataset.items||"[]"))}catch{}};
 window.addEventListener("keydown",e=>{const tag=document.activeElement?.tagName;if(["INPUT","TEXTAREA","SELECT"].includes(tag))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){e.preventDefault();redo();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();duplicateSelected();return}if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeSelected();return}const el=selected();if(!el||el.locked)return;const map={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};if(map[e.key]){e.preventDefault();pushHistory();const m=e.shiftKey?10:1;el.x+=map[e.key][0]*m;el.y+=map[e.key][1]*m;markDirty();renderAll()}});
@@ -301,7 +382,7 @@ $("#dateSelect").onchange=()=>loadCopy($("#dateSelect").value).catch(e=>$("#copy
 
 // Start: recover browser draft only when meaningful, then load server templates.
 (function init(){
-  try{const d=JSON.parse(localStorage.getItem("ndwiffle_graphics_draft")||"null");if(d?.document?.elements?.length){state.name=d.name||"Recovered Draft";loadDoc(d.document);state.dirty=true;status("Recovered an unsaved browser draft.")}else renderAll()}catch{renderAll()}
+  try{const d=JSON.parse(localStorage.getItem("ndwiffle_graphics_draft")||"null");if(d?.document?.elements?.length){state.name=d.name||"Recovered Draft";loadDoc(d.document);state.dirty=true;status("Recovered an unsaved browser draft.")}else newTemplate()}catch{newTemplate()}
   loadTemplates();
 })();
 </script>

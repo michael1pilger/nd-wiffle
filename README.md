@@ -496,3 +496,11 @@ The current static historical database is treated as the authoritative 2021–20
 - Adds reusable `{{VARIABLE}}` text tokens for player name, number, and four stat value/label pairs.
 - Adds D1-backed template persistence through `migrations/0026_graphic_templates.sql` and `/api/admin/graphic-templates`.
 - Adds Graphics Studio directly to the Admin Dashboard and keeps it accessible as step 4 of Series Hub.
+
+## v104: Sharkey default + team color presets
+- Graphics Studio now opens with an editable player-stat-card default modeled on the supplied Sharkey reference: gray background, large white jersey panel, player name, outlined jersey number, and four circular stat blocks.
+- The default uses reference colors sampled from the supplied image: blue `#26477F`, red `#D13A4F`, white, and gray `#E6E6E6`.
+- Added logo-based color presets for all 10 league teams. Applying a preset recolors only layers linked to theme roles, so manual/custom colors can remain fixed.
+- Added editable Ballfield, Running Shoe, and Jersey Panel vector elements used by the default design.
+- `New Default` restores the Sharkey-style template; `Blank` still starts from an empty 1080×1080 canvas.
+- No new D1 migration is required beyond `0026_graphic_templates.sql` from v103.

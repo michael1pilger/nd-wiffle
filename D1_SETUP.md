@@ -140,3 +140,6 @@ Repeat once per captain. `/captains/*` should remain protected by Cloudflare Acc
 
 ## Graphics Studio (v103)
 Run `migrations/0026_graphic_templates.sql` on the production D1 database. This creates the reusable commissioner template store used by `/admin/social-graphics/`. The page remains protected by the existing `/admin/*` and `/api/admin/*` Cloudflare Access policies.
+
+## Graphics Studio (v104)
+No additional D1 schema change is required. v104 reuses `graphic_templates` from migration `0026_graphic_templates.sql`; the update is client-side editor/template functionality only.
