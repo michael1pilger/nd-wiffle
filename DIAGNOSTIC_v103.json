@@ -1,0 +1,11 @@
+{
+  "build": "v103",
+  "graphics_studio": "PASS",
+  "template_editor": "SVG-based, 1080x1080",
+  "template_persistence": "D1 via /api/admin/graphic-templates",
+  "migration": "0026_graphic_templates.sql",
+  "statlists_copy_center_preserved": true,
+  "admin_dashboard_link": true,
+  "exports": ["PNG", "SVG"],
+  "syntax": "PASS"
+}

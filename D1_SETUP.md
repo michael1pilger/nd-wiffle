@@ -136,3 +136,7 @@ ON CONFLICT(season,email) DO UPDATE SET team_id=excluded.team_id, display_name=e
 ```
 
 Repeat once per captain. `/captains/*` should remain protected by Cloudflare Access. The captain portal reads the authenticated Access email and only exposes the team mapped to that email. Commissioner scheduling remains under `/admin/*` and reads submitted availability from D1.
+
+
+## Graphics Studio (v103)
+Run `migrations/0026_graphic_templates.sql` on the production D1 database. This creates the reusable commissioner template store used by `/admin/social-graphics/`. The page remains protected by the existing `/admin/*` and `/api/admin/*` Cloudflare Access policies.

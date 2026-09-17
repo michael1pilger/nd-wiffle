@@ -487,3 +487,12 @@ The current static historical database is treated as the authoritative 2021–20
 ## v86
 - Added sortable career team stat board to /teams/.
 - Added migrations/0023_roster_and_status_updates.sql for requested 2026 roster/status corrections.
+
+
+## v103: commissioner Graphics Studio
+- Replaces the old Social Graphics copy-only page with a full 1080×1080 SVG-based template editor while retaining the Stat Lists Copy Center as a second tab.
+- Adds editable text, rectangles, circles, lines, jersey/wiffle/baseball/bat/home-plate/trophy vector elements, arbitrary hex colors, image uploads, current team logos, and available player headshots.
+- Adds drag/resize, numeric position and sizing controls, layer ordering, lock/hide controls, opacity, rotation, stroke/fill, typography controls, undo/redo, keyboard nudging, duplication, and export to PNG or SVG.
+- Adds reusable `{{VARIABLE}}` text tokens for player name, number, and four stat value/label pairs.
+- Adds D1-backed template persistence through `migrations/0026_graphic_templates.sql` and `/api/admin/graphic-templates`.
+- Adds Graphics Studio directly to the Admin Dashboard and keeps it accessible as step 4 of Series Hub.

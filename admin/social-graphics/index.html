@@ -3,179 +3,307 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Social Graphics | ND Wiffle</title>
+<title>Social Graphics Studio | ND Wiffle</title>
 <link rel="stylesheet" href="/assets/styles.css?v=81">
 <style>
-.sg{padding:24px 0 50px}
-.sg-head{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}
-.sg-head h1{margin:4px 0 5px;font-size:34px}
-.sg-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
-.sg-controls label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:900;margin-bottom:5px}
-.sg-controls select{min-width:160px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:9px 10px;font-weight:800}
-.sg-section{margin-top:18px;border:1px solid var(--border);border-radius:15px;background:#0b1525;padding:14px}
-.sg-section h2{margin:0 0 4px;font-size:18px}
-.sg-section .hint{font-size:10px;color:var(--muted);margin-bottom:12px}
-.sg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.sg-field{border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#08111f;padding:10px}
-.sg-field.wide{grid-column:1/-1}
-.sg-field-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:7px}
-.sg-field-head strong{font-size:10px;text-transform:uppercase;letter-spacing:.06em}
-.copy-btn{border:1px solid var(--border);border-radius:8px;background:#13213a;color:#fff;font-size:9px;font-weight:900;padding:6px 8px;cursor:pointer}
-.copy-btn.ok{border-color:#58b680;color:#87e0aa}
-.sg-field textarea,.sg-field input{width:100%;box-sizing:border-box;background:#050b13;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px;font:700 11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;resize:vertical}
-.sg-field textarea{min-height:118px}
-.sg-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:10px}
-.person{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#091424;padding:7px;text-align:center;min-width:0}
-.person img{width:58px;height:58px;object-fit:contain;margin:auto;display:block}
-.person strong{display:block;font-size:9px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.person small{font-size:8px;color:var(--muted)}
-.empty{padding:24px;text-align:center;color:var(--muted)}
-@media(max-width:760px){.sg-grid{grid-template-columns:1fr}.sg-field.wide{grid-column:auto}.sg-preview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+:root{--sg-bg:#07101c;--sg-panel:#0b1626;--sg-panel2:#0e1b2e;--sg-line:#26364a;--sg-text:#f4f7fb;--sg-muted:#98a8bd;--sg-gold:#d7ad48;--sg-blue:#28508a}
+*{box-sizing:border-box}
+body{background:#060d17;color:var(--sg-text)}
+.sg-page{padding:18px 0 45px}.sg-shell{max-width:1600px;margin:auto;padding:0 18px}
+.sg-top{display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
+.sg-top h1{font-size:30px;margin:3px 0 2px}.sg-top .muted{font-size:11px}
+.sg-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}.sg-tab{border:1px solid var(--sg-line);background:#0a1524;color:#cbd5e3;border-radius:9px;padding:8px 12px;font-weight:900;font-size:11px;cursor:pointer}.sg-tab.active{background:var(--sg-gold);border-color:var(--sg-gold);color:#08111d}
+.sg-view{display:none}.sg-view.active{display:block}
+.studio-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-panel);padding:9px;margin-bottom:10px}
+.studio-toolbar .spacer{flex:1}.studio-toolbar button,.studio-toolbar select,.studio-toolbar input{background:#0a1422;color:#fff;border:1px solid var(--sg-line);border-radius:8px;padding:7px 9px;font:800 10px/1.2 inherit}.studio-toolbar button{cursor:pointer}.studio-toolbar button:hover{border-color:#59718f}.studio-toolbar button.primary{background:var(--sg-gold);border-color:var(--sg-gold);color:#07101c}.studio-toolbar button.danger{color:#ff9ca7}.studio-toolbar select{min-width:180px}.template-name{width:185px}
+.studio-grid{display:grid;grid-template-columns:240px minmax(520px,1fr) 300px;gap:10px;align-items:start}
+.panel{border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-panel);overflow:hidden}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid var(--sg-line);padding:10px 11px}.panel-head h2{font-size:12px;margin:0}.panel-body{padding:10px}.panel-sub{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--sg-muted);font-weight:950;margin:13px 0 7px}.panel-sub:first-child{margin-top:0}
+.tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.tool-btn{background:#091422;color:#fff;border:1px solid var(--sg-line);border-radius:9px;padding:9px 6px;font:850 10px/1.2 inherit;cursor:pointer;text-align:center}.tool-btn:hover{border-color:var(--sg-gold)}.tool-btn .ico{display:block;font-size:19px;line-height:1;margin-bottom:5px}
+.field{margin-bottom:8px}.field label{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--sg-muted);font-weight:950;margin-bottom:4px}.field input,.field select,.field textarea{width:100%;background:#07111e;color:#fff;border:1px solid var(--sg-line);border-radius:8px;padding:7px 8px;font:750 10px/1.35 inherit}.field textarea{min-height:70px;resize:vertical}.field input[type=color]{height:34px;padding:3px}.field input[type=range]{padding:0}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.frow4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.check{display:flex;align-items:center;gap:7px;font-size:10px;color:#c8d3e1}.check input{accent-color:var(--sg-gold)}
+.artboard-panel{background:#050a11;border:1px solid var(--sg-line);border-radius:12px;min-height:720px;position:relative;overflow:hidden}.artboard-top{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--sg-line);background:#091321;font-size:9px;color:var(--sg-muted)}
+.artboard-wrap{height:690px;display:flex;align-items:center;justify-content:center;padding:22px;overflow:auto;background-color:#050a11;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:20px 20px}
+#artboard{width:min(68vw,660px);height:auto;aspect-ratio:1/1;display:block;background:#ddd;box-shadow:0 16px 55px rgba(0,0,0,.48);touch-action:none;user-select:none}.sel-box{fill:none;stroke:#38a8ff;stroke-width:3;stroke-dasharray:10 7;pointer-events:none}.handle{fill:#fff;stroke:#1689dd;stroke-width:3;cursor:nwse-resize}.handle.ne,.handle.sw{cursor:nesw-resize}.element-hit{cursor:move}.element-hit.locked{cursor:not-allowed}
+.layers{max-height:250px;overflow:auto;border:1px solid var(--sg-line);border-radius:8px}.layer{display:grid;grid-template-columns:1fr auto;gap:5px;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);padding:6px}.layer:last-child{border-bottom:0}.layer.active{background:#14243a}.layer-main{min-width:0;cursor:pointer}.layer-name{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.layer-meta{font-size:8px;color:var(--sg-muted)}.layer-actions{display:flex;gap:3px}.mini{border:1px solid var(--sg-line);background:#07111e;color:#cbd5e3;border-radius:6px;padding:4px 5px;font-size:8px;cursor:pointer}.mini:hover{border-color:#5d7695}
+.palette{display:flex;flex-wrap:wrap;gap:5px}.swatch{width:25px;height:25px;border-radius:6px;border:2px solid rgba(255,255,255,.2);cursor:pointer}.swatch:hover{transform:scale(1.06)}
+.quick-tokens{display:flex;flex-wrap:wrap;gap:4px}.token-btn{border:1px solid var(--sg-line);background:#081321;color:#cbd5e3;border-radius:999px;padding:4px 6px;font-size:8px;cursor:pointer}.token-btn:hover{border-color:var(--sg-gold)}
+.vars{display:grid;grid-template-columns:1fr;gap:5px}.var-row{display:grid;grid-template-columns:90px 1fr;gap:5px;align-items:center}.var-row label{font-size:8px;color:var(--sg-muted);overflow:hidden;text-overflow:ellipsis}.var-row input{background:#07111e;color:#fff;border:1px solid var(--sg-line);border-radius:7px;padding:6px;font-size:9px;width:100%}
+.statusline{font-size:9px;color:var(--sg-muted);min-height:14px}.statusline.ok{color:#7ed69f}.statusline.err{color:#ff8c98}
+.asset-modal{position:fixed;inset:0;background:rgba(2,6,12,.78);z-index:100;display:none;align-items:center;justify-content:center;padding:18px}.asset-modal.open{display:flex}.asset-box{width:min(850px,96vw);max-height:82vh;overflow:auto;border:1px solid var(--sg-line);border-radius:14px;background:#0a1422;padding:13px}.asset-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.asset-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}.asset{border:1px solid var(--sg-line);border-radius:10px;background:#07111d;padding:8px;text-align:center;cursor:pointer}.asset:hover{border-color:var(--sg-gold)}.asset img{width:70px;height:70px;object-fit:contain}.asset strong{display:block;font-size:8px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.copy-section{margin-top:12px;border:1px solid var(--sg-line);border-radius:13px;background:var(--sg-panel);padding:13px}.copy-section h2{margin:0 0 3px;font-size:17px}.copy-hint{font-size:9px;color:var(--sg-muted);margin-bottom:10px}.copy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.copy-field{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#07111e;padding:9px}.copy-field.wide{grid-column:1/-1}.copy-field-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.copy-field-head strong{font-size:9px;text-transform:uppercase;letter-spacing:.05em}.copy-field textarea,.copy-field input{width:100%;background:#040a12;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:8px;font:700 10px/1.45 ui-monospace,monospace}.copy-field textarea{min-height:100px;resize:vertical}.copy-btn{border:1px solid var(--sg-line);border-radius:7px;background:#122039;color:#fff;font-size:8px;font-weight:900;padding:5px 7px;cursor:pointer}.copy-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px}.person{border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#081321;padding:6px;text-align:center}.person img{width:55px;height:55px;object-fit:contain}.person strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.person small{font-size:7px;color:var(--sg-muted)}
+@media(max-width:1180px){.studio-grid{grid-template-columns:210px minmax(480px,1fr)}.studio-grid>.panel.right{grid-column:1/-1}.right .panel-body{display:grid;grid-template-columns:1fr 1fr;gap:14px}.artboard-wrap{height:640px}}
+@media(max-width:800px){.studio-grid{grid-template-columns:1fr}.artboard-panel{min-height:0}.artboard-wrap{height:auto;min-height:500px;padding:12px}#artboard{width:min(92vw,620px)}.right .panel-body{display:block}.asset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.copy-grid{grid-template-columns:1fr}.copy-field.wide{grid-column:auto}.copy-preview{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
-<main class="sg">
-<div class="container">
-  <div class="sg-head">
-    <div>
-      <div class="eyebrow">Series Hub · Social Graphics · BUILD v93</div>
-      <h1>Stat Lists Copy Center</h1>
-      <div class="muted">Pick a played date, then copy each complete column directly into Stat Lists.</div>
-    </div>
-    <div class="sg-controls">
-      <div><label>Series Date</label><select id="dateSelect"></select></div>
-    </div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a class="active" href="/admin/social-graphics/">Graphics Studio</a></div></div></div>
+<main class="sg-page"><div class="sg-shell">
+  <div class="sg-top">
+    <div><div class="eyebrow">Commissioner Tools · Social Graphics · BUILD v103</div><h1>Graphics Studio</h1><div class="muted">Build reusable 1080×1080 templates with editable text, shapes, colors, icons, logos, and headshots.</div></div>
+    <div id="studioStatus" class="statusline">Ready.</div>
   </div>
+  <div class="sg-tabs"><button class="sg-tab active" data-view="builder">Template Builder</button><button class="sg-tab" data-view="copy">Stat Lists Copy Center</button></div>
 
-  <div id="status" class="muted" style="margin-top:10px">Loading...</div>
+  <section class="sg-view active" id="view-builder">
+    <div class="studio-toolbar">
+      <select id="templateSelect"><option value="">New / unsaved template</option></select>
+      <input class="template-name" id="templateName" value="Untitled Template" aria-label="Template name">
+      <button id="newBtn">New</button><button class="primary" id="saveBtn">Save</button><button id="saveAsBtn">Save As</button><button class="danger" id="deleteTemplateBtn">Delete</button>
+      <div class="spacer"></div>
+      <button id="undoBtn" title="Undo (Ctrl+Z)">↶ Undo</button><button id="redoBtn" title="Redo (Ctrl+Y)">↷ Redo</button>
+      <button id="exportSvgBtn">SVG</button><button class="primary" id="exportPngBtn">Download PNG</button>
+    </div>
 
-  <section class="sg-section">
-    <h2>Batting Leaders</h2>
-    <div class="hint">Top 5 batters on the selected date by batting fantasy points.</div>
-    <div class="sg-grid" id="batGrid"></div>
-    <div class="sg-preview" id="batPreview"></div>
+    <div class="studio-grid">
+      <aside class="panel">
+        <div class="panel-head"><h2>Add Elements</h2></div>
+        <div class="panel-body">
+          <div class="tool-grid">
+            <button class="tool-btn" data-add="text"><span class="ico">T</span>Text</button>
+            <button class="tool-btn" data-add="rect"><span class="ico">▭</span>Rectangle</button>
+            <button class="tool-btn" data-add="circle"><span class="ico">○</span>Circle</button>
+            <button class="tool-btn" data-add="line"><span class="ico">╱</span>Line</button>
+            <button class="tool-btn" data-add="jersey"><span class="ico">♙</span>Jersey</button>
+            <button class="tool-btn" data-add="wiffle"><span class="ico">◉</span>Wiffle Ball</button>
+            <button class="tool-btn" data-add="baseball"><span class="ico">⚾</span>Baseball</button>
+            <button class="tool-btn" data-add="batball"><span class="ico">⌁</span>Bat + Ball</button>
+            <button class="tool-btn" data-add="plate"><span class="ico">⌂</span>Home Plate</button>
+            <button class="tool-btn" data-add="trophy"><span class="ico">♜</span>Trophy</button>
+          </div>
+          <div class="panel-sub">Images</div>
+          <div class="tool-grid">
+            <button class="tool-btn" id="siteAssetsBtn"><span class="ico">★</span>League Assets</button>
+            <button class="tool-btn" id="uploadImageBtn"><span class="ico">↑</span>Upload Image</button>
+          </div>
+          <input type="file" id="imageInput" accept="image/*" hidden>
+          <div class="panel-sub">Canvas</div>
+          <div class="frow">
+            <div class="field"><label>Background</label><input type="color" id="canvasColor" value="#e6e6e6"></div>
+            <div class="field"><label>Hex</label><input id="canvasHex" value="#e6e6e6"></div>
+          </div>
+          <label class="check"><input type="checkbox" id="snapToggle" checked> Snap movement to 5 px</label>
+          <label class="check" style="margin-top:6px"><input type="checkbox" id="gridToggle" checked> Show editor grid</label>
+          <div class="panel-sub">Common Colors</div>
+          <div class="palette" id="palette"></div>
+          <div class="panel-sub">Template Variables</div>
+          <div class="vars" id="varsPanel"></div>
+        </div>
+      </aside>
+
+      <section class="artboard-panel">
+        <div class="artboard-top"><span>1080 × 1080 artboard · drag elements directly · arrow keys nudge · Delete removes</span><span id="selectionReadout">Nothing selected</span></div>
+        <div class="artboard-wrap" id="artboardWrap">
+          <svg id="artboard" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Graphics editor artboard"></svg>
+        </div>
+      </section>
+
+      <aside class="panel right">
+        <div class="panel-head"><h2>Properties & Layers</h2><button class="mini" id="duplicateBtn">Duplicate</button></div>
+        <div class="panel-body">
+          <div>
+            <div id="noSelection" class="statusline">Select an element to edit it.</div>
+            <div id="properties" hidden></div>
+          </div>
+          <div>
+            <div class="panel-sub">Layers</div>
+            <div class="layers" id="layers"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
   </section>
 
-  <section class="sg-section">
-    <h2>Pitching Leaders</h2>
-    <div class="hint">Top 5 pitchers on the selected date by pitching fantasy points.</div>
-    <div class="sg-grid" id="pitGrid"></div>
-    <div class="sg-preview" id="pitPreview"></div>
+  <section class="sg-view" id="view-copy">
+    <div class="studio-toolbar"><div><label style="font-size:8px;color:var(--sg-muted);text-transform:uppercase;font-weight:900">Series Date</label><select id="dateSelect"></select></div><span id="copyStatus" class="statusline">Loading…</span></div>
+    <section class="copy-section"><h2>Batting Leaders</h2><div class="copy-hint">Top 5 batters on the selected date by batting fantasy points.</div><div class="copy-grid" id="batGrid"></div><div class="copy-preview" id="batPreview"></div></section>
+    <section class="copy-section"><h2>Pitching Leaders</h2><div class="copy-hint">Top 5 pitchers on the selected date by pitching fantasy points.</div><div class="copy-grid" id="pitGrid"></div><div class="copy-preview" id="pitPreview"></div></section>
+    <section class="copy-section"><h2>Series Recap</h2><div class="copy-hint">Every game played on the selected date. Pitcher records reflect the record immediately after that game.</div><div class="copy-grid" id="recapGrid"></div></section>
   </section>
+</div></main>
 
-  <section class="sg-section">
-    <h2>Series Recap</h2>
-    <div class="hint">Every game played on the selected date. Pitcher records reflect the record immediately after that game. Saves are omitted.</div>
-    <div class="sg-grid" id="recapGrid"></div>
-  </section>
-</div>
-</main>
+<div class="asset-modal" id="assetModal"><div class="asset-box"><div class="asset-head"><div><strong>League Assets</strong><div class="statusline">Team logos and available player headshots</div></div><button class="mini" id="assetClose">Close</button></div><div class="field"><input id="assetSearch" placeholder="Search player or team..."></div><div class="asset-grid" id="assetGrid"></div></div></div>
+
 <script>
-let DATA=null,HEADSHOTS={};
-
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const lines=a=>(a||[]).join("\n");
+const uid=()=>"el_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const num=(v,d=0)=>Number.isFinite(Number(v))?Number(v):d;
+const deep=x=>JSON.parse(JSON.stringify(x));
 
-function field(label,value,multiline=true,wide=false){
-  const id="f_"+Math.random().toString(36).slice(2);
-  return `<div class="sg-field ${wide?"wide":""}">
-    <div class="sg-field-head"><strong>${esc(label)}</strong><button class="copy-btn" data-copy="${id}">Copy</button></div>
-    ${multiline?`<textarea id="${id}" readonly>${esc(value)}</textarea>`:`<input id="${id}" value="${esc(value)}" readonly>`}
-  </div>`;
+const ICONS={
+  jersey:`<path d="M18 14 34 5c8 8 24 8 32 0l16 9 15 25-17 10v46H20V49L3 39z"/><path d="M34 5c3 13 29 13 32 0" fill="none"/>`,
+  wiffle:`<circle cx="50" cy="50" r="43"/><g fill="currentColor" stroke="none"><ellipse cx="35" cy="26" rx="5" ry="10"/><ellipse cx="50" cy="22" rx="5" ry="10"/><ellipse cx="64" cy="27" rx="5" ry="10"/><ellipse cx="27" cy="39" rx="5" ry="10" transform="rotate(-22 27 39)"/><ellipse cx="73" cy="39" rx="5" ry="10" transform="rotate(22 73 39)"/></g>`,
+  baseball:`<circle cx="50" cy="50" r="43"/><path d="M28 15c7 8 10 18 9 29s-5 22-13 31M72 15c-7 8-10 18-9 29s5 22 13 31" fill="none"/><path d="m31 28 8 3m-10 8 8 2m-9 10 8 0m33-23-8 3m10 8-8 2m9 10-8 0" fill="none"/>`,
+  plate:`<path d="M14 18h72v42L50 91 14 60z"/><path d="M24 28h52v26L50 77 24 54z" fill="none"/>`,
+  trophy:`<path d="M30 12h40v18c0 18-8 29-20 34-12-5-20-16-20-34z"/><path d="M30 20H15c0 18 8 27 22 28M70 20h15c0 18-8 27-22 28M50 64v13M35 87h30M40 77h20" fill="none"/>`,
+  batball:`<path d="M18 82 63 29c5-6 14-7 19-1 5 5 4 14-2 19L29 89c-5 4-15-2-11-7z"/><path d="M19 76 31 88M24 69l13 13M30 63l13 12" fill="none"/><circle cx="72" cy="72" r="15"/><path d="M65 60c5 4 6 8 4 13s-1 9 4 13M79 61c-4 4-5 8-3 12s1 8-3 13" fill="none"/>`
+};
+
+const DEFAULT_VARS={PLAYER_NAME:"PLAYER NAME",NUMBER:"12",STAT1_VALUE:"6/6",STAT1_LABEL:"H/AB",STAT2_VALUE:"3",STAT2_LABEL:"HOME RUNS",STAT3_VALUE:"10",STAT3_LABEL:"RBIs",STAT4_VALUE:"2",STAT4_LABEL:"STOLEN BASES"};
+const state={templateId:null,name:"Untitled Template",canvas:{width:1080,height:1080,background:"#e6e6e6"},elements:[],variables:deep(DEFAULT_VARS),selected:null,snap:true,history:[],future:[],dirty:false};
+let drag=null, templateList=[], headshots={}, rosterData=null, copyData=null;
+
+function baseDoc(){return {version:1,canvas:deep(state.canvas),elements:deep(state.elements),variables:deep(state.variables)}}
+function loadDoc(doc){
+  state.canvas={width:num(doc?.canvas?.width,1080),height:num(doc?.canvas?.height,1080),background:doc?.canvas?.background||"#e6e6e6"};
+  state.elements=Array.isArray(doc?.elements)?deep(doc.elements):[];
+  state.variables={...DEFAULT_VARS,...(doc?.variables||{})}; state.selected=null; state.history=[]; state.future=[]; state.dirty=false;
+  syncControls(); renderAll();
 }
+function snapshot(){return JSON.stringify(baseDoc())}
+function restore(s){const d=JSON.parse(s);state.canvas=d.canvas;state.elements=d.elements;state.variables=d.variables||deep(DEFAULT_VARS);state.selected=null;syncControls();renderAll()}
+function pushHistory(){const s=snapshot();if(state.history[state.history.length-1]!==s)state.history.push(s);if(state.history.length>80)state.history.shift();state.future=[]}
+function undo(){if(!state.history.length)return;state.future.push(snapshot());restore(state.history.pop());markDirty(true)}
+function redo(){if(!state.future.length)return;state.history.push(snapshot());restore(state.future.pop());markDirty(true)}
+function markDirty(v=true){state.dirty=v;const el=$("#studioStatus");el.textContent=v?"Unsaved changes":"Saved";el.className="statusline "+(v?"":"ok");try{localStorage.setItem("ndwiffle_graphics_draft",JSON.stringify({name:state.name,document:baseDoc()}))}catch{}}
+function status(msg,kind=""){const el=$("#studioStatus");el.textContent=msg;el.className="statusline "+kind}
 
-function headshotUrl(playerId){
-  const path=HEADSHOTS[playerId];
-  return path?`${location.origin}${path}`:"";
+function tokenText(s){return String(s??"").replace(/\{\{\s*([A-Z0-9_]+)\s*\}\}/g,(_,k)=>state.variables[k]??`{{${k}}}`)}
+function elementName(e){if(e.name)return e.name;if(e.type==="text")return (e.content||"Text").slice(0,24);if(e.type==="icon")return e.icon.replace(/^./,c=>c.toUpperCase());return e.type.replace(/^./,c=>c.toUpperCase())}
+function selected(){return state.elements.find(e=>e.id===state.selected)||null}
+function defaultElement(type){
+  const common={id:uid(),name:"",x:340,y:340,w:400,h:180,rotation:0,opacity:1,fill:"#28508a",stroke:"#28508a",strokeWidth:0,locked:false,hidden:false,includeInExport:true};
+  if(type==="text")return {...common,x:290,y:120,w:500,h:100,content:"DOUBLE CLICK / EDIT TEXT",fill:"#28508a",stroke:"#000000",strokeWidth:0,fontFamily:"Impact",fontSize:70,fontWeight:700,fontStyle:"normal",textAlign:"center",letterSpacing:2};
+  if(type==="rect")return {...common,x:290,y:300,w:500,h:260,fill:"#ffffff",stroke:"#28508a",strokeWidth:4,radius:0};
+  if(type==="circle")return {...common,x:390,y:390,w:300,h:300,fill:"#ffffff",stroke:"#28508a",strokeWidth:8};
+  if(type==="line")return {...common,x:250,y:520,w:580,h:2,fill:"none",stroke:"#28508a",strokeWidth:8};
+  if(["jersey","wiffle","baseball","batball","plate","trophy"].includes(type))return {...common,type:"icon",icon:type,x:365,y:330,w:350,h:350,fill:type==="jersey"?"#ffffff":"none",stroke:"#28508a",strokeWidth:type==="jersey"?0:5};
+  return common;
 }
+function addElement(type,custom={}){pushHistory();const e={...defaultElement(type),...custom,id:custom.id||uid()};state.elements.push(e);state.selected=e.id;markDirty();renderAll()}
+function removeSelected(){if(!selected())return;pushHistory();state.elements=state.elements.filter(e=>e.id!==state.selected);state.selected=null;markDirty();renderAll()}
+function duplicateSelected(){const e=selected();if(!e)return;pushHistory();const c={...deep(e),id:uid(),x:e.x+25,y:e.y+25,name:e.name?e.name+" copy":""};state.elements.push(c);state.selected=c.id;markDirty();renderAll()}
 
-function renderLeaders(type,rows){
-  const label=type==="bat"?"Batting":"Pitching";
-  const grid=document.getElementById(type==="bat"?"batGrid":"pitGrid");
-  const title=`${label} Leaders - ${DATA.date_label}`;
-  const teams=lines(rows.map(x=>x.team));
-  const names=lines(rows.map(x=>x.name));
-  const stats=lines(rows.map(x=>x.stats));
-  const imgs=lines(rows.map(x=>headshotUrl(x.player_id)));
-  const points=lines(rows.map(x=>String(x.points)));
-  const ranks=lines(rows.map(()=> ""));
-  grid.innerHTML=
-    field("Title",title,false,true)+
-    field("Teams",teams)+
-    field("Names",names)+
-    field("Stats",stats)+
-    field("Player ID/Image URL",imgs)+
-    field("Ranks",ranks)+
-    field("Points",points);
-
-  const prev=document.getElementById(type==="bat"?"batPreview":"pitPreview");
-  prev.innerHTML=rows.map(r=>{
-    const u=headshotUrl(r.player_id);
-    return `<div class="person">${u?`<img src="${esc(u)}" alt="">`:""}<strong>${esc(r.name)}</strong><small>${esc(r.team)} · ${r.points} pts</small></div>`;
-  }).join("")||'<div class="empty">No leaders for this date.</div>';
+function renderIcon(e){
+  const body=ICONS[e.icon]||ICONS.baseball;
+  return `<svg x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" viewBox="0 0 100 100" overflow="visible" style="color:${esc(e.stroke||e.fill)}" fill="${esc(e.fill||"none")}" stroke="${esc(e.stroke||"none")}" stroke-width="${num(e.strokeWidth,0)}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke">${body}</svg>`;
 }
-
-function renderRecap(){
-  const games=DATA.recap?.games||[];
-  const teams=[],scores=[],extra=[];
-  for(const g of games){
-    teams.push(g.away_team,g.home_team);
-    scores.push(String(g.away_score),String(g.home_score));
-    extra.push(g.decision);
-  }
-  recapGrid.innerHTML=
-    field("Title",`${DATA.date_label} Series Recap(s)`,false,true)+
-    field("Teams",lines(teams))+
-    field("Scores",lines(scores))+
-    field("Extra Info",lines(extra))+
-    field("Ranks",lines(games.map(()=> "")));
+function renderElement(e){
+  if(e.hidden)return "";
+  const cx=e.x+e.w/2,cy=e.y+e.h/2,tr=`rotate(${num(e.rotation)} ${cx} ${cy})`,op=clamp(num(e.opacity,1),0,1);
+  let body="";
+  if(e.type==="text"){
+    const lines=tokenText(e.content).split("\n");
+    const x=e.textAlign==="left"?e.x:e.textAlign==="right"?e.x+e.w:e.x+e.w/2;
+    const anchor=e.textAlign==="left"?"start":e.textAlign==="right"?"end":"middle";
+    const lineH=num(e.fontSize,60)*1.05, start=e.y+(e.h-(lines.length-1)*lineH)/2;
+    body=`<text x="${x}" y="${start}" fill="${esc(e.fill)}" stroke="${num(e.strokeWidth)>0?esc(e.stroke):"none"}" stroke-width="${num(e.strokeWidth)}" paint-order="stroke" font-family="${esc(e.fontFamily||"Impact")}" font-size="${num(e.fontSize,60)}" font-weight="${num(e.fontWeight,700)}" font-style="${esc(e.fontStyle||"normal")}" letter-spacing="${num(e.letterSpacing,0)}" text-anchor="${anchor}" dominant-baseline="middle">${lines.map((line,i)=>`<tspan x="${x}" dy="${i?lineH:0}">${esc(line)}</tspan>`).join("")}</text>`;
+  }else if(e.type==="rect")body=`<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" rx="${num(e.radius,0)}" fill="${esc(e.fill)}" stroke="${esc(e.stroke)}" stroke-width="${num(e.strokeWidth)}"/>`;
+  else if(e.type==="circle")body=`<ellipse cx="${cx}" cy="${cy}" rx="${e.w/2}" ry="${e.h/2}" fill="${esc(e.fill)}" stroke="${esc(e.stroke)}" stroke-width="${num(e.strokeWidth)}"/>`;
+  else if(e.type==="line")body=`<line x1="${e.x}" y1="${e.y+e.h/2}" x2="${e.x+e.w}" y2="${e.y+e.h/2}" stroke="${esc(e.stroke)}" stroke-width="${num(e.strokeWidth)}" stroke-linecap="round"/>`;
+  else if(e.type==="icon")body=renderIcon(e);
+  else if(e.type==="image")body=`<image href="${esc(e.src||"")}" x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}" preserveAspectRatio="${e.fit==="cover"?"xMidYMid slice":"xMidYMid meet"}"/>`;
+  return `<g data-id="${e.id}" class="element-hit ${e.locked?"locked":""}" opacity="${op}" transform="${tr}">${body}</g>`;
 }
-
-function bindCopy(){
-  document.querySelectorAll("[data-copy]").forEach(btn=>{
-    btn.onclick=async()=>{
-      const el=document.getElementById(btn.dataset.copy);
-      try{
-        await navigator.clipboard.writeText(el.value);
-        btn.textContent="Copied";
-        btn.classList.add("ok");
-        setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok")},1100);
-      }catch{
-        el.focus();el.select();document.execCommand("copy");
-      }
-    };
+function selectionMarkup(e){
+  if(!e||e.hidden)return "";const pts=[[e.x,e.y,"nw"],[e.x+e.w,e.y,"ne"],[e.x+e.w,e.y+e.h,"se"],[e.x,e.y+e.h,"sw"]];
+  return `<g id="selectionOverlay" transform="rotate(${num(e.rotation)} ${e.x+e.w/2} ${e.y+e.h/2})"><rect class="sel-box" x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}"/>${pts.map(([x,y,k])=>`<rect class="handle ${k}" data-handle="${k}" x="${x-9}" y="${y-9}" width="18" height="18" rx="3"/>`).join("")}</g>`;
+}
+function renderArtboard(exportMode=false){
+  const svg=$("#artboard");
+  const els=state.elements.filter(e=>!e.hidden && (!exportMode||e.includeInExport!==false));
+  svg.innerHTML=`<rect x="0" y="0" width="1080" height="1080" fill="${esc(state.canvas.background)}"/>${els.map(renderElement).join("")}${exportMode?"":selectionMarkup(selected())}`;
+  if(!exportMode)bindArtboardPointers();
+}
+function renderLayers(){
+  const box=$("#layers"); if(!state.elements.length){box.innerHTML='<div class="statusline" style="padding:10px">No elements yet.</div>';return}
+  box.innerHTML=[...state.elements].reverse().map(e=>`<div class="layer ${e.id===state.selected?"active":""}" data-layer="${e.id}"><div class="layer-main"><div class="layer-name">${esc(elementName(e))}</div><div class="layer-meta">${esc(e.type)} · ${Math.round(e.x)}, ${Math.round(e.y)}</div></div><div class="layer-actions"><button class="mini" data-act="hide" title="Show/hide">${e.hidden?"○":"●"}</button><button class="mini" data-act="lock" title="Lock">${e.locked?"🔒":"◇"}</button><button class="mini" data-act="up" title="Bring forward">↑</button><button class="mini" data-act="down" title="Send backward">↓</button></div></div>`).join("");
+  $$("[data-layer]").forEach(row=>{
+    row.querySelector(".layer-main").onclick=()=>{state.selected=row.dataset.layer;renderAll()};
+    row.querySelectorAll("[data-act]").forEach(b=>b.onclick=ev=>{ev.stopPropagation();const id=row.dataset.layer,e=state.elements.find(x=>x.id===id);if(!e)return;pushHistory();const a=b.dataset.act;
+      if(a==="hide")e.hidden=!e.hidden; if(a==="lock")e.locked=!e.locked;
+      if(a==="up"){const i=state.elements.indexOf(e);if(i<state.elements.length-1)[state.elements[i],state.elements[i+1]]=[state.elements[i+1],state.elements[i]]}
+      if(a==="down"){const i=state.elements.indexOf(e);if(i>0)[state.elements[i],state.elements[i-1]]=[state.elements[i-1],state.elements[i]]}
+      markDirty();renderAll();
+    });
   });
 }
-
-function render(){
-  renderLeaders("bat",DATA.batting||[]);
-  renderLeaders("pit",DATA.pitching||[]);
-  renderRecap();
-  bindCopy();
-  status.textContent=`Loaded ${DATA.date_label}: ${(DATA.recap?.games||[]).length} games.`;
+function colorField(label,key,value){return `<div class="field"><label>${label}</label><div class="frow"><input type="color" data-prop="${key}" value="${/^#[0-9a-f]{6}$/i.test(value||"")?value:"#000000"}"><input data-prop="${key}" value="${esc(value||"")}"></div></div>`}
+function renderProperties(){
+  const e=selected(),box=$("#properties"),none=$("#noSelection"); if(!e){box.hidden=true;none.hidden=false;$("#selectionReadout").textContent="Nothing selected";return} box.hidden=false;none.hidden=true;$("#selectionReadout").textContent=`${elementName(e)} · ${Math.round(e.w)}×${Math.round(e.h)}`;
+  const textSpecific=e.type==="text"?`<div class="field"><label>Text</label><textarea data-prop="content">${esc(e.content)}</textarea></div><div class="quick-tokens">${Object.keys(state.variables).map(k=>`<button class="token-btn" data-insert-token="${k}">{{${k}}}</button>`).join("")}</div><div class="panel-sub">Typography</div><div class="field"><label>Font</label><select data-prop="fontFamily">${["Impact","Arial Black","Arial","Trebuchet MS","Verdana","Georgia","Courier New"].map(f=>`<option ${e.fontFamily===f?"selected":""}>${f}</option>`).join("")}</select></div><div class="frow"><div class="field"><label>Font size</label><input type="number" data-prop="fontSize" value="${num(e.fontSize,60)}"></div><div class="field"><label>Weight</label><select data-prop="fontWeight">${[400,600,700,800,900].map(w=>`<option value="${w}" ${num(e.fontWeight)===w?"selected":""}>${w}</option>`).join("")}</select></div></div><div class="frow"><div class="field"><label>Align</label><select data-prop="textAlign"><option ${e.textAlign==="left"?"selected":""}>left</option><option ${e.textAlign==="center"?"selected":""}>center</option><option ${e.textAlign==="right"?"selected":""}>right</option></select></div><div class="field"><label>Letter spacing</label><input type="number" data-prop="letterSpacing" value="${num(e.letterSpacing)}"></div></div>`:"";
+  const radiusSpecific=e.type==="rect"?`<div class="field"><label>Corner radius</label><input type="number" data-prop="radius" value="${num(e.radius)}"></div>`:"";
+  const imageSpecific=e.type==="image"?`<div class="field"><label>Image fit</label><select data-prop="fit"><option value="contain" ${e.fit!=="cover"?"selected":""}>contain</option><option value="cover" ${e.fit==="cover"?"selected":""}>cover</option></select></div>`:"";
+  box.innerHTML=`<div class="field"><label>Layer name</label><input data-prop="name" value="${esc(e.name||"")}" placeholder="Optional"></div>${textSpecific}<div class="panel-sub">Position & Size</div><div class="frow4"><div class="field"><label>X</label><input type="number" data-prop="x" value="${Math.round(e.x)}"></div><div class="field"><label>Y</label><input type="number" data-prop="y" value="${Math.round(e.y)}"></div><div class="field"><label>W</label><input type="number" data-prop="w" value="${Math.round(e.w)}"></div><div class="field"><label>H</label><input type="number" data-prop="h" value="${Math.round(e.h)}"></div></div><div class="frow"><div class="field"><label>Rotation</label><input type="number" data-prop="rotation" value="${num(e.rotation)}"></div><div class="field"><label>Opacity</label><input type="number" min="0" max="1" step="0.05" data-prop="opacity" value="${num(e.opacity,1)}"></div></div><div class="panel-sub">Appearance</div>${e.type!=="image"&&e.type!=="line"?colorField("Fill","fill",e.fill):""}${e.type!=="image"?colorField("Stroke","stroke",e.stroke):""}${e.type!=="image"?`<div class="field"><label>Stroke width</label><input type="number" min="0" data-prop="strokeWidth" value="${num(e.strokeWidth)}"></div>`:""}${radiusSpecific}${imageSpecific}<label class="check"><input type="checkbox" data-bool="locked" ${e.locked?"checked":""}> Lock element</label><label class="check" style="margin-top:5px"><input type="checkbox" data-bool="includeInExport" ${e.includeInExport!==false?"checked":""}> Include in export</label><button class="tool-btn" id="deleteElementBtn" style="width:100%;margin-top:10px;color:#ff9ba7">Delete Element</button>`;
+  box.querySelectorAll("[data-prop]").forEach(inp=>{
+    inp.onfocus=()=>{inp.dataset.before=snapshot()};
+    inp.oninput=()=>{const e=selected();if(!e)return;const k=inp.dataset.prop;let v=inp.value;if(["x","y","w","h","rotation","opacity","fontSize","fontWeight","letterSpacing","strokeWidth","radius"].includes(k))v=num(v);e[k]=v;if(inp.type==="color"){const pair=[...box.querySelectorAll(`[data-prop="${k}"]`)];pair.forEach(x=>{if(x!==inp)x.value=v})}markDirty();renderArtboard();renderLayers();$("#selectionReadout").textContent=`${elementName(e)} · ${Math.round(e.w)}×${Math.round(e.h)}`};
+    inp.onchange=()=>{if(inp.dataset.before){const before=inp.dataset.before;if(state.history[state.history.length-1]!==before)state.history.push(before);state.future=[];delete inp.dataset.before}renderProperties()};
+  });
+  box.querySelectorAll("[data-bool]").forEach(inp=>inp.onchange=()=>{pushHistory();selected()[inp.dataset.bool]=inp.checked;markDirty();renderAll()});
+  box.querySelectorAll("[data-insert-token]").forEach(b=>b.onclick=()=>{const ta=box.querySelector('[data-prop="content"]');if(!ta)return;pushHistory();ta.value+=(ta.value?" ":"")+`{{${b.dataset.insertToken}}}`;selected().content=ta.value;markDirty();renderAll()});
+  $("#deleteElementBtn").onclick=removeSelected;
 }
+function renderVariables(){const p=$("#varsPanel");p.innerHTML=Object.keys(state.variables).map(k=>`<div class="var-row"><label title="${k}">${k}</label><input data-var="${k}" value="${esc(state.variables[k])}"></div>`).join("");p.querySelectorAll("[data-var]").forEach(i=>i.oninput=()=>{state.variables[i.dataset.var]=i.value;markDirty();renderArtboard()})}
+function renderAll(){renderArtboard();renderLayers();renderProperties();renderVariables();syncControls()}
+function syncControls(){$("#canvasColor").value=/^#[0-9a-f]{6}$/i.test(state.canvas.background)?state.canvas.background:"#e6e6e6";$("#canvasHex").value=state.canvas.background;$("#templateName").value=state.name;$("#snapToggle").checked=state.snap}
 
-async function load(date=""){
-  status.textContent="Loading...";
-  const q=new URLSearchParams({season:"2026"});
-  if(date)q.set("date",date);
-  const r=await fetch(`/api/admin/social-graphics?${q}`,{cache:"no-store"});
-  const j=await r.json();
-  if(!r.ok||!j.ok)throw new Error(j.error||"Could not load social graphics.");
-  DATA=j;
-  dateSelect.innerHTML=(j.available_dates||[]).map(d=>`<option value="${d}" ${d===j.date?"selected":""}>${d}</option>`).join("");
-  render();
+function svgPoint(evt){const svg=$("#artboard"),p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function bindArtboardPointers(){
+  $$("#artboard [data-id]").forEach(node=>node.onpointerdown=evt=>{evt.preventDefault();evt.stopPropagation();const e=state.elements.find(x=>x.id===node.dataset.id);state.selected=e.id;renderLayers();renderProperties();if(e.locked){renderArtboard();return}pushHistory();const p=svgPoint(evt);drag={mode:"move",id:e.id,start:p,x:e.x,y:e.y};node.setPointerCapture?.(evt.pointerId)});
+  $$("#artboard [data-handle]").forEach(h=>h.onpointerdown=evt=>{evt.preventDefault();evt.stopPropagation();const e=selected();if(!e||e.locked)return;pushHistory();const p=svgPoint(evt);drag={mode:"resize",id:e.id,handle:h.dataset.handle,start:p,x:e.x,y:e.y,w:e.w,h:e.h};h.setPointerCapture?.(evt.pointerId)});
+  $("#artboard").onpointerdown=evt=>{if(evt.target===$("#artboard")||evt.target.tagName==="rect"&&evt.target=== $("#artboard").firstElementChild){state.selected=null;renderAll()}};
 }
+window.addEventListener("pointermove",evt=>{if(!drag)return;const e=state.elements.find(x=>x.id===drag.id);if(!e)return;const p=svgPoint(evt),dx=p.x-drag.start.x,dy=p.y-drag.start.y,s=state.snap?5:1,round=v=>Math.round(v/s)*s;
+  if(drag.mode==="move"){e.x=round(clamp(drag.x+dx,-e.w+10,1070));e.y=round(clamp(drag.y+dy,-e.h+10,1070))}
+  else{let x=drag.x,y=drag.y,w=drag.w,h=drag.h;if(drag.handle.includes("e"))w=Math.max(10,drag.w+dx);if(drag.handle.includes("s"))h=Math.max(10,drag.h+dy);if(drag.handle.includes("w")){x=drag.x+dx;w=Math.max(10,drag.w-dx)}if(drag.handle.includes("n")){y=drag.y+dy;h=Math.max(10,drag.h-dy)}e.x=round(x);e.y=round(y);e.w=round(w);e.h=round(h)}
+  markDirty();renderArtboard();renderLayers();renderProperties();
+});
+window.addEventListener("pointerup",()=>{if(drag){drag=null;renderAll()}});
 
-dateSelect.onchange=()=>load(dateSelect.value).catch(e=>status.textContent=e.message);
+function serializeForExport(){const current=state.selected;state.selected=null;renderArtboard(true);const clone=$("#artboard").cloneNode(true);state.selected=current;renderArtboard();clone.setAttribute("width",state.canvas.width);clone.setAttribute("height",state.canvas.height);clone.setAttribute("viewBox",`0 0 ${state.canvas.width} ${state.canvas.height}`);clone.setAttribute("xmlns","http://www.w3.org/2000/svg");return clone}
+async function blobToDataUrl(blob){return await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob)})}
+async function inlineImages(svg){for(const img of [...svg.querySelectorAll("image")]){const href=img.getAttribute("href");if(!href||href.startsWith("data:"))continue;try{const url=new URL(href,location.origin).href;const r=await fetch(url);if(r.ok)img.setAttribute("href",await blobToDataUrl(await r.blob()))}catch{}}return svg}
+function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function safeName(){return (state.name||"graphic").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"graphic"}
+async function exportSvg(){status("Preparing SVG…");const svg=await inlineImages(serializeForExport());const xml=new XMLSerializer().serializeToString(svg);downloadBlob(new Blob([xml],{type:"image/svg+xml"}),safeName()+".svg");status("SVG downloaded.","ok")}
+async function exportPng(){status("Rendering PNG…");const svg=await inlineImages(serializeForExport());const xml=new XMLSerializer().serializeToString(svg),blob=new Blob([xml],{type:"image/svg+xml"}),url=URL.createObjectURL(blob),img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});const c=document.createElement("canvas");c.width=state.canvas.width;c.height=state.canvas.height;const ctx=c.getContext("2d");ctx.drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);const out=await new Promise(res=>c.toBlob(res,"image/png"));downloadBlob(out,safeName()+".png");status("PNG downloaded.","ok")}
 
-Promise.all([
-  fetch("/assets/headshots/manifest.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).catch(()=>({})),
-  Promise.resolve()
-]).then(([m])=>{
-  HEADSHOTS=m||{};
-  return load();
-}).catch(e=>status.textContent=e.message);
+async function loadTemplates(){try{const r=await fetch("/api/admin/graphic-templates",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not load templates.");templateList=j.templates||[];renderTemplateSelect();status("Templates loaded.","ok")}catch(e){renderTemplateSelect();status(e.message+" Browser draft still works.","err")}}
+function renderTemplateSelect(){const s=$("#templateSelect");s.innerHTML='<option value="">New / unsaved template</option>'+templateList.map(t=>`<option value="${esc(t.template_id)}" ${t.template_id===state.templateId?"selected":""}>${esc(t.name)}</option>`).join("")}
+async function openTemplate(id){if(!id){newTemplate();return}status("Loading template…");const r=await fetch(`/api/admin/graphic-templates?id=${encodeURIComponent(id)}`,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not load template.");state.templateId=j.template.template_id;state.name=j.template.name;loadDoc(j.template.document);renderTemplateSelect();status("Template loaded.","ok")}
+async function saveTemplate(asNew=false){state.name=$("#templateName").value.trim()||"Untitled Template";const payload={action:"save",template_id:asNew?null:state.templateId,name:state.name,document:baseDoc()};status("Saving…");const r=await fetch("/api/admin/graphic-templates",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not save template.");state.templateId=j.template.template_id;state.dirty=false;await loadTemplates();renderTemplateSelect();status("Template saved.","ok")}
+async function deleteTemplate(){if(!state.templateId)return status("This template has not been saved yet.","err");if(!confirm(`Delete “${state.name}”?`))return;const r=await fetch("/api/admin/graphic-templates",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"delete",template_id:state.templateId})}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not delete template.");newTemplate();await loadTemplates();status("Template deleted.","ok")}
+function newTemplate(){state.templateId=null;state.name="Untitled Template";state.canvas={width:1080,height:1080,background:"#e6e6e6"};state.elements=[];state.variables=deep(DEFAULT_VARS);state.selected=null;state.history=[];state.future=[];state.dirty=false;renderAll();renderTemplateSelect();status("Blank template ready.")}
+
+async function compressImage(file){if(file.size>5000000)throw new Error("Image is too large. Use a file under 5 MB.");const data=await blobToDataUrl(file);const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=data});const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext("2d").drawImage(img,0,0,c.width,c.height);return c.toDataURL(file.type==="image/jpeg"?"image/jpeg":"image/png",.9)}
+async function addUploadedImage(file){status("Preparing image…");const src=await compressImage(file);addElement("image",{type:"image",src,x:290,y:290,w:500,h:500,fit:"contain",fill:"none",stroke:"none",strokeWidth:0,name:file.name});status("Image added.","ok")}
+async function loadAssets(){if(rosterData)return rosterData;const [rr,hm]=await Promise.all([fetch("/api/admin/rosters?season=2026",{cache:"no-store"}).then(r=>r.ok?r.json():null),fetch("/assets/headshots/manifest.json",{cache:"no-store"}).then(r=>r.ok?r.json():{}).catch(()=>({}))]);rosterData=rr;headshots=hm||{};return rosterData}
+async function openAssets(){try{await loadAssets();const assets=[];const teams=(rosterData?.teams||[]);for(const t of teams)assets.push({name:t.display_name,type:"Team logo",src:`/assets/logos/${t.team_id}.png`});for(const p of (rosterData?.players||[])){const src=headshots[p.player_id];if(src)assets.push({name:p.name,type:"Headshot",src})}renderAssetGrid(assets);$("#assetModal").classList.add("open")}catch(e){status("Could not load league assets: "+e.message,"err")}}
+function renderAssetGrid(items){const q=$("#assetSearch").value.trim().toLowerCase(),show=items.filter(a=>!q||a.name.toLowerCase().includes(q)||a.type.toLowerCase().includes(q));$("#assetGrid").innerHTML=show.map((a,i)=>`<div class="asset" data-asset="${i}" data-src="${esc(a.src)}" data-name="${esc(a.name)}"><img src="${esc(a.src)}" alt=""><strong>${esc(a.name)}</strong><div class="statusline">${esc(a.type)}</div></div>`).join("");$$("[data-asset]").forEach(a=>a.onclick=()=>{addElement("image",{type:"image",src:a.dataset.src,x:340,y:300,w:400,h:400,fit:"contain",fill:"none",stroke:"none",strokeWidth:0,name:a.dataset.name});$("#assetModal").classList.remove("open")});$("#assetGrid").dataset.items=JSON.stringify(items)}
+
+const COMMON_COLORS=["#ffffff","#e6e6e6","#0c2340","#28508a","#d7ad48","#d33f50","#000000","#6c757d","#8c1d40","#006747","#f05a28","#7b2cbf"];
+$("#palette").innerHTML=COMMON_COLORS.map(c=>`<button class="swatch" data-color="${c}" title="${c}" style="background:${c}"></button>`).join("");
+$$("[data-color]").forEach(b=>b.onclick=()=>{const e=selected();pushHistory();if(e){if(e.type==="line")e.stroke=b.dataset.color;else e.fill=b.dataset.color}else state.canvas.background=b.dataset.color;markDirty();renderAll()});
+
+// Top-level bindings
+$$("[data-view]").forEach(b=>b.onclick=()=>{$$("[data-view]").forEach(x=>x.classList.toggle("active",x===b));$$(".sg-view").forEach(v=>v.classList.toggle("active",v.id===`view-${b.dataset.view}`));if(b.dataset.view==="copy"&&!copyData)loadCopy().catch(e=>$("#copyStatus").textContent=e.message)});
+$$("[data-add]").forEach(b=>b.onclick=()=>addElement(b.dataset.add));
+$("#canvasColor").oninput=e=>{pushHistory();state.canvas.background=e.target.value;markDirty();renderAll()};$("#canvasHex").onchange=e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value)){pushHistory();state.canvas.background=e.target.value;markDirty();renderAll()}else syncControls()};
+$("#snapToggle").onchange=e=>state.snap=e.target.checked;$("#gridToggle").onchange=e=>$("#artboardWrap").style.backgroundImage=e.target.checked?"":"none";
+$("#newBtn").onclick=()=>{if(state.dirty&&!confirm("Discard unsaved changes?"))return;newTemplate()};$("#saveBtn").onclick=()=>saveTemplate(false).catch(e=>status(e.message,"err"));$("#saveAsBtn").onclick=()=>{const n=prompt("Name this template:",state.name);if(!n)return;$("#templateName").value=n;state.name=n;saveTemplate(true).catch(e=>status(e.message,"err"))};$("#deleteTemplateBtn").onclick=()=>deleteTemplate().catch(e=>status(e.message,"err"));$("#templateSelect").onchange=e=>{if(state.dirty&&!confirm("Discard unsaved changes?")){renderTemplateSelect();return}openTemplate(e.target.value).catch(er=>status(er.message,"err"))};$("#templateName").oninput=e=>{state.name=e.target.value;markDirty()};
+$("#undoBtn").onclick=undo;$("#redoBtn").onclick=redo;$("#duplicateBtn").onclick=duplicateSelected;$("#exportSvgBtn").onclick=()=>exportSvg().catch(e=>status("SVG export failed: "+e.message,"err"));$("#exportPngBtn").onclick=()=>exportPng().catch(e=>status("PNG export failed: "+e.message,"err"));
+$("#uploadImageBtn").onclick=()=>$("#imageInput").click();$("#imageInput").onchange=e=>{const f=e.target.files?.[0];if(f)addUploadedImage(f).catch(er=>status(er.message,"err"));e.target.value=""};$("#siteAssetsBtn").onclick=openAssets;$("#assetClose").onclick=()=>$("#assetModal").classList.remove("open");$("#assetModal").onclick=e=>{if(e.target===$("#assetModal"))$("#assetModal").classList.remove("open")};$("#assetSearch").oninput=()=>{try{renderAssetGrid(JSON.parse($("#assetGrid").dataset.items||"[]"))}catch{}};
+window.addEventListener("keydown",e=>{const tag=document.activeElement?.tagName;if(["INPUT","TEXTAREA","SELECT"].includes(tag))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();e.shiftKey?redo():undo();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="y"){e.preventDefault();redo();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="d"){e.preventDefault();duplicateSelected();return}if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeSelected();return}const el=selected();if(!el||el.locked)return;const map={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]};if(map[e.key]){e.preventDefault();pushHistory();const m=e.shiftKey?10:1;el.x+=map[e.key][0]*m;el.y+=map[e.key][1]*m;markDirty();renderAll()}});
+window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue=""}});
+
+// Preserved Stat Lists copy center
+const lines=a=>(a||[]).join("\n");
+function copyField(label,value,multiline=true,wide=false){const id="f_"+Math.random().toString(36).slice(2);return `<div class="copy-field ${wide?"wide":""}"><div class="copy-field-head"><strong>${esc(label)}</strong><button class="copy-btn" data-copy="${id}">Copy</button></div>${multiline?`<textarea id="${id}" readonly>${esc(value)}</textarea>`:`<input id="${id}" value="${esc(value)}" readonly>`}</div>`}
+function headshotUrl(playerId){const path=headshots[playerId];return path?`${location.origin}${path}`:""}
+function renderLeaders(type,rows){const label=type==="bat"?"Batting":"Pitching",grid=$(type==="bat"?"#batGrid":"#pitGrid"),title=`${label} Leaders - ${copyData.date_label}`;grid.innerHTML=copyField("Title",title,false,true)+copyField("Teams",lines(rows.map(x=>x.team)))+copyField("Names",lines(rows.map(x=>x.name)))+copyField("Stats",lines(rows.map(x=>x.stats)))+copyField("Player ID/Image URL",lines(rows.map(x=>headshotUrl(x.player_id))))+copyField("Ranks",lines(rows.map(()=>"")))+copyField("Points",lines(rows.map(x=>String(x.points))));const prev=$(type==="bat"?"#batPreview":"#pitPreview");prev.innerHTML=rows.map(r=>{const u=headshotUrl(r.player_id);return `<div class="person">${u?`<img src="${esc(u)}" alt="">`:""}<strong>${esc(r.name)}</strong><small>${esc(r.team)} · ${r.points} pts</small></div>`}).join("")||'<div class="statusline">No leaders for this date.</div>'}
+function renderRecap(){const games=copyData.recap?.games||[],teams=[],scores=[],extra=[];for(const g of games){teams.push(g.away_team,g.home_team);scores.push(String(g.away_score),String(g.home_score));extra.push(g.decision)}$("#recapGrid").innerHTML=copyField("Title",`${copyData.date_label} Series Recap(s)`,false,true)+copyField("Teams",lines(teams))+copyField("Scores",lines(scores))+copyField("Extra Info",lines(extra))+copyField("Ranks",lines(games.map(()=>"")))}
+function bindCopy(){$$('[data-copy]').forEach(btn=>btn.onclick=async()=>{const el=document.getElementById(btn.dataset.copy);try{await navigator.clipboard.writeText(el.value);btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",900)}catch{el.focus();el.select();document.execCommand("copy")}})}
+function renderCopy(){renderLeaders("bat",copyData.batting||[]);renderLeaders("pit",copyData.pitching||[]);renderRecap();bindCopy();$("#copyStatus").textContent=`Loaded ${copyData.date_label}: ${(copyData.recap?.games||[]).length} games.`}
+async function loadCopy(date=""){await loadAssets().catch(()=>{});const q=new URLSearchParams({season:"2026"});if(date)q.set("date",date);const r=await fetch(`/api/admin/social-graphics?${q}`,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Could not load social graphics data.");copyData=j;$("#dateSelect").innerHTML=(j.available_dates||[]).map(d=>`<option value="${d}" ${d===j.date?"selected":""}>${d}</option>`).join("");renderCopy()}
+$("#dateSelect").onchange=()=>loadCopy($("#dateSelect").value).catch(e=>$("#copyStatus").textContent=e.message);
+
+// Start: recover browser draft only when meaningful, then load server templates.
+(function init(){
+  try{const d=JSON.parse(localStorage.getItem("ndwiffle_graphics_draft")||"null");if(d?.document?.elements?.length){state.name=d.name||"Recovered Draft";loadDoc(d.document);state.dirty=true;status("Recovered an unsaved browser draft.")}else renderAll()}catch{renderAll()}
+  loadTemplates();
+})();
 </script>
 </body>
 </html>
