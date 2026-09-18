@@ -4,6 +4,12 @@
   const numRe=/^[+\-]?(?:\d+(?:\.\d+)?|\.\d+)$/;
   function cleanText(cell){return (cell?.innerText||cell?.textContent||'').replace(/\s+/g,' ').trim();}
   function value(cell){
+    const explicit=cell?.dataset?.sortValue;
+    if(explicit!==undefined && explicit!==""){
+      const n=Number(explicit);
+      if(Number.isFinite(n))return {type:'num',v:n};
+      return {type:'text',v:String(explicit).toLowerCase()};
+    }
     const t=cleanText(cell).replace(/,/g,'').replace(/%$/,'');
     if(!t||t==='—'||t==='-') return {type:'empty',v:null};
     if(numRe.test(t)) return {type:'num',v:Number(t)};

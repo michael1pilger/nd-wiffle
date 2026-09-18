@@ -1,0 +1,8 @@
+{
+  "standings_form": "current consecutive W/L streak, e.g. W 4 or L 2",
+  "power_rankings_last6": "unchanged; still uses last-six record",
+  "gb_display": "unchanged",
+  "gb_sort": "signed relative to 7th: above positive, 7th zero, below negative",
+  "generic_sorter_data_sort_value_support": "PASS",
+  "syntax": "PASS"
+}

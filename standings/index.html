@@ -53,7 +53,7 @@
 </tr><tr style="--team:144,224,224"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/zyns.png?v=81" alt="Zyns"><span>Zyns</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order.</div></div></section>
+</tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order. GB sorting treats teams above 7th as games ahead (+), 7th as 0, and teams below 7th as games behind.</div></div></section>
 <section class="standings-shell power-panel" id="powerPanel"><div class="container">
   <div class="power-summary">
     <div class="power-summary-card"><small>Model</small><strong>Opponent-adjusted 2026 form</strong></div>
@@ -112,25 +112,53 @@ function buildLast6(results){
       });
     }
   }
-  games.sort((a,b)=>`${b.date}|${b.game_number}`.localeCompare(`${a.date}|${a.game_number}`));
+
+  // Most recent game first. game_number is reversed within the same series
+  // so Game 3 is considered more recent than Game 2, etc.
+  games.sort((a,b)=>{
+    const d=String(b.date).localeCompare(String(a.date));
+    return d || b.game_number-a.game_number;
+  });
+
   const ids=[...new Set(games.flatMap(g=>[g.away,g.home]))];
   const out=new Map();
+
   for(const id of ids){
-    const last=games.filter(g=>g.away===id||g.home===id).slice(0,6);
-    const form=last.map(g=>{
+    const all=games.filter(g=>g.away===id||g.home===id);
+    const resultsForTeam=all.map(g=>{
       const own=g.away===id?g.away_score:g.home_score;
       const opp=g.away===id?g.home_score:g.away_score;
       return own>opp?"W":"L";
     });
-    const wins=form.filter(x=>x==="W").length;
-    out.set(id,{form,wins,losses:form.length-wins,pct:form.length?wins/form.length:.5});
+
+    const last=resultsForTeam.slice(0,6);
+    const wins=last.filter(x=>x==="W").length;
+
+    let streakType=null,streak=0;
+    if(resultsForTeam.length){
+      streakType=resultsForTeam[0];
+      for(const result of resultsForTeam){
+        if(result!==streakType)break;
+        streak++;
+      }
+    }
+
+    out.set(id,{
+      form:last,
+      wins,
+      losses:last.length-wins,
+      pct:last.length?wins/last.length:.5,
+      streakType,
+      streak
+    });
   }
   LAST6_BY_TEAM=out;
 }
 function formHtml(teamId){
-  const f=LAST6_BY_TEAM.get(teamId)?.form||[];
-  if(!f.length)return '<span style="color:var(--muted)">—</span>';
-  return `<span style="letter-spacing:.12em;font-weight:900">${f.map(x=>`<span style="color:${x==="W"?"#71d49c":"#eb7884"}">${x}</span>`).join(" ")}</span>`;
+  const x=LAST6_BY_TEAM.get(teamId);
+  if(!x?.streakType||!x.streak)return '<span style="color:var(--muted)">—</span>';
+  const color=x.streakType==="W"?"#71d49c":"#eb7884";
+  return `<span style="font-weight:900;color:${color}">${x.streakType} ${x.streak}</span>`;
 }
 
 function renderLiveStandings(rows,seriesCount){
@@ -141,7 +169,7 @@ function renderLiveStandings(rows,seriesCount){
    return `<tr${cutoff} style="--team:${ui.color}">
     <td class="standings-rank">${r.rank}</td>
     <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}</span></div></td>
-    <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td>${gb(r.GB,r.rank)}</td>
+    <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td data-sort-value="${Number(r.rank)<7?Math.abs(Number(r.GB||0)):Number(r.rank)===7?0:-Math.abs(Number(r.GB||0))}">${gb(r.GB,r.rank)}</td>
     <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${formHtml(r.team_id)}</td>
    </tr>`;
  }).join("");
@@ -305,4 +333,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=81"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script></body></html>
