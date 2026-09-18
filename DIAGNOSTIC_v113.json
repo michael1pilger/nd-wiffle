@@ -1,0 +1,12 @@
+{
+  "source_build": "v112",
+  "new_page": "/admin/stat-lists/",
+  "graphics_nav_link": "PASS",
+  "graphics_heading_quicklink": "PASS",
+  "stat_lists_copy_center_restored": "PASS",
+  "uses_existing_social_graphics_api": "PASS",
+  "patched_admin_nav_files": [
+    "admin/social-graphics/index.html"
+  ],
+  "syntax": "PASS"
+}

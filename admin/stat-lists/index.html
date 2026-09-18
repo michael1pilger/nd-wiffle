@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stat Lists Copy Center | ND Wiffle</title>
+<link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+:root{--panel:#0b1626;--line:#26364a;--muted:#98a8bd;--gold:#d7ad48}
+*{box-sizing:border-box}
+body{background:#05080d;color:#f4f7fb}
+.page{padding:24px 0 50px}
+.shell{max-width:1450px;margin:auto;padding:0 18px}
+.head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.head h1{margin:3px 0 2px;font-size:30px}
+.head p{margin:0;color:var(--muted);font-size:11px}
+.toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:11px 12px;margin-bottom:12px}
+.field label{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:900;margin-bottom:4px}
+.field select{min-width:210px;background:#07111e;color:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-weight:800}
+.status{font-size:10px;color:var(--muted);padding-bottom:7px}
+.section{margin-top:12px;border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:13px}
+.section h2{margin:0 0 3px;font-size:18px}
+.hint{font-size:9px;color:var(--muted);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.copy-field{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#07111e;padding:9px}
+.copy-field.wide{grid-column:1/-1}
+.copy-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.copy-head strong{font-size:9px;text-transform:uppercase;letter-spacing:.05em}
+.copy-field textarea,.copy-field input{width:100%;background:#040a12;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:8px;font:700 10px/1.45 ui-monospace,monospace}
+.copy-field textarea{min-height:105px;resize:vertical}
+.copy-btn{border:1px solid var(--line);border-radius:7px;background:#122039;color:#fff;font-size:8px;font-weight:900;padding:5px 8px;cursor:pointer}
+.copy-btn:hover{border-color:var(--gold)}
+.preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:9px}
+.person{border:1px solid rgba(255,255,255,.08);border-radius:9px;background:#081321;padding:6px;text-align:center}
+.person img{width:58px;height:58px;object-fit:contain}
+.person strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person small{font-size:7px;color:var(--muted)}
+.quicklink{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;color:#fff;text-decoration:none;font-size:9px;font-weight:900;background:#0a1422}
+.quicklink:hover{border-color:var(--gold)}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.copy-field.wide{grid-column:auto}.preview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a href="/admin/social-graphics/">Graphics</a><a class="active" href="/admin/stat-lists/">Stat Lists</a><a href="/admin/exports/">Export Data</a></div></div></div>
+
+<main class="page"><div class="shell">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Commissioner Tools · BUILD v113</div>
+      <h1>Stat Lists Copy Center</h1>
+      <p>Copy the daily batting leaders, pitching leaders, headshot URLs, and series recap directly into Stat Lists.</p>
+    </div>
+    <a class="quicklink" href="/admin/social-graphics/">← Player Graphic Builder</a>
+  </div>
+
+  <div class="toolbar">
+    <div class="field"><label for="dateSelect">Series Date</label><select id="dateSelect"></select></div>
+    <div id="copyStatus" class="status">Loading…</div>
+  </div>
+
+  <section class="section">
+    <h2>Batting Leaders</h2>
+    <div class="hint">Top 5 batters on the selected date by batting fantasy points.</div>
+    <div class="grid" id="batGrid"></div>
+    <div class="preview" id="batPreview"></div>
+  </section>
+
+  <section class="section">
+    <h2>Pitching Leaders</h2>
+    <div class="hint">Top 5 pitchers on the selected date by pitching fantasy points.</div>
+    <div class="grid" id="pitGrid"></div>
+    <div class="preview" id="pitPreview"></div>
+  </section>
+
+  <section class="section">
+    <h2>Series Recap</h2>
+    <div class="hint">Every game played on the selected date. Pitcher records reflect the record immediately after that game.</div>
+    <div class="grid" id="recapGrid"></div>
+  </section>
+</div></main>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lines=a=>(a||[]).join("\n");
+let copyData=null,headshots={};
+
+function copyField(label,value,multiline=true,wide=false){
+  const id="f_"+Math.random().toString(36).slice(2);
+  return `<div class="copy-field ${wide?"wide":""}">
+    <div class="copy-head"><strong>${esc(label)}</strong><button class="copy-btn" data-copy="${id}">Copy</button></div>
+    ${multiline?`<textarea id="${id}" readonly>${esc(value)}</textarea>`:`<input id="${id}" value="${esc(value)}" readonly>`}
+  </div>`;
+}
+
+function headshotUrl(playerId){
+  const path=headshots[playerId];
+  return path?`${location.origin}${path}`:"";
+}
+
+function renderLeaders(type,rows){
+  const label=type==="bat"?"Batting":"Pitching";
+  const grid=$(type==="bat"?"#batGrid":"#pitGrid");
+  const title=`${label} Leaders - ${copyData.date_label}`;
+  grid.innerHTML=
+    copyField("Title",title,false,true)+
+    copyField("Teams",lines(rows.map(x=>x.team)))+
+    copyField("Names",lines(rows.map(x=>x.name)))+
+    copyField("Stats",lines(rows.map(x=>x.stats)))+
+    copyField("Player ID/Image URL",lines(rows.map(x=>headshotUrl(x.player_id))))+
+    copyField("Ranks",lines(rows.map(()=>"")))+
+    copyField("Points",lines(rows.map(x=>String(x.points))));
+  const prev=$(type==="bat"?"#batPreview":"#pitPreview");
+  prev.innerHTML=rows.map(r=>{
+    const u=headshotUrl(r.player_id);
+    return `<div class="person">${u?`<img src="${esc(u)}" alt="">`:""}<strong>${esc(r.name)}</strong><small>${esc(r.team)} · ${r.points} pts</small></div>`;
+  }).join("")||'<div class="status">No leaders for this date.</div>';
+}
+
+function renderRecap(){
+  const games=copyData.recap?.games||[],teams=[],scores=[],extra=[];
+  for(const g of games){
+    teams.push(g.away_team,g.home_team);
+    scores.push(String(g.away_score),String(g.home_score));
+    extra.push(g.decision);
+  }
+  $("#recapGrid").innerHTML=
+    copyField("Title",`${copyData.date_label} Series Recap(s)`,false,true)+
+    copyField("Teams",lines(teams))+
+    copyField("Scores",lines(scores))+
+    copyField("Extra Info",lines(extra))+
+    copyField("Ranks",lines(games.map(()=>"")));
+}
+
+function bindCopy(){
+  $$("[data-copy]").forEach(btn=>btn.onclick=async()=>{
+    const el=document.getElementById(btn.dataset.copy);
+    try{
+      await navigator.clipboard.writeText(el.value);
+      btn.textContent="Copied";
+      setTimeout(()=>btn.textContent="Copy",900);
+    }catch{
+      el.focus();el.select();document.execCommand("copy");
+      btn.textContent="Copied";
+      setTimeout(()=>btn.textContent="Copy",900);
+    }
+  });
+}
+
+function render(){
+  renderLeaders("bat",copyData.batting||[]);
+  renderLeaders("pit",copyData.pitching||[]);
+  renderRecap();
+  bindCopy();
+  $("#copyStatus").textContent=`Loaded ${copyData.date_label}: ${(copyData.recap?.games||[]).length} games.`;
+}
+
+async function load(date=""){
+  $("#copyStatus").textContent="Loading…";
+  try{
+    if(!Object.keys(headshots).length){
+      const hm=await fetch("/assets/headshots/manifest.json",{cache:"no-store"});
+      headshots=hm.ok?await hm.json():{};
+    }
+    const q=new URLSearchParams({season:"2026"});
+    if(date)q.set("date",date);
+    const r=await fetch(`/api/admin/social-graphics?${q}`,{cache:"no-store"});
+    const j=await r.json();
+    if(!r.ok||!j.ok)throw new Error(j.error||"Could not load Stat Lists data.");
+    copyData=j;
+    $("#dateSelect").innerHTML=(j.available_dates||[]).map(d=>`<option value="${esc(d)}" ${d===j.date?"selected":""}>${esc(d)}</option>`).join("");
+    render();
+  }catch(e){
+    $("#copyStatus").textContent=e.message||String(e);
+  }
+}
+
+$("#dateSelect").onchange=()=>load($("#dateSelect").value);
+load();
+</script>
+</body>
+</html>
