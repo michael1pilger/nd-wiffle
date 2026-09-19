@@ -104,9 +104,9 @@ function renderTable(){
 }
 
 const AWARD_TRACKERS=[
- {id:"MVP",label:"MVP",method:"Rate performance leads the model, with a meaningful but smaller playing-time component. Batting and pitching are scored separately, then combined so true two-way value is rewarded without letting raw volume dominate."},
- {id:"CY",label:"Cy Young",method:"Pitching quality (ERA, WHIP, strikeout rate and production per out) is weighted more heavily than innings, with a modest usage and W/SV component."},
- {id:"SS",label:"Silver Slugger",method:"Offensive quality (OPS, average and production per PA) is weighted more heavily than plate appearances, while still rewarding players who have sustained it over more playing time."},
+ {id:"MVP",label:"MVP",method:"Rate performance is the primary driver. Playing time is a small durability check rather than a major source of points. Batting and pitching are scored separately, then combined so two-way value is rewarded without letting raw PA/IP dominate."},
+ {id:"CY",label:"Cy Young",method:"Pitching quality dominates the tracker: ERA, WHIP, strikeout rate and production per out carry 88% of the core score. Innings are only a 12% durability component, while wins and saves receive small bonuses because they are partly team-dependent."},
+ {id:"SS",label:"Silver Slugger",method:"Offensive quality (OPS, average and production per PA) drives 85% of the score. Plate appearances are only a 15% durability component, so superior hitting rates are favored over simply accumulating more appearances."},
  {id:"ROTY",label:"ROTY",method:"The MVP-style rate-and-volume score among Class of 2030 players with published 2026 batting or pitching stats."},
  {id:"FOURTH",label:"4th Man",method:"MVP-style score among secondary-role players. The top three batters by PA on each team are excluded, and the team ace (most pitching outs) is also excluded. This keeps regulars and primary pitchers out of the 4th Man pool."}
 ];
@@ -119,11 +119,11 @@ function awardCandidates(){
  const eraVals=all.filter(x=>x.outs>0&&Number.isFinite(x.era)).map(x=>x.era),whipVals=all.filter(x=>x.outs>0&&Number.isFinite(x.whip)).map(x=>x.whip),kVals=all.filter(x=>x.outs>0).map(x=>x.kRate),pitRateVals=all.filter(x=>x.outs>0).map(x=>x.pitRate);
  for(const x of all){
    const batQ=x.pa>0?100*(.55*pctRank(opsVals,x.ops,true)+.25*pctRank(avgVals,x.avg,true)+.20*pctRank(batRateVals,x.batRate,true)):0;
-   const batV=100*Math.sqrt(x.pa/maxPA);x.batAward=x.pa>0?.72*batQ+.28*batV:0;
+   const batV=100*Math.sqrt(x.pa/maxPA);x.batAward=x.pa>0?.85*batQ+.15*batV:0;
    const pitQ=x.outs>0?100*(.35*pctRank(eraVals,x.era,false)+.25*pctRank(whipVals,x.whip,false)+.22*pctRank(kVals,x.kRate,true)+.18*pctRank(pitRateVals,x.pitRate,true)):0;
-   const pitV=100*Math.sqrt(x.outs/maxOuts);x.pitAward=x.outs>0?.72*pitQ+.28*pitV:0;
+   const pitV=100*Math.sqrt(x.outs/maxOuts);x.pitAward=x.outs>0?.88*pitQ+.12*pitV:0;
    const hi=Math.max(x.batAward,x.pitAward),lo=Math.min(x.batAward,x.pitAward);x.mvp=hi+.35*lo;
-   x.cy=x.pitAward+.9*num(x.p.W)+.55*num(x.p.S);x.ss=x.batAward;
+   x.cy=x.pitAward+.35*num(x.p.W)+.25*num(x.p.S);x.ss=x.batAward;
  }
  const teamPA=new Map(),teamOuts=new Map();for(const x of all){const tid=x.team?.id;if(!tid)continue;if(!teamPA.has(tid))teamPA.set(tid,[]);if(!teamOuts.has(tid))teamOuts.set(tid,[]);teamPA.get(tid).push(x);teamOuts.get(tid).push(x)}
  const topBatUse=new Set(),acePitchers=new Set();for(const rows of teamPA.values())rows.slice().sort((a,b)=>b.pa-a.pa).slice(0,3).forEach(x=>{if(x.pa>0)topBatUse.add(x.id)});for(const rows of teamOuts.values()){const ace=rows.slice().sort((a,b)=>b.outs-a.outs)[0];if(ace&&ace.outs>0)acePitchers.add(ace.id)}

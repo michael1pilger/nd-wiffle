@@ -5,9 +5,24 @@
 
 .player-card-ident{display:flex;align-items:center;gap:9px}
 .player-thumb{width:42px;height:42px;border-radius:8px;object-fit:contain;background:#050a10;border:1px solid rgba(255,255,255,.08);flex:0 0 auto}
+.league-streaks{margin:0 0 18px;border:1px solid var(--border);border-radius:15px;background:var(--panel);padding:14px}
+.league-streaks-head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:10px}
+.league-streaks-head h2{margin:0;font-size:20px}.league-streaks-head p{margin:3px 0 0;color:var(--muted);font-size:10px}
+.streak-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.streak-card{display:block;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#081321;padding:10px;min-width:0}
+.streak-card:hover{border-color:rgba(215,173,72,.55)}
+.streak-card-top{display:flex;align-items:center;gap:8px}.streak-card img{width:30px;height:30px;object-fit:contain;border-radius:6px}
+.streak-card strong{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.streak-card small{display:block;color:var(--muted);font-size:8px;margin-top:2px}
+.streak-line{margin-top:8px;font-size:10px;font-weight:900;line-height:1.35}.streak-num{color:var(--gold);font-size:18px;margin-right:4px}
+@media(max-width:900px){.streak-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.streak-grid{grid-template-columns:1fr}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="active" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
-<main><div class="container pagehead"><div class="eyebrow">League Directory</div><h1>Players</h1></div><div class="container"><div class="player-controls">
+<main><div class="container pagehead"><div class="eyebrow">League Directory</div><h1>Players</h1></div><div class="container">
+<section class="league-streaks">
+  <div class="league-streaks-head"><div><div class="eyebrow">2026 Form</div><h2>League Streak Leaders</h2><p>Longest multi-series batting and pitching streaks from published 2026 results.</p></div><div id="leagueStreakStatus" class="player-count">Loading…</div></div>
+  <div class="streak-grid" id="leagueStreakGrid"></div>
+</section>
+<div class="player-controls">
 <input class="search" id="pq" placeholder="Search players...">
 <select id="playerTeam"><option value="">All teams</option></select>
 <select id="playerClass"><option value="">All classes</option></select>
@@ -209,9 +224,75 @@ function renderPlayers(){
  return `<a class="card playercard playercard-link" href="/player/?id=${encodeURIComponent(p.Player_ID)}" aria-label="View ${p.Name} player page"><div class="player-card-top"><div class="player-card-ident">${PLAYER_HEADSHOTS[p.Player_ID]?`<img class="player-thumb" src="${PLAYER_HEADSHOTS[p.Player_ID]}" alt="${p.Name}" onerror="this.style.display='none'">`:""}<div><div class="player-name">${p.Name}${ret?'<span class="retired-badge">Retired</span>':""}</div><div class="player-meta">${c?`Class '${c.slice(-2)}`:"Class —"}</div></div></div><div class="player-team-logos">${logos}</div></div>
  <div class="player-statline"><span class="tag">${b.Hits??0} H</span><span class="tag">${b.HRs??0} HR</span><span class="tag">${pit.Ks??0} Pitching K</span>${num(pit.IP)>0?`<span class="tag">${fmt2(pit.ERA)} ERA</span>`:""}</div>${accoladeHTML(p.Player_ID)}${best.length?`<div class="best-season">${best.join("<br>")}</div>`:""}<div class="player-open">View player page →</div></a>`}).join("")
 }
+
+function streakBest(rows,test){
+ let best=0,cur=0;
+ for(const r of rows){if(test(r)){cur++;best=Math.max(best,cur)}else cur=0}
+ return best;
+}
+function leagueStreakCandidates(results){
+ const byPlayer=new Map();
+ const ordered=[...(results?.series||[])].sort((a,b)=>
+   String(a.series_date||"").localeCompare(String(b.series_date||"")) ||
+   String(a.series_id||"").localeCompare(String(b.series_id||""))
+ );
+ for(const sr of ordered){
+   for(const b of (sr.batting||[])){
+     if(!byPlayer.has(b.player_id))byPlayer.set(b.player_id,{id:b.player_id,name:b.name,team:b.team_name,bat:[],pit:[]});
+     byPlayer.get(b.player_id).bat.push(b);
+   }
+   for(const p of (sr.pitching||[])){
+     if(!byPlayer.has(p.player_id))byPlayer.set(p.player_id,{id:p.player_id,name:p.name,team:p.team_name,bat:[],pit:[]});
+     byPlayer.get(p.player_id).pit.push(p);
+   }
+ }
+ const candidates=[];
+ for(const x of byPlayer.values()){
+   const add=(length,label,category,strength=0)=>{
+     if(length>=2)candidates.push({player_id:x.id,name:x.name,team:x.team,length,label,category,strength});
+   };
+   // strongest hits threshold with a real streak
+   for(const th of [5,4,3,2,1]){const n=streakBest(x.bat,r=>Number(r.H||0)>=th);if(n>=2){add(n,`${th}+ H`, "Hits",th);break}}
+   for(const th of [.600,.500,.400]){const n=streakBest(x.bat,r=>Number(r.PA||0)>0&&((Number(r.H||0)+Number(r.BB||0))/Number(r.PA||1))>=th);if(n>=2){add(n,`${th.toFixed(3).replace(/^0/,"")}+ OBP`,"OBP",th*10);break}}
+   add(streakBest(x.bat,r=>Number(r.HR||0)>=1),"HR","Home Run",1);
+   for(const th of [4,3,2]){const n=streakBest(x.bat,r=>Number(r.RBI||0)>=th);if(n>=2){add(n,`${th}+ RBI`,"RBI",th);break}}
+
+   for(const th of [8,7,6,5,4,3,2,1]){const n=streakBest(x.pit,r=>Number(r.K||0)>=th);if(n>=2){add(n,`${th}+ K`,"Strikeouts",th);break}}
+   for(const th of [0,1,2]){const n=streakBest(x.pit,r=>Number(r.Outs||0)>0&&Number(r.ER||0)<=th);if(n>=2){add(n,th===0?"0 ER":`${th} ER or fewer`,"Run Prevention",3-th);break}}
+   for(const outs of [9,6,3]){const n=streakBest(x.pit,r=>Number(r.Outs||0)>=outs);if(n>=2){add(n,`${outs/3}+ IP`,"Workload",outs/3);break}}
+   add(streakBest(x.pit,r=>Number(r.Outs||0)>0&&Number(r.H||0)<=1),"1 H or fewer","Hits Allowed",1);
+ }
+ // One entry per player/category, then rank primarily by streak length.
+ candidates.sort((a,b)=>b.length-a.length||b.strength-a.strength||a.name.localeCompare(b.name));
+ const seen=new Set(),out=[];
+ for(const c of candidates){
+   const k=`${c.player_id}|${c.category}`;
+   if(seen.has(k))continue;seen.add(k);out.push(c);
+   if(out.length>=8)break;
+ }
+ return out;
+}
+async function loadLeagueStreaks(){
+ const grid=document.getElementById("leagueStreakGrid"),status=document.getElementById("leagueStreakStatus");
+ try{
+   const r=await fetch("/api/public/results?season=2026",{cache:"no-store"}),j=await r.json();
+   if(!r.ok||!j.ok)throw new Error(j.error||"Streak data unavailable");
+   const rows=leagueStreakCandidates(j);
+   status.textContent=`${rows.length} featured streaks`;
+   grid.innerHTML=rows.length?rows.map(x=>{
+     const img=PLAYER_HEADSHOTS[x.player_id];
+     return `<a class="streak-card" href="/player/?id=${encodeURIComponent(x.player_id)}"><div class="streak-card-top">${img?`<img src="${img}" alt="" onerror="this.style.display='none'">`:""}<div><strong>${x.name}</strong><small>${x.team||""} · ${x.category}</small></div></div><div class="streak-line"><span class="streak-num">${x.length}</span> consecutive series · ${x.label}</div></a>`;
+   }).join(""):'<div class="player-data-note">No multi-series streaks yet.</div>';
+ }catch(err){
+   status.textContent="Unavailable";
+   grid.innerHTML='<div class="player-data-note">League streaks are temporarily unavailable.</div>';
+ }
+}
+
 [pq,teamSel,classSel,statusSel,sortSel].forEach(el=>el.addEventListener(el===pq?"input":"change",renderPlayers));
 populateFilters();
 renderPlayers();
 playerCount.textContent+=" · loading 2026 roster…";
 loadLivePlayerData();
+loadLeagueStreaks();
 </script></body></html>

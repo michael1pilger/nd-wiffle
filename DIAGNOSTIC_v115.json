@@ -1,0 +1,14 @@
+{
+  "stat_lists_multi_series_order": "game number first, then series",
+  "league_streak_leaders_on_players_page": "PASS",
+  "playoff_remaining_opponents": "PASS",
+  "playoff_magic_numbers_and_paths": "PASS",
+  "crucial_upcoming_series": "PASS",
+  "award_tracker_batting_quality_weight": 0.85,
+  "award_tracker_batting_volume_weight": 0.15,
+  "award_tracker_pitching_quality_weight": 0.88,
+  "award_tracker_pitching_volume_weight": 0.12,
+  "cy_win_bonus_per_win": 0.35,
+  "cy_save_bonus_per_save": 0.25,
+  "syntax": "PASS"
+}

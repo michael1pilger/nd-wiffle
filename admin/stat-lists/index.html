@@ -46,7 +46,7 @@ body{background:#05080d;color:#f4f7fb}
 <main class="page"><div class="shell">
   <div class="head">
     <div>
-      <div class="eyebrow">Commissioner Tools · BUILD v113</div>
+      <div class="eyebrow">Commissioner Tools · BUILD v115</div>
       <h1>Stat Lists Copy Center</h1>
       <p>Copy the daily batting leaders, pitching leaders, headshot URLs, and series recap directly into Stat Lists.</p>
     </div>
@@ -117,8 +117,23 @@ function renderLeaders(type,rows){
   }).join("")||'<div class="status">No leaders for this date.</div>';
 }
 
+function recapDisplayOrder(rawGames){
+  const games=[...(rawGames||[])];
+  // With multiple series on the same date, Stat Lists looks best when Game 1
+  // from every series is shown first, then Game 2 from every series, etc.
+  // Preserve the API's first-seen series order inside each game number.
+  const seriesOrder=new Map();
+  let next=0;
+  for(const g of games){
+    if(!seriesOrder.has(g.series_id))seriesOrder.set(g.series_id,next++);
+  }
+  return games.sort((a,b)=>
+    Number(a.game_number||0)-Number(b.game_number||0) ||
+    Number(seriesOrder.get(a.series_id))-Number(seriesOrder.get(b.series_id))
+  );
+}
 function renderRecap(){
-  const games=copyData.recap?.games||[],teams=[],scores=[],extra=[];
+  const games=recapDisplayOrder(copyData.recap?.games||[]),teams=[],scores=[],extra=[];
   for(const g of games){
     teams.push(g.away_team,g.home_team);
     scores.push(String(g.away_score),String(g.home_score));
