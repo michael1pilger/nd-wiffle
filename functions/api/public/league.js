@@ -149,11 +149,18 @@ export async function onRequestGet(context){
     }).sort((a,b)=>
       b.PCT-a.PCT || b.W-a.W || b.DIFF-a.DIFF || b.RS-a.RS || a.team.localeCompare(b.team)
     );
-    const playoffCutoff=rows[6]||rows[0]||{W:0,L:0};
+    const playoffCutoff=rows[6]||rows[0]||{W:0,L:0,PCT:0};
+    // "GB" is relative to 7th place, but teams often have played different
+    // numbers of games. Traditional baseball GB can therefore contradict
+    // the actual PCT ordering (e.g. 3-9 appearing ahead of 4-11).
+    // Normalize each team's pace to the 24-game ND Wiffle season, then round
+    // to the nearest half-game so GB always agrees with the standings order.
+    const seasonGames=24;
+    const halfGame=x=>Math.round(x*2)/2;
     rows=rows.map((r,i)=>({
       ...r,
       rank:i+1,
-      GB:i===6?0:((playoffCutoff.W-r.W)+(r.L-playoffCutoff.L))/2
+      GB:i===6?0:halfGame((Number(playoffCutoff.PCT||0)-Number(r.PCT||0))*seasonGames)
     }));
 
     const decisions=new Map((decisionsRes.results||[]).map(r=>[r.player_id,r]));
@@ -188,7 +195,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v80",season,
+      ok:true,build:"v116",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

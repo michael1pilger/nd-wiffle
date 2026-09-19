@@ -1,0 +1,14 @@
+{
+  "league_streak_workload_removed": "PASS",
+  "playoff_remaining_opponents": "assume every unplayed opponent until 8 distinct opponents are accounted for",
+  "playoff_crucial_series": "includes scheduled + assumed TBD matchups",
+  "playoff_team_logo_icons": "circular",
+  "gb_model": "24-game pace normalized vs 7th, rounded to nearest 0.5",
+  "gb_sanity_if_goobers_are_cutoff": {
+    "Goobers": 0.0,
+    "Stiffies": 0.5,
+    "Dirty Dawgs": 0.5,
+    "Zyns": 2.5
+  },
+  "syntax": "PASS"
+}

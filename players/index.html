@@ -259,7 +259,6 @@ function leagueStreakCandidates(results){
 
    for(const th of [8,7,6,5,4,3,2,1]){const n=streakBest(x.pit,r=>Number(r.K||0)>=th);if(n>=2){add(n,`${th}+ K`,"Strikeouts",th);break}}
    for(const th of [0,1,2]){const n=streakBest(x.pit,r=>Number(r.Outs||0)>0&&Number(r.ER||0)<=th);if(n>=2){add(n,th===0?"0 ER":`${th} ER or fewer`,"Run Prevention",3-th);break}}
-   for(const outs of [9,6,3]){const n=streakBest(x.pit,r=>Number(r.Outs||0)>=outs);if(n>=2){add(n,`${outs/3}+ IP`,"Workload",outs/3);break}}
    add(streakBest(x.pit,r=>Number(r.Outs||0)>0&&Number(r.H||0)<=1),"1 H or fewer","Hits Allowed",1);
  }
  // One entry per player/category, then rank primarily by streak length.

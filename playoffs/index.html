@@ -28,6 +28,9 @@
 .path-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .path-row{border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px;background:#0a1422}
 .path-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.path-team{font-weight:950}.path-tag{font-size:9px;color:var(--gold);font-weight:900}
+.team-icon{width:24px;height:24px;border-radius:50%;background:#07111e;border:1px solid rgba(255,255,255,.12);padding:3px;object-fit:contain;vertical-align:middle}
+.opp-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.opp-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:#07111e;padding:4px 7px 4px 4px;font-size:9px;color:#cbd5e3}.opp-chip.scheduled{border-color:rgba(215,173,72,.35)}.opp-chip .date{color:var(--gold);font-weight:900}
+.crucial-match{display:flex;align-items:center;gap:6px;min-width:0}.crucial-match .vs{color:var(--muted);font-size:8px}.crucial-match strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .path-copy{margin-top:5px;color:#c7d2df;font-size:10px;line-height:1.45}.opp{color:var(--muted)}
 .crucial-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .crucial-row:last-child{border-bottom:0}.crucial-date{color:var(--gold);font-weight:900;font-size:10px}.crucial-why{color:var(--muted);font-size:9px;margin-top:2px}
@@ -41,8 +44,8 @@
 <div id="pictureMeta" class="picture-meta"></div>
 <div id="pictureRoot"><div class="picture-empty">Loading current playoff picture…</div></div>
 <div class="playoff-intel">
-  <section class="intel-card"><h2>Remaining Opponents & Paths</h2><div class="intel-sub">Known scheduled opponents are shown below. If a team still has unscheduled series, those slots are marked TBD. Magic numbers are conservative and require finishing strictly ahead of the current outside field; ties may still depend on DIFF.</div><div id="pathGrid" class="path-grid"><div class="picture-empty">Loading paths…</div></div></section>
-  <section class="intel-card"><h2>Most Crucial Upcoming Series</h2><div class="intel-sub">Ranked by current playoff-cutoff implications, direct bubble matchups, and proximity in the standings.</div><div id="crucialSeries"><div class="picture-empty">Loading upcoming series…</div></div></section>
+  <section class="intel-card"><h2>Remaining Opponents & Paths</h2><div class="intel-sub">The league is treated as a full round robin while the schedule is still being filled: every unplayed opponent is assumed to remain until eight distinct opponent series are completed or scheduled, at which point the omitted matchup can be inferred. Scheduled series show dates; assumed series show TBD. Magic numbers are conservative and require finishing strictly ahead on wins.</div><div id="pathGrid" class="path-grid"><div class="picture-empty">Loading paths…</div></div></section>
+  <section class="intel-card"><h2>Most Crucial Upcoming Series</h2><div class="intel-sub">Ranked across all assumed remaining round-robin matchups, including unscheduled TBD series, using playoff-cutoff implications, direct bubble matchups, and standings proximity.</div><div id="crucialSeries"><div class="picture-empty">Loading upcoming series…</div></div></section>
 </div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 playoff picture.</div></footer>
 <script>
@@ -88,62 +91,159 @@ function scheduledRemaining(schedule,results){
  const completed=new Set((results?.series||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)));
  return (schedule?.scheduled||[]).filter(x=>!completed.has(pairKey(x.team_a_id,x.team_b_id)));
 }
-function teamRemainingInfo(rows,results,schedule){
- const completedCount=new Map(rows.map(r=>[r.team_id,0]));
- for(const sr of (results?.series||[])){
-   if(completedCount.has(sr.away_team_id))completedCount.set(sr.away_team_id,completedCount.get(sr.away_team_id)+1);
-   if(completedCount.has(sr.home_team_id))completedCount.set(sr.home_team_id,completedCount.get(sr.home_team_id)+1);
+function logoFor(id){return LOGOS[id]||""}
+function teamNameById(rows,id){return rows.find(r=>r.team_id===id)?.team||id}
+function roundRobinRemaining(rows,results,schedule){
+ const ids=rows.map(r=>r.team_id);
+ const played=new Set((results?.series||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)));
+ const scheduled=scheduledRemaining(schedule,results);
+ const scheduledByPair=new Map(scheduled.map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));
+ const info=new Map();
+
+ for(const id of ids){
+   const playedOpp=new Set();
+   for(const sr of (results?.series||[])){
+     if(sr.away_team_id===id)playedOpp.add(sr.home_team_id);
+     else if(sr.home_team_id===id)playedOpp.add(sr.away_team_id);
+   }
+
+   const scheduledOpp=new Set();
+   for(const x of scheduled){
+     if(x.team_a_id===id)scheduledOpp.add(x.team_b_id);
+     else if(x.team_b_id===id)scheduledOpp.add(x.team_a_id);
+   }
+
+   const candidates=ids.filter(opp=>opp!==id&&!playedOpp.has(opp));
+   // League format = eight opponent series. Until eight opponents are accounted
+   // for, assume every still-unplayed matchup is live. Once completed+scheduled
+   // reaches eight distinct opponents, any other unplayed opponent is inferred
+   // to be the omitted round-robin matchup.
+   const accounted=new Set([...playedOpp,...scheduledOpp]);
+   let remaining=candidates;
+   if(accounted.size>=8){
+     remaining=candidates.filter(opp=>scheduledOpp.has(opp));
+   }
+
+   const rowsForTeam=remaining.map(opp=>{
+     const pair=pairKey(id,opp),sch=scheduledByPair.get(pair);
+     return {
+       opp_id:opp,
+       opp:teamNameById(rows,opp),
+       scheduled:!!sch,
+       date:sch?.series_date||"",
+       time:sch?.series_time||""
+     };
+   }).sort((a,b)=>
+     Number(b.scheduled)-Number(a.scheduled) ||
+     String(a.date||"9999").localeCompare(String(b.date||"9999")) ||
+     a.opp.localeCompare(b.opp)
+   );
+
+   info.set(id,{
+     playedOpp,
+     scheduledOpp,
+     accounted,
+     remaining:rowsForTeam,
+     omitted:accounted.size>=8
+       ? ids.filter(opp=>opp!==id&&!playedOpp.has(opp)&&!scheduledOpp.has(opp))
+       : []
+   });
  }
- const upcoming=scheduledRemaining(schedule,results);
- const map=new Map(rows.map(r=>[r.team_id,[]]));
- for(const x of upcoming){
-   if(map.has(x.team_a_id))map.get(x.team_a_id).push({opp:x.team_b||x.team_b_name||x.team_b_id,date:x.series_date,time:x.series_time});
-   if(map.has(x.team_b_id))map.get(x.team_b_id).push({opp:x.team_a||x.team_a_name||x.team_a_id,date:x.series_date,time:x.series_time});
- }
- return {completedCount,map,upcoming};
+ return {info,scheduled,scheduledByPair};
 }
 function formatDate(d){
  if(!d)return "TBD";
  const [y,m,day]=String(d).split("-").map(Number);
  return m&&day?`${m}/${day}`:d;
 }
+function opponentChips(items){
+ return items.map(x=>`<span class="opp-chip ${x.scheduled?"scheduled":""}">${logoFor(x.opp_id)?`<img class="team-icon" src="${logoFor(x.opp_id)}" alt="">`:""}<span>${esc(x.opp)}</span><span class="date">${x.scheduled?formatDate(x.date):"TBD"}</span></span>`).join("");
+}
 function renderPaths(rows,results,schedule){
  const root=document.getElementById("pathGrid");
  if(!rows.length){root.innerHTML='<div class="picture-empty">No standings available.</div>';return}
- const cutoff=rows[6],outsiders=rows.slice(7),{completedCount,map}=teamRemainingInfo(rows,results,schedule);
+ const cutoff=rows[6],outsiders=rows.slice(7),rr=roundRobinRemaining(rows,results,schedule);
+
  root.innerHTML=rows.map(r=>{
-   const playedSeries=completedCount.get(r.team_id)||0,remainingSeries=Math.max(0,8-playedSeries);
-   const known=map.get(r.team_id)||[],tbd=Math.max(0,remainingSeries-known.length);
-   const opponents=[...known.map(x=>`${x.opp} (${formatDate(x.date)})`),...(tbd?Array(tbd).fill("TBD") : [])];
+   const x=rr.info.get(r.team_id)||{remaining:[],omitted:[]};
+   const remainingGames=x.remaining.length*3;
    let tag="",path="";
+
    if(r.rank<=7){
-     const magic=outsiders.length?Math.max(0,...outsiders.map(o=>25-n(r.W)-n(o.L))):0;
-     tag=magic===0?"Clinched by win/loss math":`Magic number: ${magic}`;
-     const toughest=outsiders.slice().sort((a,b)=>(25-n(r.W)-n(b.L))-(25-n(r.W)-n(a.L)))[0];
-     path=magic===0?"A top-seven finish is secured on wins/losses alone.":`Any combination of ${magic} ${r.team} wins and losses by the toughest current outside challenger${toughest?` (${toughest.team})`:""} guarantees finishing strictly ahead of the outside field.`;
+     // Conservative magic number based on current outside challengers and the
+     // maximum games they could still win under the assumed remaining slate.
+     const threats=outsiders.map(o=>{
+       const orr=rr.info.get(o.team_id);
+       const oRemain=(orr?.remaining?.length||0)*3;
+       return {team:o.team,maxW:n(o.W)+oRemain};
+     });
+     const toughest=threats.sort((a,b)=>b.maxW-a.maxW)[0];
+     const magic=toughest?Math.max(0,toughest.maxW-n(r.W)+1):0;
+     tag=magic===0?"Clinched by current slate":`Magic number: ${magic}`;
+     path=magic===0
+       ?"Under the current round-robin assumption, no outside team can finish with more wins."
+       :`Any combination of ${magic} ${r.team} wins and losses by the strongest current outside challenger${toughest?` (${toughest.team})`:""} guarantees finishing strictly ahead on wins.`;
    }else{
-     const gap=Math.max(0,n(cutoff.W)-n(r.W));
-     const winsToPass=Math.max(0,n(cutoff.W)+1-n(r.W));
-     const direct=known.find(x=>String(x.opp)===String(cutoff.team));
+     const ownRemain=remainingGames;
+     const maxW=n(r.W)+ownRemain;
+     const cutoffRemain=(rr.info.get(cutoff.team_id)?.remaining?.length||0)*3;
+     const cutoffMax=n(cutoff.W)+cutoffRemain;
+     const direct=x.remaining.find(o=>o.opp_id===cutoff.team_id);
      tag=`${r.rank-7} spot${r.rank-7===1?"":"s"} outside`;
-     path=direct?`Direct leverage: the scheduled series vs ${cutoff.team} is the clearest chance to move the cutoff. At current records, ${winsToPass} additional win${winsToPass===1?"":"s"} would move past ${cutoff.team}'s present win total before accounting for its future results.`:`Current target: gain ${gap} win${gap===1?"":"s"} on No. 7 ${cutoff.team}. Reaching ${n(cutoff.W)+1} wins would exceed its present win total, though the cutoff will move as more games are played.`;
+     if(direct){
+       path=`Direct leverage remains against No. 7 ${cutoff.team}: sweeping that series creates a six-game swing in head-to-head win totals. Current maximum wins under the assumed slate: ${maxW}.`;
+     }else{
+       path=`Current target is No. 7 ${cutoff.team}. Under the assumed remaining slate, ${r.team} can reach ${maxW} wins while ${cutoff.team} can reach ${cutoffMax}.`;
+     }
    }
-   return `<div class="path-row"><div class="path-head"><span class="path-team">#${r.rank} ${esc(r.team)} · ${r.W}-${r.L}</span><span class="path-tag">${esc(tag)}</span></div><div class="path-copy">${esc(path)}</div><div class="path-copy opp"><strong>Remaining:</strong> ${esc(opponents.join(" · ")||"Regular-season series complete")}</div></div>`;
+
+   const omitted=x.omitted.length?`<div class="path-copy opp"><strong>Likely omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`:"";
+   return `<div class="path-row"><div class="path-head"><span class="path-team">#${r.rank} ${esc(r.team)} · ${r.W}-${r.L}</span><span class="path-tag">${esc(tag)}</span></div><div class="path-copy">${esc(path)}</div><div class="opp-list">${opponentChips(x.remaining)}</div>${omitted}</div>`;
  }).join("");
 }
 function renderCrucial(rows,results,schedule){
  const root=document.getElementById("crucialSeries"),rank=new Map(rows.map(r=>[r.team_id,n(r.rank)]));
- const upcoming=scheduledRemaining(schedule,results).map(x=>{
-   const ra=rank.get(x.team_a_id)||99,rb=rank.get(x.team_b_id)||99;
-   const bubbleA=Math.max(0,5-Math.abs(ra-7.5)),bubbleB=Math.max(0,5-Math.abs(rb-7.5));
-   const crosses=(ra<=7&&rb>=8)||(rb<=7&&ra>=8);
-   const bothBubble=ra>=5&&ra<=10&&rb>=5&&rb<=10;
-   const closeness=Math.max(0,4-Math.abs(ra-rb));
-   const score=bubbleA+bubbleB+(crosses?8:0)+(bothBubble?4:0)+closeness;
-   let why=crosses?"Direct inside-vs-outside bubble matchup":bothBubble?"Both teams are clustered around the playoff cutoff":ra<=4&&rb<=4?"Seeding implications near the top of the bracket":"Standings and seeding implications";
-   return {...x,ra,rb,score,why};
- }).sort((a,b)=>b.score-a.score||String(a.series_date).localeCompare(String(b.series_date))).slice(0,5);
- root.innerHTML=upcoming.length?upcoming.map(x=>`<div class="crucial-row"><div class="crucial-date">${formatDate(x.series_date)}${x.series_time?` · ${esc(x.series_time)}`:""}</div><div><strong>#${x.ra} ${esc(x.team_a||x.team_a_name||x.team_a_id)} vs #${x.rb} ${esc(x.team_b||x.team_b_name||x.team_b_id)}</strong><div class="crucial-why">${esc(x.why)}</div></div><div class="seed-record">Impact ${x.score.toFixed(1)}</div></div>`).join(""):'<div class="picture-empty">No future series are currently scheduled.</div>';
+ const rr=roundRobinRemaining(rows,results,schedule),seen=new Set(),matchups=[];
+
+ // Include every assumed unplayed matchup, not just already scheduled series.
+ for(const [teamId,x] of rr.info){
+   for(const rem of x.remaining){
+     const k=pairKey(teamId,rem.opp_id);
+     if(seen.has(k))continue;
+     seen.add(k);
+     const sch=rr.scheduledByPair.get(k);
+     const a=teamId,b=rem.opp_id,ra=rank.get(a)||99,rb=rank.get(b)||99;
+     const bubbleA=Math.max(0,5-Math.abs(ra-7.5)),bubbleB=Math.max(0,5-Math.abs(rb-7.5));
+     const crosses=(ra<=7&&rb>=8)||(rb<=7&&ra>=8);
+     const bothBubble=ra>=5&&ra<=10&&rb>=5&&rb<=10;
+     const closeness=Math.max(0,4-Math.abs(ra-rb));
+     const scheduledBonus=sch?1.5:0;
+     const score=bubbleA+bubbleB+(crosses?8:0)+(bothBubble?4:0)+closeness+scheduledBonus;
+     let why=crosses?"Direct inside-vs-outside bubble matchup":bothBubble?"Both teams are clustered around the playoff cutoff":ra<=4&&rb<=4?"Seeding implications near the top of the bracket":"Standings and seeding implications";
+     matchups.push({
+       a,b,ra,rb,score,why,
+       date:sch?.series_date||"",
+       time:sch?.series_time||"",
+       scheduled:!!sch
+     });
+   }
+ }
+
+ matchups.sort((a,b)=>b.score-a.score||Number(b.scheduled)-Number(a.scheduled)||String(a.date||"9999").localeCompare(String(b.date||"9999")));
+ const upcoming=matchups.slice(0,7);
+ root.innerHTML=upcoming.length?upcoming.map(x=>`
+   <div class="crucial-row">
+     <div class="crucial-date">${x.scheduled?`${formatDate(x.date)}${x.time?` · ${esc(x.time)}`:""}`:"TBD"}</div>
+     <div>
+       <div class="crucial-match">
+         ${logoFor(x.a)?`<img class="team-icon" src="${logoFor(x.a)}" alt="">`:""}<strong>#${x.ra} ${esc(teamNameById(rows,x.a))}</strong>
+         <span class="vs">vs</span>
+         ${logoFor(x.b)?`<img class="team-icon" src="${logoFor(x.b)}" alt="">`:""}<strong>#${x.rb} ${esc(teamNameById(rows,x.b))}</strong>
+       </div>
+       <div class="crucial-why">${esc(x.why)}${x.scheduled?" · Scheduled":" · Assumed remaining matchup"}</div>
+     </div>
+     <div class="seed-record">Impact ${x.score.toFixed(1)}</div>
+   </div>`).join(""):'<div class="picture-empty">No remaining round-robin matchups.</div>';
 }
 Promise.all([
  fetch("/api/public/league?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})),

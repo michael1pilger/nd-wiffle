@@ -53,7 +53,7 @@
 </tr><tr style="--team:144,224,224"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/zyns.png?v=81" alt="Zyns"><span>Zyns</span></div></td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
-</tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order. GB sorting treats teams above 7th as games ahead (+), 7th as 0, and teams below 7th as games behind.</div></div></section>
+</tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order. GB is normalized to each team's 24-game pace so unequal games played cannot make a lower-PCT team appear ahead of a higher-PCT team. Sorting treats teams above 7th as ahead (+), 7th as 0, and teams below 7th as behind.</div></div></section>
 <section class="standings-shell power-panel" id="powerPanel"><div class="container">
   <div class="power-summary">
     <div class="power-summary-card"><small>Model</small><strong>Opponent-adjusted 2026 form</strong></div>
@@ -169,7 +169,7 @@ function renderLiveStandings(rows,seriesCount){
    return `<tr${cutoff} style="--team:${ui.color}">
     <td class="standings-rank">${r.rank}</td>
     <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}</span></div></td>
-    <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td data-sort-value="${Number(r.rank)<7?Math.abs(Number(r.GB||0)):Number(r.rank)===7?0:-Math.abs(Number(r.GB||0))}">${gb(r.GB,r.rank)}</td>
+    <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td data-sort-value="${-Number(r.GB||0)}">${gb(r.GB,r.rank)}</td>
     <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${formHtml(r.team_id)}</td>
    </tr>`;
  }).join("");
