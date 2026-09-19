@@ -44,7 +44,7 @@
 <div id="pictureMeta" class="picture-meta"></div>
 <div id="pictureRoot"><div class="picture-empty">Loading current playoff picture…</div></div>
 <div class="playoff-intel">
-  <section class="intel-card"><h2>Remaining Opponents & Paths</h2><div class="intel-sub">The league is treated as a full round robin while the schedule is still being filled: every unplayed opponent is assumed to remain until eight distinct opponent series are completed or scheduled, at which point the omitted matchup can be inferred. Scheduled series show dates; assumed series show TBD. Magic numbers are conservative and require finishing strictly ahead on wins.</div><div id="pathGrid" class="path-grid"><div class="picture-empty">Loading paths…</div></div></section>
+  <section class="intel-card"><h2>Remaining Opponents & Paths</h2><div class="intel-sub">The league is treated as a full round robin while the schedule is still being filled: every unplayed opponent is assumed to remain until eight distinct opponent series are completed or scheduled, at which point the omitted matchup can be inferred. Scheduled series show dates; assumed series show TBD. Magic numbers now use the top-seven clinch condition: a team only needs to guarantee finishing ahead of three opponents. Head-to-head wins have extra leverage because they add one win while also adding one loss to that opponent.</div><div id="pathGrid" class="path-grid"><div class="picture-empty">Loading paths…</div></div></section>
   <section class="intel-card"><h2>Most Crucial Upcoming Series</h2><div class="intel-sub">Ranked across all assumed remaining round-robin matchups, including unscheduled TBD series, using playoff-cutoff implications, direct bubble matchups, and standings proximity.</div><div id="crucialSeries"><div class="picture-empty">Loading upcoming series…</div></div></section>
 </div>
 </div></main><footer><div class="container">ND Wiffle · Live 2026 playoff picture.</div></footer>
@@ -159,67 +159,114 @@ function formatDate(d){
 function opponentChips(items){
  return items.map(x=>`<span class="opp-chip ${x.scheduled?"scheduled":""}">${logoFor(x.opp_id)?`<img class="team-icon" src="${logoFor(x.opp_id)}" alt="">`:""}<span>${esc(x.opp)}</span><span class="date">${x.scheduled?formatDate(x.date):"TBD"}</span></span>`).join("");
 }
+function opponentMagic(team,opp){
+ // Traditional elimination number against one opponent in a 24-game season:
+ // team wins + opponent losses needed to guarantee finishing ahead on wins.
+ return Math.max(0,25-n(team.W)-n(opp.L));
+}
+function clinchProfile(team,rows,rr){
+ const others=rows.filter(o=>o.team_id!==team.team_id);
+ // To guarantee a top-7 finish, the team only needs to guarantee finishing
+ // ahead of any three opponents. The three easiest opponents to eliminate
+ // are those already carrying the most losses.
+ const byEase=others.slice().sort((a,b)=>
+   opponentMagic(team,a)-opponentMagic(team,b) ||
+   n(b.L)-n(a.L) ||
+   n(a.W)-n(b.W)
+ );
+ const three=byEase.slice(0,3);
+ const limiting=three[2]||null;
+ const magic=limiting?opponentMagic(team,limiting):0;
+ const remainingGames=(rr.info.get(team.team_id)?.remaining?.length||0)*3;
+ const ownWinsNeeded=Math.min(magic,remainingGames);
+ const helpNeeded=Math.max(0,magic-remainingGames);
+ return {three,limiting,magic,remainingGames,ownWinsNeeded,helpNeeded};
+}
+function leverageForSeries(team,opp){
+ const before=opponentMagic(team,opp);
+ // Each head-to-head win simultaneously adds one team win and one opponent loss.
+ const afterOne=Math.max(0,before-2);
+ return Math.max(0,before-afterOne);
+}
 function renderPaths(rows,results,schedule){
  const root=document.getElementById("pathGrid");
  if(!rows.length){root.innerHTML='<div class="picture-empty">No standings available.</div>';return}
- const cutoff=rows[6],outsiders=rows.slice(7),rr=roundRobinRemaining(rows,results,schedule);
+ const rr=roundRobinRemaining(rows,results,schedule);
 
  root.innerHTML=rows.map(r=>{
    const x=rr.info.get(r.team_id)||{remaining:[],omitted:[]};
-   const remainingGames=x.remaining.length*3;
-   let tag="",path="";
+   const prof=clinchProfile(r,rows,rr);
+   const direct=x.remaining
+     .map(o=>({ ...o, oppRow:rows.find(t=>t.team_id===o.opp_id) }))
+     .filter(o=>o.oppRow)
+     .map(o=>({...o,magic:opponentMagic(r,o.oppRow),leverage:leverageForSeries(r,o.oppRow)}))
+     .sort((a,b)=>a.magic-b.magic||b.leverage-a.leverage);
 
-   if(r.rank<=7){
-     // Conservative magic number based on current outside challengers and the
-     // maximum games they could still win under the assumed remaining slate.
-     const threats=outsiders.map(o=>{
-       const orr=rr.info.get(o.team_id);
-       const oRemain=(orr?.remaining?.length||0)*3;
-       return {team:o.team,maxW:n(o.W)+oRemain};
-     });
-     const toughest=threats.sort((a,b)=>b.maxW-a.maxW)[0];
-     const magic=toughest?Math.max(0,toughest.maxW-n(r.W)+1):0;
-     tag=magic===0?"Clinched by current slate":`Magic number: ${magic}`;
-     path=magic===0
-       ?"Under the current round-robin assumption, no outside team can finish with more wins."
-       :`Any combination of ${magic} ${r.team} wins and losses by the strongest current outside challenger${toughest?` (${toughest.team})`:""} guarantees finishing strictly ahead on wins.`;
+   let tag,path;
+   if(prof.magic===0){
+     tag="Clinched";
+     path="This team is already guaranteed to finish ahead of at least three opponents on wins.";
+   }else if(prof.helpNeeded===0){
+     tag=`Magic number: ${prof.magic}`;
+     path=`At worst, ${prof.magic} more wins guarantee a top-seven finish even if every bubble rival wins all of its other games. The current three easiest teams to mathematically finish ahead of are ${prof.three.map(t=>t.team).join(", ")}.`;
    }else{
-     const ownRemain=remainingGames;
-     const maxW=n(r.W)+ownRemain;
-     const cutoffRemain=(rr.info.get(cutoff.team_id)?.remaining?.length||0)*3;
-     const cutoffMax=n(cutoff.W)+cutoffRemain;
-     const direct=x.remaining.find(o=>o.opp_id===cutoff.team_id);
-     tag=`${r.rank-7} spot${r.rank-7===1?"":"s"} outside`;
-     if(direct){
-       path=`Direct leverage remains against No. 7 ${cutoff.team}: sweeping that series creates a six-game swing in head-to-head win totals. Current maximum wins under the assumed slate: ${maxW}.`;
-     }else{
-       path=`Current target is No. 7 ${cutoff.team}. Under the assumed remaining slate, ${r.team} can reach ${maxW} wins while ${cutoff.team} can reach ${cutoffMax}.`;
-     }
+     tag="Needs help";
+     path=`Winning every remaining game is not enough to clinch without help. A combination of ${prof.magic} team wins and losses by the three easiest elimination targets is needed; at least ${prof.helpNeeded} of those reductions must come from opponent losses.`;
    }
 
-   const omitted=x.omitted.length?`<div class="path-copy opp"><strong>Likely omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`:"";
-   return `<div class="path-row"><div class="path-head"><span class="path-team">#${r.rank} ${esc(r.team)} · ${r.W}-${r.L}</span><span class="path-tag">${esc(tag)}</span></div><div class="path-copy">${esc(path)}</div><div class="opp-list">${opponentChips(x.remaining)}</div>${omitted}</div>`;
+   const leverage=direct.filter(o=>o.leverage>0&&o.magic>0).slice(0,3);
+   const leverageCopy=leverage.length
+     ? `<div class="path-copy"><strong>Direct leverage:</strong> ${leverage.map(o=>`${esc(o.opp)} (${o.magic} vs opponent now; each head-to-head win cuts that opponent's number by 2)`).join(" · ")}</div>`
+     : "";
+
+   const omitted=x.omitted.length
+     ? `<div class="path-copy opp"><strong>Likely omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`
+     : "";
+
+   return `<div class="path-row">
+     <div class="path-head"><span class="path-team">#${r.rank} ${esc(r.team)} · ${r.W}-${r.L}</span><span class="path-tag">${esc(tag)}</span></div>
+     <div class="path-copy">${path}</div>
+     ${leverageCopy}
+     <div class="opp-list">${opponentChips(x.remaining)}</div>
+     ${omitted}
+   </div>`;
  }).join("");
 }
 function renderCrucial(rows,results,schedule){
  const root=document.getElementById("crucialSeries"),rank=new Map(rows.map(r=>[r.team_id,n(r.rank)]));
  const rr=roundRobinRemaining(rows,results,schedule),seen=new Set(),matchups=[];
 
- // Include every assumed unplayed matchup, not just already scheduled series.
  for(const [teamId,x] of rr.info){
    for(const rem of x.remaining){
      const k=pairKey(teamId,rem.opp_id);
      if(seen.has(k))continue;
      seen.add(k);
+
      const sch=rr.scheduledByPair.get(k);
      const a=teamId,b=rem.opp_id,ra=rank.get(a)||99,rb=rank.get(b)||99;
+     const teamA=rows.find(t=>t.team_id===a),teamB=rows.find(t=>t.team_id===b);
      const bubbleA=Math.max(0,5-Math.abs(ra-7.5)),bubbleB=Math.max(0,5-Math.abs(rb-7.5));
      const crosses=(ra<=7&&rb>=8)||(rb<=7&&ra>=8);
      const bothBubble=ra>=5&&ra<=10&&rb>=5&&rb<=10;
      const closeness=Math.max(0,4-Math.abs(ra-rb));
      const scheduledBonus=sch?1.5:0;
-     const score=bubbleA+bubbleB+(crosses?8:0)+(bothBubble?4:0)+closeness+scheduledBonus;
-     let why=crosses?"Direct inside-vs-outside bubble matchup":bothBubble?"Both teams are clustered around the playoff cutoff":ra<=4&&rb<=4?"Seeding implications near the top of the bracket":"Standings and seeding implications";
+
+     // Head-to-head wins count twice against an opponent-specific magic number:
+     // one team win + one opponent loss.
+     const leverageA=teamA&&teamB?leverageForSeries(teamA,teamB):0;
+     const leverageB=teamA&&teamB?leverageForSeries(teamB,teamA):0;
+     const directMagic=Math.max(leverageA,leverageB);
+     const score=bubbleA+bubbleB+(crosses?8:0)+(bothBubble?4:0)+closeness+scheduledBonus+directMagic*2;
+
+     let why=crosses
+       ?"Direct inside-vs-outside bubble matchup"
+       :bothBubble
+         ?"Both teams are clustered around the playoff cutoff"
+         :ra<=4&&rb<=4
+           ?"Seeding implications near the top of the bracket"
+           :"Standings and seeding implications";
+     if(directMagic>0)why+=` · each head-to-head win can create a 2-step clinch swing`;
+
      matchups.push({
        a,b,ra,rb,score,why,
        date:sch?.series_date||"",
@@ -229,7 +276,11 @@ function renderCrucial(rows,results,schedule){
    }
  }
 
- matchups.sort((a,b)=>b.score-a.score||Number(b.scheduled)-Number(a.scheduled)||String(a.date||"9999").localeCompare(String(b.date||"9999")));
+ matchups.sort((a,b)=>
+   b.score-a.score ||
+   Number(b.scheduled)-Number(a.scheduled) ||
+   String(a.date||"9999").localeCompare(String(b.date||"9999"))
+ );
  const upcoming=matchups.slice(0,7);
  root.innerHTML=upcoming.length?upcoming.map(x=>`
    <div class="crucial-row">

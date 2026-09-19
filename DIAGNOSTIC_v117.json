@@ -1,0 +1,14 @@
+{
+  "gb_formula": "((team W-L) - (7th W-L)) / 2",
+  "gb_user_examples": {
+    "Stiffies": 0.0,
+    "Goobers": -0.5,
+    "Storm": 6.5,
+    "Zyns": -1.0
+  },
+  "magic_number_formula": "25 - team wins - opponent losses, using the 3rd-easiest opponent needed for a top-7 clinch",
+  "magic_number_never_presented_as_required_own_wins_if_above_remaining_games": "PASS",
+  "head_to_head_leverage": "each win reduces opponent-specific magic by 2",
+  "crucial_series_uses_head_to_head_leverage": "PASS",
+  "syntax": "PASS"
+}
