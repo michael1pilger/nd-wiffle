@@ -78,4 +78,4 @@ fetch("/api/admin/health",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.
  if(ok&&j.ok){dot.classList.add("ok");text.textContent=`Database online · ${j.database?.series||0} published series`;}
  else{dot.classList.add("err");text.textContent=j.error||"Database check failed";}
 }).catch(()=>{document.getElementById("healthDot").classList.add("err");document.getElementById("healthText").textContent="Database check unavailable";});
-</script></body></html>
+</script><script src="/assets/hof.js?v=118"></script></body></html>

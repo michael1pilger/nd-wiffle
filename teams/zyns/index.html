@@ -20,4 +20,4 @@ fetch("/api/public/rosters?season=2026",{cache:"no-store"}).then(r=>r.json()).th
  const rows=(j.rosters||[]).filter(x=>x.team_id==="zyns").sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
  body.innerHTML=rows.length?rows.map(x=>`<tr><td>${x.name}</td><td>${x.class_year?`Class '${String(x.class_year).slice(-2)}`:"—"}</td><td>${x.role==="captain"?"Captain":x.role==="protected"?"Protected":"Active"}</td></tr>`).join(""):'<tr><td colspan="3" class="muted">No active roster entries.</td></tr>';
 }).catch(()=>{});
-</script><script src="/assets/table-tools.js?v=81"></script></body></html>
+</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=118"></script></body></html>

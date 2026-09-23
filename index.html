@@ -306,4 +306,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
 })();
 </script><script>
 fetch("/api/public/fantasy?date="+(()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`})(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(!j.ok)return;const n=(j.scheduled||[]).length,e=(j.leaderboard||[]).length;homeFantasyMeta.textContent=j.locked?`${e} entries · Slate locked`:`${n} ${n===1?"series":"series"} today · ${e} entries · Locks ${j.slate?.lock_time||"TBD"}`;homeFantasyLink.textContent=j.locked?"View Leaderboard →":"Build Your Lineup →"}).catch(()=>{});
-</script></body></html>
+</script><script src="/assets/hof.js?v=118"></script></body></html>

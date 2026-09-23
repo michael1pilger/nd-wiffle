@@ -74,4 +74,4 @@ function setDraftTab(which){
 document.getElementById("draftBoardTab").addEventListener("click",()=>setDraftTab("board"));
 document.getElementById("availableTab").addEventListener("click",()=>setDraftTab("available"));
 fetch("/api/public/draft?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})).then(({ok,j})=>{if(!ok||!j.ok)throw new Error(j.error||"Draft unavailable");DATA=j;render()}).catch(e=>{console.error(e);document.getElementById("clock").textContent="Draft unavailable";document.getElementById("board").innerHTML='<div class="muted" style="padding:15px">Draft data is temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=81"></script></body></html>
+</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=118"></script></body></html>
