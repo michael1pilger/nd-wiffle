@@ -5,10 +5,22 @@
 .hof-card:hover{border-color:rgba(215,173,72,.55)}
 .hof-card img{width:42px;height:42px;object-fit:contain;border-radius:50%;background:#07111e;border:1px solid rgba(215,173,72,.32);padding:3px}
 .hof-card strong{display:block;font-size:13px}.hof-card small{display:block;color:var(--gold);font-size:8px;font-weight:900;text-transform:uppercase;margin-top:3px}
-.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.feat-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px}.feat-card h3{margin:0 0 10px;font-size:18px}
-.feat-list{display:grid;gap:6px}.feat-row{display:grid;grid-template-columns:minmax(115px,.7fr) minmax(0,2fr);gap:10px;align-items:start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px}.feat-row:last-child{border-bottom:0}.feat-count{color:var(--gold);font-weight:900}.feat-event{color:#d7e0ea}
+
+.feat-calendar{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px;margin-bottom:14px}
+.feat-calendar h3{margin:0 0 4px;font-size:18px}.feat-calendar-sub{color:var(--muted);font-size:9px;margin-bottom:12px}
+.feat-years{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:8px;overflow-x:auto;padding-bottom:3px}
+.feat-year{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#081321;padding:9px;min-height:165px}
+.feat-year-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.feat-year-head strong{font-size:15px}.feat-year-head span{font-size:8px;color:var(--gold);font-weight:900}
+.feat-event-card{border-left:3px solid var(--gold);background:#0b1728;border-radius:7px;padding:6px 7px;margin:6px 0;font-size:8px;line-height:1.35}
+.feat-event-card.nh{border-left-color:#7da8ff}.feat-event-card .feat-kind{font-size:7px;font-weight:950;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)}.feat-event-card.nh .feat-kind{color:#8eb3ff}
+.feat-event-card strong{display:block;font-size:9px;margin-top:2px}.feat-event-card small{display:block;color:var(--muted);font-size:7px;margin-top:2px}
+.feat-leaders{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.feat-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px}.feat-card h3{margin:0;font-size:18px}
+.feat-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.feat-sort{background:#07111e;color:#fff;border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:8px;font-weight:800}
+.feat-rank-list{display:grid;gap:4px}.feat-rank-row{display:grid;grid-template-columns:26px minmax(0,1fr) 45px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}.feat-rank-row:last-child{border-bottom:0}
+.feat-rank{color:var(--muted);font-size:9px;font-weight:900}.feat-player{font-size:10px;font-weight:900}.feat-total{text-align:right;color:var(--gold);font-size:16px;font-weight:950}.feat-total small{display:block;color:var(--muted);font-size:6px;text-transform:uppercase}
 .current-season-note{border:1px dashed var(--border);border-radius:12px;padding:16px;color:var(--muted);font-size:11px;line-height:1.5}
-@media(max-width:800px){.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feat-grid{grid-template-columns:1fr}}@media(max-width:520px){.hof-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feat-leaders{grid-template-columns:1fr}.feat-years{grid-template-columns:repeat(6,150px)}}.feat-grid{grid-template-columns:1fr}}@media(max-width:520px){.hof-grid{grid-template-columns:1fr}}
 </style>
 </head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
@@ -64,10 +76,23 @@
 
 <section class="awards-by-year-section" id="pitchingFeatsSection">
   <div class="container">
-    <div class="history-section-head"><div><div class="eyebrow">Pitching Feats</div><h2>Perfect Games & No-Hitters</h2><p class="muted">Historic individual pitching performances. Perfect games are listed separately from no-hitters.</p></div></div>
-    <div class="feat-grid">
-      <div class="feat-card"><h3>Perfect Games</h3><div id="perfectGames"></div></div>
-      <div class="feat-card"><h3>No-Hitters</h3><div id="noHitters"></div></div>
+    <div class="history-section-head"><div><div class="eyebrow">Pitching Feats</div><h2>Perfect Games & No-Hitters</h2><p class="muted">The timeline shows when each feat occurred. Player totals are ranked separately so counts are never tied to an unrelated game row.</p></div></div>
+
+    <div class="feat-calendar">
+      <h3>League Timeline</h3>
+      <div class="feat-calendar-sub">Events are grouped by season and ordered by match number within each year. Postseason performances appear after regular-season matches.</div>
+      <div id="featTimeline" class="feat-years"></div>
+    </div>
+
+    <div class="feat-leaders">
+      <div class="feat-card">
+        <div class="feat-card-head"><h3>Perfect Game Leaders</h3><select id="pgSort" class="feat-sort"><option value="desc">Most → Least</option><option value="asc">Least → Most</option></select></div>
+        <div id="perfectGameLeaders" class="feat-rank-list"></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-card-head"><h3>No-Hitter Leaders</h3><select id="nhSort" class="feat-sort"><option value="desc">Most → Least</option><option value="asc">Least → Most</option></select></div>
+        <div id="noHitterLeaders" class="feat-rank-list"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -94,17 +119,41 @@ for(const a of chron){
 }
 
 const HOF_MEMBERS=[{"id":"michael_pilger","name":"Michael Pilger"},{"id":"matthew_doty","name":"Matthew Doty"},{"id":"casey_cavlovich","name":"Casey Cavlovich"},{"id":"matt_baldwin","name":"Matt Baldwin"},{"id":"jack_penney","name":"Jack Penney"},{"id":"patrick_thompson","name":"Patrick Thompson"},{"id":"jack_glavy","name":"Jack Glavy"},{"id":"patrick_sullivan","name":"Patrick Sullivan"},{"id":"xavier_hirsch","name":"Xavier Hirsch"}];
-const PERFECT_GAMES=[{"count":"Pilger 2","event":"Pilger v. Underdawgs (2022, Match 19)"},{"count":"Doty 2","event":"Doty v. Stiffies (2022, Match 22)"},{"count":"","event":"Doty v. Ball Busters (2024, Match 12)"},{"count":"","event":"Pilger v. Silverbacks (2024 World Series)"},{"count":"Thomalla 1","event":"Thomalla v. Twin Titans (2026, Match 6)"}];
-const NO_HITTERS=[{"count":"Pires 1","event":"Pires v. Midnight (2021, Match 8)"},{"count":"Doty 4","event":"Doty v. Midnight (2021, Match 12)"},{"count":"Baldwin 2","event":"Fitzgerald v Silverbacks (2022, Match 1)"},{"count":"Bates 2","event":"Donegan v. Yard Goats (2022, Match 2)"},{"count":"Vielhauer 2","event":"Doty v. Yard Goats (2022, Match 7)"},{"count":"Pires 1","event":"Hirsch v. Silverbacks (2022, Match 12)"},{"count":"Fitzgerald 1","event":"Doty v. Zyns (2022, Match 15)"},{"count":"Donegan 1","event":"Doty v. Yard Goats (2022, Match 17)"},{"count":"Hirsch 1","event":"Sullivan v. Goobers (2023, Match 5)"},{"count":"Sullivan 1","event":"Cavlovich v. Ball Busters (2023, Match 14)"},{"count":"Cavlovich 1","event":"Baldwin v. Stiffies (2023, Match 17)"},{"count":"Rotatori 1","event":"Rotatori v. Silverbacks (2024, Match 2)"},{"count":"Dove 1","event":"Dove v. Silverbacks (2024, Match 2)"},{"count":"Dwyer 1","event":"Dwyer v. Storm (2024, Match 21)"},{"count":"Pilger 1","event":"Pilger v. Dirty Dawgs (2024 Semifinals)"},{"count":"Passo 1","event":"Passo v Silverbacks (2025 Match 5)"},{"count":"Blanco 1","event":"Bates v Dirty Dawgs (2025 Match 28)"},{"count":"Mato 1","event":"Baldwin v Zyns (2025, Wildcard)"},{"count":"","event":"Blanco v Zyns (2026, Match 2)"},{"count":"","event":"Mato v Silverbacks (2026, Match 5)"},{"count":"","event":"Vielhauer v Zyns (2026, Match 9)"},{"count":"","event":"Bates v Goobers (2026 Match 20)"},{"count":"","event":"Vielhauer v Twin Titans (2026 Match 21)"}];
+const PITCHING_FEATS=[{"kind":"PG","pitcher":"Pilger","opponent":"Underdawgs","year":2022,"label":"Match 19","order":19},{"kind":"PG","pitcher":"Doty","opponent":"Stiffies","year":2022,"label":"Match 22","order":22},{"kind":"PG","pitcher":"Doty","opponent":"Ball Busters","year":2024,"label":"Match 12","order":12},{"kind":"PG","pitcher":"Pilger","opponent":"Silverbacks","year":2024,"label":"World Series","order":999},{"kind":"PG","pitcher":"Thomalla","opponent":"Twin Titans","year":2026,"label":"Match 6","order":6},{"kind":"NH","pitcher":"Pires","opponent":"Midnight","year":2021,"label":"Match 8","order":8},{"kind":"NH","pitcher":"Doty","opponent":"Midnight","year":2021,"label":"Match 12","order":12},{"kind":"NH","pitcher":"Fitzgerald","opponent":"Silverbacks","year":2022,"label":"Match 1","order":1},{"kind":"NH","pitcher":"Donegan","opponent":"Yard Goats","year":2022,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Doty","opponent":"Yard Goats","year":2022,"label":"Match 7","order":7},{"kind":"NH","pitcher":"Hirsch","opponent":"Silverbacks","year":2022,"label":"Match 12","order":12},{"kind":"NH","pitcher":"Doty","opponent":"Zyns","year":2022,"label":"Match 15","order":15},{"kind":"NH","pitcher":"Doty","opponent":"Yard Goats","year":2022,"label":"Match 17","order":17},{"kind":"NH","pitcher":"Sullivan","opponent":"Goobers","year":2023,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Cavlovich","opponent":"Ball Busters","year":2023,"label":"Match 14","order":14},{"kind":"NH","pitcher":"Baldwin","opponent":"Stiffies","year":2023,"label":"Match 17","order":17},{"kind":"NH","pitcher":"Rotatori","opponent":"Silverbacks","year":2024,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Dove","opponent":"Silverbacks","year":2024,"label":"Match 2","order":2.1},{"kind":"NH","pitcher":"Dwyer","opponent":"Storm","year":2024,"label":"Match 21","order":21},{"kind":"NH","pitcher":"Pilger","opponent":"Dirty Dawgs","year":2024,"label":"Semifinals","order":998},{"kind":"NH","pitcher":"Passo","opponent":"Silverbacks","year":2025,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Bates","opponent":"Dirty Dawgs","year":2025,"label":"Match 28","order":28},{"kind":"NH","pitcher":"Baldwin","opponent":"Zyns","year":2025,"label":"Wildcard","order":997},{"kind":"NH","pitcher":"Blanco","opponent":"Zyns","year":2026,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Mato","opponent":"Silverbacks","year":2026,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Vielhauer","opponent":"Zyns","year":2026,"label":"Match 9","order":9},{"kind":"NH","pitcher":"Bates","opponent":"Goobers","year":2026,"label":"Match 20","order":20},{"kind":"NH","pitcher":"Vielhauer","opponent":"Twin Titans","year":2026,"label":"Match 21","order":21}];
 
-function renderHOF(){
-  const manifest={"michael_pilger":"/assets/headshots/michael_pilger.png","matthew_doty":"/assets/headshots/matthew_doty.png","casey_cavlovich":"/assets/headshots/casey_cavlovich.png","matt_baldwin":"/assets/headshots/matt_baldwin.png","jack_penney":"/assets/headshots/jack_penney.png","patrick_thompson":"/assets/headshots/patrick_thompson.png","jack_glavy":"/assets/headshots/jack_glavy.png","patrick_sullivan":"/assets/headshots/patrick_sullivan.png","xavier_hirsch":"/assets/headshots/xavier_hirsch.png"};
-  document.getElementById("hofGrid").innerHTML=HOF_MEMBERS.map(x=>`<a class="hof-card" href="/player/?id=${encodeURIComponent(x.id)}">${manifest[x.id]?`<img src="${manifest[x.id]}" alt="" onerror="this.style.display='none'">`:""}<div><strong>${x.name}</strong><small>★ Hall of Fame</small></div></a>`).join("");
+function featCounts(kind){
+  const counts=new Map();
+  for(const e of PITCHING_FEATS){
+    if(e.kind!==kind)continue;
+    counts.set(e.pitcher,(counts.get(e.pitcher)||0)+1);
+  }
+  return [...counts.entries()].map(([player,count])=>({player,count}));
 }
-function renderFeatList(id,rows){
-  document.getElementById(id).innerHTML=`<div class="feat-list">${rows.map(x=>`<div class="feat-row"><div class="feat-count">${x.count||""}</div><div class="feat-event">${x.event}</div></div>`).join("")}</div>`;
+
+function renderFeatTimeline(){
+  const years=[2021,2022,2023,2024,2025,2026];
+  document.getElementById("featTimeline").innerHTML=years.map(year=>{
+    const rows=PITCHING_FEATS.filter(x=>x.year===year).sort((a,b)=>a.order-b.order||a.pitcher.localeCompare(b.pitcher));
+    return `<div class="feat-year">
+      <div class="feat-year-head"><strong>${year}</strong><span>${rows.length} feat${rows.length===1?"":"s"}</span></div>
+      ${rows.length?rows.map(e=>`<div class="feat-event-card ${e.kind==="NH"?"nh":""}"><div class="feat-kind">${e.kind==="PG"?"Perfect Game":"No-Hitter"}</div><strong>${e.pitcher} vs. ${e.opponent}</strong><small>${e.label}</small></div>`).join(""):'<div class="muted" style="font-size:8px">No recorded feats</div>'}
+    </div>`;
+  }).join("");
 }
-renderHOF();renderFeatList("perfectGames",PERFECT_GAMES);renderFeatList("noHitters",NO_HITTERS);
+
+function renderFeatLeaders(kind,sortDir,target){
+  const rows=featCounts(kind).sort((a,b)=>sortDir==="asc"?(a.count-b.count||a.player.localeCompare(b.player)):(b.count-a.count||a.player.localeCompare(b.player)));
+  document.getElementById(target).innerHTML=rows.map((x,i)=>`<div class="feat-rank-row"><div class="feat-rank">${i+1}</div><div class="feat-player">${x.player}</div><div class="feat-total">${x.count}<small>${kind==="PG"?"PG":"NH"}</small></div></div>`).join("");
+}
+
+function renderPitchingFeats(){
+  renderFeatTimeline();
+  renderFeatLeaders("PG",document.getElementById("pgSort").value,"perfectGameLeaders");
+  renderFeatLeaders("NH",document.getElementById("nhSort").value,"noHitterLeaders");
+}
+document.getElementById("pgSort").addEventListener("change",()=>renderFeatLeaders("PG",document.getElementById("pgSort").value,"perfectGameLeaders"));
+document.getElementById("nhSort").addEventListener("change",()=>renderFeatLeaders("NH",document.getElementById("nhSort").value,"noHitterLeaders"));
+renderPitchingFeats();
 
 function postseasonClass(v){
   if(v==="Champions")return "history-champion";
@@ -168,4 +217,4 @@ function renderSeason(){
 }
 renderSeason();
 </script>
-<script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=118"></script></body></html>
+<script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=119"></script></body></html>

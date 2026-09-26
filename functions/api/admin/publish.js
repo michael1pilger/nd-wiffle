@@ -90,6 +90,17 @@ function serverValidate(payload, teamIds, playerIds){
   if(!teamIds.away || !teamIds.home) errors.push("Unknown home or away team.");
   if(teamIds.away && teamIds.home && teamIds.away===teamIds.home) errors.push("Home and away team cannot match.");
 
+  if(payload.series_type==="conditional_forfeit"){
+    const cf=payload.conditional_forfeit||{};
+    if(!["away","home"].includes(cf.forfeiting_side)) errors.push("Conditional forfeit requires a valid forfeiting_side.");
+    if(!["away","home"].includes(cf.beneficiary_side)) errors.push("Conditional forfeit requires a valid beneficiary_side.");
+    if(cf.forfeiting_side && cf.beneficiary_side && cf.forfeiting_side===cf.beneficiary_side) errors.push("Forfeiting and beneficiary sides cannot match.");
+    if(Number(cf.conditional_wins)!==3 || Number(cf.conditional_losses)!==3) errors.push("Conditional forfeit must assign exactly 3 wins and 3 losses.");
+    if((payload.games||[]).length) errors.push("Conditional forfeits cannot include game rows.");
+    if((payload.batting||[]).length || (payload.pitching||[]).length || (payload.participants||[]).length) errors.push("Conditional forfeits cannot include player stats or participants.");
+    return {errors,warnings};
+  }
+
   const games=payload.games||[];
   if(games.length!==3) errors.push("Exactly 3 games are required.");
   const participantByName=new Map((payload.participants||[]).map(p=>[norm(p.name),p]));
@@ -279,7 +290,7 @@ export async function onRequestPost(context) {
     ) VALUES(?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
   `).bind(
     payload.series_id,payload.series.season,payload.series.date,awayTeamId,homeTeamId,
-    payload.schema_version,payload.source||"ndwiffle_admin_v99",actor,payload.commissioner_notes||null,
+    payload.schema_version,payload.source||"ndwiffle_admin_v120",actor,payload.commissioner_notes||null,
     Number(payload.validation?.warning_count||0),JSON.stringify(payload)
   ));
 

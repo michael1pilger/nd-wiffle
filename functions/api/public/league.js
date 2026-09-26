@@ -29,7 +29,7 @@ export async function onRequestGet(context){
 
   try{
     const [
-      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes
+      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes,conditionalRes
     ]=await DB.batch([
       DB.prepare(`
         SELECT team_id, display_name
@@ -119,6 +119,15 @@ export async function onRequestGet(context){
         FROM team_rosters tr
         JOIN teams t ON t.team_id=tr.team_id
         WHERE tr.season=?
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          series_id,away_team_id,home_team_id,
+          json_extract(payload_json,'$.conditional_forfeit.forfeiting_side') AS forfeiting_side,
+          json_extract(payload_json,'$.conditional_forfeit.beneficiary_side') AS beneficiary_side
+        FROM series
+        WHERE season=?
+          AND json_extract(payload_json,'$.series_type')='conditional_forfeit'
       `).bind(season)
     ]);
 
@@ -133,7 +142,7 @@ export async function onRequestGet(context){
       }
     }
     const standings=new Map(teams.map(t=>[t.team_id,{
-      team_id:t.team_id,team:t.display_name,W:0,L:0,RS:0,RA:0
+      team_id:t.team_id,team:t.display_name,W:0,L:0,RS:0,RA:0,conditional_wins:0,conditional_losses:0
     }]));
     for(const g of games){
       const away=standings.get(g.away_team_id),home=standings.get(g.home_team_id);
@@ -142,6 +151,17 @@ export async function onRequestGet(context){
       home.RS+=n(g.home_score);home.RA+=n(g.away_score);
       if(n(g.away_score)>n(g.home_score)){away.W++;home.L++;}
       else{home.W++;away.L++;}
+    }
+    const conditionalForfeits=conditionalRes.results||[];
+    for(const cf of conditionalForfeits){
+      const away=standings.get(cf.away_team_id),home=standings.get(cf.home_team_id);
+      if(!away||!home)continue;
+      const forfeiter=cf.forfeiting_side==="away"?away:home;
+      const beneficiary=cf.forfeiting_side==="away"?home:away;
+      beneficiary.W+=3;
+      beneficiary.conditional_wins+=3;
+      forfeiter.L+=3;
+      forfeiter.conditional_losses+=3;
     }
     let rows=[...standings.values()].map(r=>{
       const gp=r.W+r.L;
@@ -192,12 +212,13 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v117",season,
+      ok:true,build:"v120",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,
       pitching,
       participants:participantsRes.results||[],
+      conditional_forfeits:conditionalForfeits,
       games
     });
   }catch(err){

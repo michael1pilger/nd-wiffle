@@ -1,0 +1,10 @@
+{
+  "conditional_forfeit_entry_mode": "PASS",
+  "stat_entry_bypassed": "PASS",
+  "conditional_record_effect": "beneficiary +3 W; forfeiter +3 L",
+  "standings_asterisk": "PASS",
+  "hover_text": "shows conditional wins/losses",
+  "makeup_workflow": "replace same series entry with played series; conditional effect disappears automatically",
+  "schema_migration_required": false,
+  "syntax": "PASS"
+}

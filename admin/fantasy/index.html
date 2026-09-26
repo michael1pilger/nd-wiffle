@@ -21,4 +21,4 @@ async function load(){status.textContent="Loading…";const r=await fetch(`/api/
 async function savePlayer(row,id){const body={action:"player",date:dateSel.value,player_id:id,batting_eligible:row.querySelector(".batE").checked,pitching_eligible:row.querySelector(".pitE").checked,batting_multiplier_override:row.querySelector(".batM").value,pitching_multiplier_override:row.querySelector(".pitM").value};const r=await fetch("/api/admin/fantasy",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),j=await r.json();status.textContent=r.ok&&j.ok?"Saved.":j.error||"Save failed.";if(r.ok)await load()}
 async function setStatus(x){const r=await fetch("/api/admin/fantasy",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"status",date:dateSel.value,status:x})}),j=await r.json();status.textContent=r.ok&&j.ok?`Slate ${x}.`:j.error||"Update failed.";if(r.ok)await load()}
 dateSel.value=localDate();dateSel.onchange=load;load();
-</script><script src="/assets/hof.js?v=118"></script></body></html>
+</script><script src="/assets/hof.js?v=119"></script></body></html>

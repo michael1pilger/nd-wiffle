@@ -68,11 +68,11 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v98</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v120</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
-<p class="admin-intro">Upload the four iScore series exports, enter the three game results directly here, add any Games Played overrides, then validate everything before publishing. Publishing writes the validated series directly to the protected D1 league database.</p>
+<p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
-<section class="admin-panel">
+<section class="admin-panel" id="statsUploadSection">
 <h2>1. Upload iScore Stats</h2>
 <p class="step-note">Only the four iScore exports are required. The old Series Results CSV is no longer used.</p>
 <div class="upload-grid">
@@ -87,14 +87,23 @@
 <section class="admin-panel">
 <h2>2. Series Details</h2>
 <div class="form-grid">
+<div class="field"><label>Entry Type</label><select id="entryType"><option value="played">Played Series</option><option value="conditional_forfeit">Conditional Forfeit</option></select></div>
 <div class="field"><label>Season</label><select id="season"><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select></div>
 <div class="field"><label>Series Date</label><input id="seriesDate" type="date"></div>
 <div class="field"><label>Away Team</label><select id="awayTeam"></select><div class="detected" id="awayDetected"></div></div>
 <div class="field"><label>Home Team</label><select id="homeTeam"></select><div class="detected" id="homeDetected"></div></div>
 </div>
+<div id="conditionalForfeitPanel" class="hidden" style="margin-top:16px;border:1px solid #6b5421;border-radius:12px;padding:14px;background:rgba(215,173,72,.06)">
+  <div class="admin-kicker" style="font-size:10px">Conditional Forfeit</div>
+  <p class="step-note" style="margin:5px 0 12px">Use this when a team cancels less than 3 hours before the series. The canceling team receives 3 conditional losses and the opponent receives 3 conditional wins. No player stats or pitcher decisions are recorded. If the series is later made up, replace this entry with the played series.</p>
+  <div class="form-grid">
+    <div class="field"><label>Team That Canceled</label><select id="forfeitSide"><option value="">Select...</option><option value="away">Away Team</option><option value="home">Home Team</option></select></div>
+    <div class="field"><label>Standing Effect</label><input id="forfeitEffect" value="3 conditional wins / 3 conditional losses" readonly></div>
+  </div>
+</div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="playerReviewSection">
 <h2>3. Player Identity Review</h2>
 <p class="step-note">Existing players are matched automatically. Every unrecognized name is flagged. If it is a genuine new player, confirm the player and enter that new player's class year. If it looks like a typo or name variant, map it to the correct existing player. Existing players never require a class year here.</p>
 <div id="playerReviewEmpty" class="empty-state">Parse the four iScore files to check player identities.</div>
@@ -102,7 +111,7 @@
 <div id="registrySummary" class="registry-summary"></div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="gameResultsSection">
 <h2>4. Game Results & Pitcher Decisions</h2>
 <p class="step-note">Scores and pitcher decisions are entered here instead of in a fifth CSV. Pitcher dropdowns are populated from the uploaded series participants.</p>
 <div class="game-table">
@@ -113,7 +122,7 @@
 </div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="gpSection">
 <h2>5. Games Played Overrides</h2>
 <p class="step-note">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to 3 GP. Add an override only if that player actually appeared in 1 or 2 games. Zero-stat roster entries are ignored.</p>
 <div id="gpEmpty" class="empty-state">No overrides. All active series participants will receive 3 GP.</div>
@@ -121,7 +130,7 @@
 <div class="admin-actions"><button class="admin-btn" id="addGpBtn">+ Add Override</button></div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="pitchUsageSection">
 <h2>6. Pitching Appearances & Starts</h2>
 <p class="step-note">Enter the number of pitching appearances and starts for every pitcher detected in the iScore exports. These cannot be reconstructed reliably from the aggregate series files.</p>
 <div id="pitchingMetaEmpty" class="empty-state">Parse the four iScore files to load detected pitchers.</div>
@@ -131,7 +140,7 @@
 </div>
 </section>
 
-<section class="admin-panel">
+<section class="admin-panel" id="correctionsSection">
 <h2>7. Manual Stat Corrections</h2>
 <p class="step-note">Use this only when the iScore export is known to be wrong. Corrections are applied to the normalized player row, while the original export remains preserved in <code>source_totals</code> and the correction is saved in the audit payload.</p>
 <div id="correctionEmpty" class="empty-state">No manual corrections.</div>
@@ -355,6 +364,25 @@ function populatePlayerSelects(){
     if([...s.options].some(o=>o.value===prior))s.value=prior;
   });
 }
+
+function isConditionalForfeit(){return document.getElementById("entryType")?.value==="conditional_forfeit"}
+function syncEntryMode(){
+  const cf=isConditionalForfeit();
+  ["statsUploadSection","playerReviewSection","gameResultsSection","gpSection","pitchUsageSection","correctionsSection"].forEach(id=>{
+    document.getElementById(id)?.classList.toggle("hidden",cf);
+  });
+  document.getElementById("conditionalForfeitPanel")?.classList.toggle("hidden",!cf);
+  const btn=document.getElementById("validateBtn");
+  if(btn)btn.textContent=cf?"Validate Conditional Forfeit":"Validate Series";
+  if(cf){
+    document.getElementById("publishStatus").textContent="Select teams, date, and the canceling team, then validate the conditional forfeit.";
+  }else{
+    syncPublishState();
+  }
+}
+document.getElementById("entryType").addEventListener("change",syncEntryMode);
+syncEntryMode();
+
 function parseLoaded(){
   const missing=Object.entries(fileData).filter(([,v])=>!v).map(([k])=>k);
   if(missing.length){alert("Upload all four iScore files first.");return false}
@@ -729,6 +757,65 @@ function renderSocialLeaders(leaders){
 }
 
 document.getElementById("validateBtn").onclick=()=>{
+  if(isConditionalForfeit()){
+    const checks=[];
+    const away=document.getElementById("awayTeam").value;
+    const home=document.getElementById("homeTeam").value;
+    const season=Number(document.getElementById("season").value);
+    const date=document.getElementById("seriesDate").value||null;
+    const forfeitingSide=document.getElementById("forfeitSide").value;
+
+    if(!away||!home)check(checks,"error","Select both teams");
+    else if(away===home)check(checks,"error","Home and away teams cannot match");
+    else check(checks,"pass","Series teams selected",`${away} at ${home}`);
+
+    if(!date)check(checks,"error","Series date is required");
+    else if(Number(date.slice(0,4))!==season)check(checks,"warn","Series date is outside the selected season",`${date} does not match ${season}.`);
+    else check(checks,"pass","Series date matches selected season",date);
+
+    if(!["away","home"].includes(forfeitingSide)){
+      check(checks,"error","Select the team that canceled","Conditional forfeits require a forfeiting team.");
+    }else{
+      const forfeitingTeam=forfeitingSide==="away"?away:home;
+      const beneficiaryTeam=forfeitingSide==="away"?home:away;
+      check(checks,"info","Conditional forfeit standing adjustment",`${beneficiaryTeam} receives 3 conditional wins; ${forfeitingTeam} receives 3 conditional losses.`);
+      check(checks,"pass","Stat entry bypassed","No batting, pitching, GP, or pitcher-decision rows will be published.");
+    }
+
+    const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
+    const payload={
+      schema_version:3,
+      source:"ndwiffle_admin_v120",
+      series_type:"conditional_forfeit",
+      series_id:seriesId,
+      series:{season,date,away_team:away,home_team:home},
+      conditional_forfeit:{
+        forfeiting_side:forfeitingSide||null,
+        beneficiary_side:forfeitingSide==="away"?"home":forfeitingSide==="home"?"away":null,
+        conditional_wins:3,
+        conditional_losses:3,
+        rule:"Canceled less than 3 hours before scheduled series"
+      },
+      games:[],
+      gp_overrides:[],
+      player_resolutions:[],
+      pitching_usage:[],
+      manual_corrections:[],
+      commissioner_notes:document.getElementById("notes").value.trim()||null,
+      participants:[],
+      batting:[],
+      pitching:[],
+      validation:{
+        warning_count:checks.filter(c=>c.type==="warn").length,
+        error_count:checks.filter(c=>c.type==="error").length,
+        warnings_approved:[],
+        all_warnings_approved:checks.filter(c=>c.type==="warn").length===0
+      }
+    };
+    renderSocialLeaders({batting:[],pitching:[]});
+    renderReview(checks,payload);
+    return;
+  }
   if(!parsed && !parseLoaded())return;
   const checks=[];
   if(playerResolutionState.loading)check(checks,"error","Player registry check is still running","Wait for the player identity review to finish.");
@@ -1017,5 +1104,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=118"></script></body>
+<script src="/assets/hof.js?v=120"></script></body>
 </html>

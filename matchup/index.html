@@ -199,4 +199,4 @@ else Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Results unavailable");return j}),
  fetch("/api/public/rosters?season=2026",{cache:"no-store"}).then(async r=>{const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Rosters unavailable");return j})
 ]).then(([data,results,rosters])=>render(data,results,rosters)).catch(err=>{console.error(err);document.getElementById("matchRoot").innerHTML='<div class="match-empty">Matchup details are temporarily unavailable.</div>'});
-</script><script src="/assets/hof.js?v=118"></script></body></html>
+</script><script src="/assets/hof.js?v=119"></script></body></html>

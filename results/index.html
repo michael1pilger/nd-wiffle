@@ -126,4 +126,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
  .then(async r=>({ok:r.ok,body:await r.json()}))
  .then(({ok,body})=>{if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");render(body.series||[])})
  .catch(err=>{console.error(err);document.getElementById("resultsList").innerHTML='<div class="result-empty">Results are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=118"></script></body></html>
+</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=119"></script></body></html>

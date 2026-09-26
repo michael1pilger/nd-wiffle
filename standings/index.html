@@ -16,6 +16,7 @@
 .power-up{color:#7fd69a;font-weight:850}.power-down{color:#ff9f9f;font-weight:850}.power-flat{color:var(--muted);font-weight:850}
 .power-method{color:var(--muted);font-size:11px;line-height:1.6;margin-top:14px}
 @media(max-width:760px){.power-summary{grid-template-columns:1fr}.power-table th,.power-table td{padding:9px 7px;font-size:10px}}
+.conditional-marker{display:inline-flex;align-items:center;justify-content:center;margin-left:4px;color:var(--gold);font-size:13px;font-weight:950;cursor:help;vertical-align:super;line-height:1}.conditional-marker:hover{filter:brightness(1.2)}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
@@ -159,6 +160,15 @@ function formHtml(teamId){
   return `<span style="font-weight:900;color:${color}">${x.streakType} ${x.streak}</span>`;
 }
 
+
+function conditionalMarker(r){
+ const w=Number(r.conditional_wins||0),l=Number(r.conditional_losses||0);
+ if(!w&&!l)return "";
+ const parts=[];
+ if(w)parts.push(`${w} conditional ${w===1?"win":"wins"} from a late-cancellation forfeit`);
+ if(l)parts.push(`${l} conditional ${l===1?"loss":"losses"} from a late-cancellation forfeit`);
+ return `<span class="conditional-marker" title="${parts.join("; ")}">*</span>`;
+}
 function renderLiveStandings(rows,seriesCount){
  const body=document.getElementById("standingsBody");
  body.innerHTML=rows.map((r,i)=>{
@@ -166,13 +176,13 @@ function renderLiveStandings(rows,seriesCount){
    const cutoff=i===7?' class="playoff-line"':"";
    return `<tr${cutoff} style="--team:${ui.color}">
     <td class="standings-rank">${r.rank}</td>
-    <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}</span></div></td>
+    <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}${conditionalMarker(r)}</span></div></td>
     <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td data-sort-value="${Number(r.GB||0)}">${gb(r.GB,r.rank)}</td>
     <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${formHtml(r.team_id)}</td>
    </tr>`;
  }).join("");
  document.getElementById("standingsStatus").textContent=seriesCount
-   ? `Live standings from ${seriesCount} published 2026 ${seriesCount===1?"series":"series"}.`
+   ? `Live standings from ${seriesCount} published 2026 ${seriesCount===1?"series":"series"}. * indicates conditional forfeit wins/losses pending a possible makeup.`
    : "No 2026 series have been published yet.";
 }
 const num=v=>Number(v||0);
@@ -331,4 +341,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=118"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=120"></script></body></html>

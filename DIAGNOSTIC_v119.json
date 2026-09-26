@@ -1,0 +1,41 @@
+{
+  "pitching_feats_timeline": "2021-2026 year calendar",
+  "perfect_game_counts": {
+    "Pilger": 2,
+    "Doty": 2,
+    "Thomalla": 1
+  },
+  "no_hitter_counts": {
+    "Doty": 4,
+    "Baldwin": 2,
+    "Bates": 2,
+    "Vielhauer": 2,
+    "Pires": 1,
+    "Fitzgerald": 1,
+    "Donegan": 1,
+    "Hirsch": 1,
+    "Sullivan": 1,
+    "Cavlovich": 1,
+    "Rotatori": 1,
+    "Dove": 1,
+    "Dwyer": 1,
+    "Pilger": 1,
+    "Passo": 1,
+    "Blanco": 1,
+    "Mato": 1
+  },
+  "leader_sort": "most-to-least / least-to-most",
+  "new_default_grid": {
+    "rows": [
+      "team_midnight",
+      "season_bat_hits_gte_20",
+      "season_pit_ip_gte_20"
+    ],
+    "cols": [
+      "team_goobers",
+      "career_pit_w_gte_5",
+      "team_underdawgs"
+    ]
+  },
+  "syntax": "PASS"
+}
