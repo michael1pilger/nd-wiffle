@@ -68,7 +68,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v120</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v121</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
 <p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
@@ -703,7 +703,7 @@ function renderReview(checks,payload){
   document.getElementById("passCount").textContent=counts.pass;
   document.getElementById("warnCount").textContent=counts.warn;
   document.getElementById("errorCount").textContent=counts.error;
-  document.getElementById("playerCount").textContent=parsed.participants.length;
+  document.getElementById("playerCount").textContent=(payload.participants||parsed?.participants||[]).length;
   let warnIndex=0;
   document.getElementById("checks").innerHTML=checks.map(c=>{
     let approval="";
@@ -715,9 +715,10 @@ function renderReview(checks,payload){
   }).join("");
   document.querySelectorAll(".warningApproval,.warning-reason").forEach(el=>el.addEventListener("input",syncWarningApprovals));
   const away=payload.series.away_team,home=payload.series.home_team;
-  const aw=payload.games.filter(g=>g.away_score>g.home_score).length, hw=payload.games.filter(g=>g.home_score>g.away_score).length;
-  const runs=sumGameScores();
-  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div><div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
+  const games=payload.games||[];
+  const aw=games.filter(g=>g.away_score>g.home_score).length, hw=games.filter(g=>g.home_score>g.away_score).length;
+  const runs=payload.series_type==="conditional_forfeit"?{away:0,home:0}:sumGameScores();
+  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div>${payload.series_type==="conditional_forfeit"?`<div style="margin-top:8px;color:#d7ad48;font-weight:900">Conditional Forfeit</div><div class="muted">${payload.conditional_forfeit?.beneficiary_side==="away"?away:home} +3 conditional wins · ${payload.conditional_forfeit?.forfeiting_side==="away"?away:home} +3 conditional losses</div>`:""}<div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
   document.getElementById("playerPreview").innerHTML=`<table class="preview-table"><tr><th>Player</th><th>Team</th><th>GP</th></tr>${payload.participants.map(p=>`<tr><td>${p.name}</td><td>${p.team}</td><td>${p.games_played}</td></tr>`).join("")}</table><div class="payload-meta">${payload.batting.length} batting rows · ${payload.pitching.length} pitching rows · ${payload.pitching_decisions.length} pitchers with decisions · ${payload.manual_corrections.length} manual corrections</div>`;
   document.getElementById("payload").value=JSON.stringify(payload,null,2);
   document.getElementById("review").classList.remove("hidden");
@@ -785,7 +786,7 @@ document.getElementById("validateBtn").onclick=()=>{
     const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
     const payload={
       schema_version:3,
-      source:"ndwiffle_admin_v120",
+      source:"ndwiffle_admin_v121",
       series_type:"conditional_forfeit",
       series_id:seriesId,
       series:{season,date,away_team:away,home_team:home},
@@ -1104,5 +1105,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=120"></script></body>
+<script src="/assets/hof.js?v=121"></script></body>
 </html>

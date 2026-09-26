@@ -1,0 +1,7 @@
+{
+  "root_cause": "renderReview referenced parsed.participants during conditional-forfeit validation even though stat files are intentionally not parsed",
+  "conditional_validate_button": "PASS",
+  "conditional_review_preview": "PASS",
+  "no_stat_files_required": "PASS",
+  "syntax": "PASS"
+}
