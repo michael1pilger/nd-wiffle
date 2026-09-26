@@ -1,0 +1,6 @@
+{
+  "root_cause": "syncEntryMode called syncPublishState before lastPayload was initialized, causing a ReferenceError that stopped the script before validateBtn.onclick was assigned",
+  "early_syncPublishState_removed": "PASS",
+  "validate_handler_can_bind": "PASS",
+  "syntax": "PASS"
+}

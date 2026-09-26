@@ -290,7 +290,7 @@ export async function onRequestPost(context) {
     ) VALUES(?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
   `).bind(
     payload.series_id,payload.series.season,payload.series.date,awayTeamId,homeTeamId,
-    payload.schema_version,payload.source||"ndwiffle_admin_v122",actor,payload.commissioner_notes||null,
+    payload.schema_version,payload.source||"ndwiffle_admin_v123",actor,payload.commissioner_notes||null,
     Number(payload.validation?.warning_count||0),JSON.stringify(payload)
   ));
 

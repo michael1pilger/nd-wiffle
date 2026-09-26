@@ -68,7 +68,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v122</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v123</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
 <p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
@@ -377,7 +377,8 @@ function syncEntryMode(){
   if(cf){
     document.getElementById("publishStatus").textContent="Select teams, date, and the canceling team, then validate the conditional forfeit.";
   }else{
-    syncPublishState();
+    const status=document.getElementById("publishStatus");
+    if(status && !status.textContent.trim())status.textContent="Database publish is not ready until validation passes.";
   }
 }
 document.getElementById("entryType").addEventListener("change",syncEntryMode);
@@ -795,7 +796,7 @@ document.getElementById("validateBtn").onclick=()=>{
     const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
     const payload={
       schema_version:3,
-      source:"ndwiffle_admin_v122",
+      source:"ndwiffle_admin_v123",
       series_type:"conditional_forfeit",
       series_id:seriesId,
       series:{season,date,away_team:away,home_team:home},
@@ -1118,5 +1119,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=122"></script></body>
+<script src="/assets/hof.js?v=123"></script></body>
 </html>
