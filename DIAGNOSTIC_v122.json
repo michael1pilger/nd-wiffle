@@ -1,0 +1,12 @@
+{
+  "root_cause": "renderReview still accessed payload.participants.map and payload.pitching_decisions.length directly; conditional payload had no pitching_decisions field",
+  "conditional_payload_full_shape": "PASS",
+  "render_review_null_safe": "PASS",
+  "validate_click_visual_feedback": "PASS",
+  "remaining_unsafe_refs": {
+    "payload.participants.map": false,
+    "payload.pitching_decisions.length": false,
+    "payload.manual_corrections.length": false
+  },
+  "syntax": "PASS"
+}
