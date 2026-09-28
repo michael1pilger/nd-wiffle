@@ -17,10 +17,21 @@ export async function onRequestGet(context){
    WHERE ss.season=?
    ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
   `).bind(season).all();
-  return json({ok:true,build:"v80",season,scheduled:rows.results||[]});
+  
+  let exhibitions=[],exhibition_schema_ready=true;
+  try{
+    const er=await DB.prepare(`
+      SELECT event_id,season,event_type,event_title,team_a_name,team_a_logo,team_b_name,team_b_logo,
+             event_date,event_time,location,notes
+      FROM exhibition_events WHERE season=?
+      ORDER BY event_date,COALESCE(event_time,'23:59'),event_title,team_a_name
+    `).bind(season).all();
+    exhibitions=er.results||[];
+  }catch{exhibition_schema_ready=false;}
+  return json({ok:true,build:"v124",season,scheduled:rows.results||[],exhibitions,exhibition_schema_ready});
  }catch(err){
   const msg=String(err?.message||err);
-  if(msg.includes("no such table"))return json({ok:true,build:"v80",season,scheduled:[],schema_ready:false});
+  if(msg.includes("no such table"))return json({ok:true,build:"v124",season,scheduled:[],schema_ready:false});
   return json({ok:false,error:"Public schedule query failed.",detail:msg},500);
  }
 }

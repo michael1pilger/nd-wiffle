@@ -55,8 +55,20 @@ export async function onRequestGet(context){
     `).bind(season).all();
     captain_availability=ar.results||[];
   }catch{}
+  let exhibitions=[],exhibition_schema_ready=true;
+  try{
+    const er=await DB.prepare(`
+      SELECT event_id,season,event_type,event_title,team_a_name,team_a_logo,team_b_name,team_b_logo,
+             event_date,event_time,location,notes,updated_at
+      FROM exhibition_events WHERE season=?
+      ORDER BY event_date,COALESCE(event_time,'23:59'),event_title,team_a_name
+    `).bind(season).all();
+    exhibitions=er.results||[];
+  }catch(err){
+    exhibition_schema_ready=false;
+  }
   const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
-  return json({ok:true,build:"v90",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v124",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
@@ -65,6 +77,44 @@ export async function onRequestPost(context){
  let body;try{body=await context.request.json()}catch{return json({ok:false,error:"Request body must be valid JSON."},400)}
  const action=clean(body.action||"save"),season=Number(body.season||2026),actor=context.data.actorEmail||"unknown-access-user";
  if(!Number.isInteger(season)||season<2021||season>2100)return json({ok:false,error:"Invalid season."},400);
+
+ if(action==="save_exhibition"){
+  const type=clean(body.event_type),title=clean(body.event_title),aName=clean(body.team_a_name),bName=clean(body.team_b_name),
+        aLogo=clean(body.team_a_logo),bLogo=clean(body.team_b_logo),date=clean(body.event_date),time=clean(body.event_time),
+        location=clean(body.location),notes=clean(body.notes);
+  if(!["all_star","exhibition"].includes(type))return json({ok:false,error:"Choose All-Star Game or Exhibition Game."},422);
+  if(!aName||!bName)return json({ok:false,error:"Enter both exhibition team names."},422);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return json({ok:false,error:"A valid event date is required."},422);
+  if(time&&!/^\d{2}:\d{2}$/.test(time))return json({ok:false,error:"Time must use HH:MM format."},422);
+  let eventId=clean(body.event_id);
+  if(!eventId){
+    const slug=v=>clean(v).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,32)||"event";
+    eventId=`exh_${season}_${date}_${slug(title||`${aName}-${bName}`)}_${Date.now().toString(36)}`;
+  }
+  try{
+   await DB.prepare(`
+    INSERT INTO exhibition_events(event_id,season,event_type,event_title,team_a_name,team_a_logo,team_b_name,team_b_logo,event_date,event_time,location,notes,updated_by)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+    ON CONFLICT(event_id) DO UPDATE SET
+      season=excluded.season,event_type=excluded.event_type,event_title=excluded.event_title,
+      team_a_name=excluded.team_a_name,team_a_logo=excluded.team_a_logo,
+      team_b_name=excluded.team_b_name,team_b_logo=excluded.team_b_logo,
+      event_date=excluded.event_date,event_time=excluded.event_time,location=excluded.location,notes=excluded.notes,
+      updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP
+   `).bind(eventId,season,type,title||null,aName,aLogo||null,bName,bLogo||null,date,time||null,location||null,notes||null,actor).run();
+   return json({ok:true,action:"saved_exhibition",season,event_id:eventId});
+  }catch(err){
+   const msg=String(err?.message||err);
+   if(msg.includes("no such table"))return json({ok:false,code:"EXHIBITION_SCHEMA_MISSING",error:"Special-event scheduling is not installed. Run migrations/0027_exhibition_events.sql."},503);
+   return json({ok:false,error:"Could not save special event.",detail:msg},500);
+  }
+ }
+ if(action==="delete_exhibition"){
+  const eventId=clean(body.event_id);if(!eventId)return json({ok:false,error:"event_id is required."},422);
+  try{await DB.prepare("DELETE FROM exhibition_events WHERE event_id=? AND season=?").bind(eventId,season).run();return json({ok:true,action:"deleted_exhibition",event_id:eventId});}
+  catch(err){const msg=String(err?.message||err);if(msg.includes("no such table"))return json({ok:false,code:"EXHIBITION_SCHEMA_MISSING",error:"Special-event scheduling is not installed. Run migrations/0027_exhibition_events.sql."},503);return json({ok:false,error:"Could not remove special event.",detail:msg},500)}
+ }
+
  if(action==="delete"){
   const key=clean(body.pair_key);
   if(!key)return json({ok:false,error:"pair_key is required."},422);
