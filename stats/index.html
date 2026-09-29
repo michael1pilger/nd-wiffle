@@ -47,7 +47,7 @@
  <div id="fullHint" class="qualifier-hint full-stats-hint">Full Stats exposes every field available in the normalized website dataset. Scroll horizontally on smaller screens.</div>
  
 <div class="qualifier-hint" id="warHint">
-  ND WAR uses league-specific replacement levels. Batting WAR is intentionally compressed relative to the earlier model. Pitching WAR treats the replacement option as soft toss rather than another competent pitcher, but pWAR is normalized to the short ND Wiffle season. Real innings still provide positive value, poor pitching bottoms out at 0 pWAR, and run-prevention value is compressed to prevent MLB-scale career totals. Career WAR sums regular-season, inferred playoff, and live 2026 value.
+  ND offensive WAR now uses a wOBA-based runs-above-replacement model. Walks, singles, doubles, triples, and home runs receive linear run values; wOBA is converted to runs above league average, replacement credit is added for playing time, and runs are converted to wins. A full 10-team, 24-game season is calibrated to roughly 27 offensive WAR, so both rate performance and PA matter. wRC+ is shown with 100 = league average. Pitching WAR remains on the short-season soft-toss replacement scale. Career WAR sums regular-season, inferred playoff, and live 2026 value.
 </div>
 <div id="table"></div>
  <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
@@ -120,8 +120,8 @@ const CURRENT_ROSTER_TEAM_BY_NAME={};
 [
  ["storm",["Michael Pilger","Will Stevens","Gerard Sharkey","Landon Edwards","Xavier Hirsch","Jimmy Suter","Collin Barker","Vasco Esquivel","Anthony Bellone","Freddy Rudolph","Johnny Carey","John Savage","Liam Lyon"]],
  ["stiff-wifflers",["Brendan Mato","Sam Spolyar","Tommy Wollscheid","Brady Cahill","Quinn Brown","Nick Swiderski","Jaden Lukose","Will Carter V","Alex Tsvetkov","Jack Conners","Patrick Gareau"]],
- ["midnight",["Jacob Clark","Joey Thomalla","Jimmy Szpak","Diego Alonso","Logan Bettinger","Freddy Zeckser","Bennett Alvarado","Zach Zywiec","Anthony Lucatuorto","Aiden O'Reilly","Ben Jollay","Charlie Doherty","Andrew Le"]],
- ["goofy-goobers",["Jacob Olejnik","Ian Phelps","Chase Niemeyer","Dean Zervos","Nik Husarik","Danny Kennedy","Rainier Gilliss","Charlie Chevalier","Michael Budd","Kevin Harnish","Chuck Menard"]],
+ ["midnight",["Jacob Clark","Joey Thomalla","Jimmy Szpak","Diego Alonso","Logan Bettinger","Freddy Zeckser","Zach Zywiec","Anthony Lucatuorto","Aiden O'Reilly","Ben Jollay","Charlie Doherty","Andrew Le"]],
+ ["goofy-goobers",["Jacob Olejnik", "Ian Phelps", "Chase Niemeyer", "Dean Zervos", "Nik Husarik", "Danny Kennedy", "Rainier Gilliss", "Charlie Chevalier", "Michael Budd", "Kevin Harnish", "Chuck Menard", "Grayson Beckham"]],
  ["dirty-dawgs",["Jimmy Redfern","Johnny Toole","Andrew Frey","Kevin Curran","Joe O'Melveny","Connor Savage","Jacob Bailey","Liam Kaseburg","Christopher Marvel","Liam Hill","Donny Edwards","Sebastian Borjas"]],
  ["ball-busters",["Evan Reid","JT Kaiser","Alex Rivera","JP Cardenas","Tim Baldwin","Nick Hulgrave","Jeb Blanco","James Baird","Teddy Skendzel","Jack Powers","Noah Adkins","Nathan Skendzel","Noah Cerniglia"]],
  ["twin-titans",["Luke Gormsen","Eddie McGettigan","Will Cohn","Ben Meyer","Silas Carder","Matt Schuenemann","Jacob Bechtel","Patrick Collins","Michael Camilleri","Max Busk","Patrick Jackson","Justin Murray"]],
@@ -154,11 +154,13 @@ function rowRgb(r){return teamInfo(r).ui?.rgb||"90,98,110"}
 
 function num(v){const x=parseFloat(v);return Number.isFinite(x)?x:0}
 
-function runsCreatedRow(r){
- const h=num(r.Hits),bb=num(r.BB),ab=num(r.ABs);
- const tb=num(r.Singles)+2*num(r.Doubles)+3*num(r.Triples)+4*num(r.HRs);
- const denom=ab+bb;
- return denom>0?((h+bb)*tb)/denom:0;
+function ndWobaRow(r){
+ const pa=num(r.PAs);
+ if(pa<=0)return 0;
+ // ND Wiffle linear weights: reaching base is especially valuable in a
+ // three-inning game, while extra bases and home runs retain additional value.
+ const weighted=.72*num(r.BB)+.90*num(r.Singles)+1.25*num(r.Doubles)+1.55*num(r.Triples)+2.05*num(r.HRs);
+ return weighted/pa;
 }
 function seasonWarMap(batRows,pitRows){
  const bats=(batRows||[]).filter(r=>num(r.PAs)>0);
@@ -167,37 +169,44 @@ function seasonWarMap(batRows,pitRows){
    return outs>0;
  });
 
+ // ---- Offensive WAR ----
+ // Framework: ND-wOBA -> runs above average -> replacement runs -> wins.
+ // The full modern 10-team / 24-game league is calibrated to distribute
+ // approximately 27 offensive WAR across a complete regular season.
  const lgPA=bats.reduce((a,r)=>a+num(r.PAs),0);
- const lgRC=bats.reduce((a,r)=>a+runsCreatedRow(r),0);
- const lgRcPerPa=lgPA>0?lgRC/lgPA:0;
-
- // Batting replacement is deliberately closer to average than before and
- // the resulting RAR is compressed. This keeps elite bats valuable without
- // producing implausibly large WAR totals in a short 24-game season.
- const replacementBatRate=lgRcPerPa*.90;
- const battingCompression=.72;
+ const lgWeighted=bats.reduce((a,r)=>a+(
+   .72*num(r.BB)+.90*num(r.Singles)+1.25*num(r.Doubles)+1.55*num(r.Triples)+2.05*num(r.HRs)
+ ),0);
+ const lgWoba=lgPA>0?lgWeighted/lgPA:0;
+ const wobaScale=1.15;
+ const runsPerWin=6.0;
+ const fullSeasonPA=3200;
+ const fullSeasonOWarPool=27.0;
+ // This makes the WAR pool accumulate naturally as the season is played and
+ // scales older/smaller league seasons down with their actual PA volume.
+ const replacementRunsPerPA=(fullSeasonOWarPool*runsPerWin)/fullSeasonPA;
 
  const lgOuts=pits.reduce((a,r)=>a+((r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP)),0);
  const lgER=pits.reduce((a,r)=>a+num(r.ER),0);
  const lgErPerOut=lgOuts>0?lgER/lgOuts:0;
 
- // ND Wiffle replacement pitching is soft toss, not another ordinary pitcher.
- // Use a deliberately poor soft-toss run rate and separately reward workload.
+ // Pitching WAR remains on the existing short-season soft-toss replacement scale.
  const softTossErPerOut=Math.max(.60,lgErPerOut*1.65);
- const priorOuts=27;                 // stabilize small pitching samples
- const workloadWarPerIP=.035;        // supplying real pitching has roster value
- const preventionShare=.70;          // run-prevention component before league normalization
- const pitchingWarNormalization=.30; // compress pWAR to ND Wiffle's short-season scale
+ const priorOuts=27;
+ const workloadWarPerIP=.035;
+ const preventionShare=.70;
+ const pitchingWarNormalization=.30;
 
- const approxTeamPA=12;
- const runsPerWin=Math.max(4.5,Math.min(9.0,2*lgRcPerPa*approxTeamPA || 6.0));
  const map=new Map();
 
  for(const r of bats){
-   const pa=num(r.PAs),rc=runsCreatedRow(r);
-   const rar=(rc-replacementBatRate*pa)*battingCompression;
-   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
-   x.oWAR=rar/runsPerWin;
+   const pa=num(r.PAs),woba=ndWobaRow(r);
+   const wRAA=((woba-lgWoba)/wobaScale)*pa;
+   const replacementRuns=replacementRunsPerPA*pa;
+   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0,wOBA:0,wRCplus:100};
+   x.oWAR=(wRAA+replacementRuns)/runsPerWin;
+   x.wOBA=woba;
+   x.wRCplus=lgWoba>0?100*(woba/lgWoba):100;
    x.WAR=x.oWAR+x.pWAR;map.set(r.Player_ID,x);
  }
 
@@ -207,7 +216,7 @@ function seasonWarMap(batRows,pitRows){
    const regRate=(er+lgErPerOut*priorOuts)/(outs+priorOuts);
    const prevented=Math.max(0,(softTossErPerOut-regRate)*outs);
    const workload=(outs/3)*workloadWarPerIP;
-   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
+   const x=map.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0,wOBA:0,wRCplus:100};
    const rawPWar=workload+(prevented/runsPerWin)*preventionShare;
    x.pWAR=Math.max(0,rawPWar*pitchingWarNormalization);
    x.WAR=x.oWAR+x.pWAR;map.set(r.Player_ID,x);
@@ -251,9 +260,18 @@ function warForScope(){
 }
 function attachWar(rows){
  const wm=warForScope();
- return (rows||[]).map(r=>{
-   const w=wm.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0};
-   return {...r,oWAR:w.oWAR,pWAR:w.pWAR,WAR:w.WAR};
+ const src=rows||[];
+ const career=scopeSel.value==="career";
+ const careerPA=career?src.reduce((a,r)=>a+num(r.PAs),0):0;
+ const careerWeighted=career?src.reduce((a,r)=>a+(
+   .72*num(r.BB)+.90*num(r.Singles)+1.25*num(r.Doubles)+1.55*num(r.Triples)+2.05*num(r.HRs)
+ ),0):0;
+ const careerLgWoba=careerPA>0?careerWeighted/careerPA:0;
+ return src.map(r=>{
+   const w=wm.get(r.Player_ID)||{oWAR:0,pWAR:0,WAR:0,wOBA:0,wRCplus:100};
+   const rate=career?ndWobaRow(r):(w.wOBA||0);
+   const wrc=career?(careerLgWoba>0?100*(rate/careerLgWoba):100):(w.wRCplus||100);
+   return {...r,oWAR:w.oWAR,pWAR:w.pWAR,WAR:w.WAR,NDwOBA:rate,wRCplus:wrc};
  });
 }
 
@@ -401,10 +419,10 @@ function sourceRows(){
 }
 function columns(){
  if(viewMode==="standard")return mode==="bat"
-  ?["Name","Team","WAR","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
+  ?["Name","Team","WAR","wRCplus","NDwOBA","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
   :["Name","Team","WAR","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP"];
  return mode==="bat"
-  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","BA","OBP","SLG","OPS"]
+  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","wRCplus","NDwOBA","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","BA","OBP","SLG","OPS"]
   :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","WP","ERA","WHIP"];
 }
 function pctMetric(c,r){
@@ -447,6 +465,8 @@ function label(c){
  if(c==="WAR")return "WAR";
  if(c==="oWAR")return "oWAR";
  if(c==="pWAR")return "pWAR";
+ if(c==="NDwOBA")return "wOBA";
+ if(c==="wRCplus")return "wRC+";
  if(c==="Walks")return "BB";
  return c;
 }
@@ -552,4 +572,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=124"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=125"></script></body></html>

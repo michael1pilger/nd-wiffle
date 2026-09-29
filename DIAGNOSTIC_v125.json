@@ -1,0 +1,15 @@
+{
+  "rosters": {
+    "Grayson Beckham": "Goofy Goobers",
+    "Bennett Alvarado": "Zyns"
+  },
+  "migration": "0028_beckham_alvarado_rosters.sql",
+  "offensive_war": "ND-wOBA -> wRAA -> replacement runs -> wins",
+  "full_season_offensive_war_pool": 27,
+  "2025_empirical_owar_pool": 27.127,
+  "standings_clinch_marker": "X with superscript lowest possible seed",
+  "tiebreak_for_seed_floor": "current run differential, then runs scored",
+  "grid": "Dirty Dawgs / Gold Glove / 5+ pitching W x Silverbacks / 25+ pitching K / 5+ career HR",
+  "syntax": "PASS",
+  "career_woba_wrcplus": "PASS"
+}
