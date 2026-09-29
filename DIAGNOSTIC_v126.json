@@ -1,0 +1,19 @@
+{
+  "stats_rounding": {
+    "wOBA": "3 decimals",
+    "wRC+": "nearest whole number"
+  },
+  "standings": {
+    "clinched": "X (lowest possible seed), smaller styling",
+    "eliminated": "E (best possible seed), logic included",
+    "tiebreak_snapshot": "run differential, then runs scored"
+  },
+  "award_tracker": {
+    "MVP": "total WAR",
+    "Silver Slugger": "oWAR",
+    "ROTY": "total WAR",
+    "4th Man": "total WAR with role exclusions",
+    "Cy Young": "pWAR-led value with small W/S bonuses"
+  },
+  "syntax": "PASS"
+}

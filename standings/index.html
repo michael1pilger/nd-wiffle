@@ -17,8 +17,10 @@
 .power-method{color:var(--muted);font-size:11px;line-height:1.6;margin-top:14px}
 @media(max-width:760px){.power-summary{grid-template-columns:1fr}.power-table th,.power-table td{padding:9px 7px;font-size:10px}}
 .conditional-marker{display:inline-flex;align-items:center;justify-content:center;margin-left:4px;color:var(--gold);font-size:13px;font-weight:950;cursor:help;vertical-align:super;line-height:1}.conditional-marker:hover{filter:brightness(1.2)}
-.clinch-marker{display:inline-flex;align-items:flex-start;margin-left:5px;color:#71d49c;font-weight:950;cursor:help;line-height:1}
-.clinch-marker sup{font-size:7px;margin-left:1px;top:-.35em;position:relative;color:#a9e8c5}
+.clinch-marker,.elim-marker{display:inline-flex;align-items:center;margin-left:5px;font-size:9px;font-weight:900;cursor:help;line-height:1;letter-spacing:.1px}
+.clinch-marker{color:#71d49c}
+.elim-marker{color:#eb7884}
+.clinch-marker .seed-note,.elim-marker .seed-note{font-size:8px;font-weight:800;margin-left:1px;opacity:.9}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
@@ -163,26 +165,45 @@ function formHtml(teamId){
 }
 
 
+function tiebreakAhead(a,b){
+ if(Number(a.DIFF||0)!==Number(b.DIFF||0))return Number(a.DIFF||0)>Number(b.DIFF||0);
+ if(Number(a.RS||0)!==Number(b.RS||0))return Number(a.RS||0)>Number(b.RS||0);
+ return String(a.team||"").localeCompare(String(b.team||""))<0;
+}
 function lowestPossibleSeed(team,rows){
- // 24-game season. A rival can still finish above this team if its maximum
- // possible wins exceed the team's current wins. When maximum wins tie, use
- // the current standings tiebreak order: run differential, then runs scored.
+ // Worst finish if this team wins no more games and every rival reaches its
+ // maximum possible win total. At equal win totals, current DIFF then RS
+ // applies as the standings tiebreak snapshot.
  let threats=0;
  for(const opp of rows){
    if(opp.team_id===team.team_id)continue;
-   const maxWins=24-Number(opp.L||0);
-   if(maxWins>Number(team.W||0)){threats++;continue}
-   if(maxWins===Number(team.W||0)){
-     if(Number(opp.DIFF||0)>Number(team.DIFF||0)){threats++;continue}
-     if(Number(opp.DIFF||0)===Number(team.DIFF||0) && Number(opp.RS||0)>Number(team.RS||0)){threats++;continue}
-   }
+   const oppMaxWins=24-Number(opp.L||0);
+   if(oppMaxWins>Number(team.W||0)){threats++;continue}
+   if(oppMaxWins===Number(team.W||0)&&tiebreakAhead(opp,team))threats++;
  }
- return Math.min(10,threats+1);
+ return Math.min(rows.length,threats+1);
+}
+function highestPossibleSeed(team,rows){
+ // Best finish if this team reaches its maximum win total. Any rival already
+ // guaranteed to finish above that mark still occupies a seed in front.
+ const teamMaxWins=24-Number(team.L||0);
+ let guaranteedAhead=0;
+ for(const opp of rows){
+   if(opp.team_id===team.team_id)continue;
+   if(Number(opp.W||0)>teamMaxWins){guaranteedAhead++;continue}
+   if(Number(opp.W||0)===teamMaxWins&&tiebreakAhead(opp,team))guaranteedAhead++;
+ }
+ return Math.min(rows.length,guaranteedAhead+1);
 }
 function clinchMarker(r,rows){
  const seed=lowestPossibleSeed(r,rows);
  if(seed>7)return "";
- return `<span class="clinch-marker" title="Clinched playoff berth · lowest possible seed: ${seed}. Maximum-win ties use current run differential, then runs scored.">X<sup>${seed}</sup></span>`;
+ return `<span class="clinch-marker" title="Clinched playoff berth · lowest possible seed: ${seed}. Equal-win comparisons use current run differential, then runs scored.">X<span class="seed-note">(${seed})</span></span>`;
+}
+function eliminationMarker(r,rows){
+ const seed=highestPossibleSeed(r,rows);
+ if(seed<=7)return "";
+ return `<span class="elim-marker" title="Mathematically eliminated · best possible seed: ${seed}. Equal-win comparisons use current run differential, then runs scored.">E<span class="seed-note">(${seed})</span></span>`;
 }
 function conditionalMarker(r){
  const w=Number(r.conditional_wins||0),l=Number(r.conditional_losses||0);
@@ -199,13 +220,13 @@ function renderLiveStandings(rows,seriesCount){
    const cutoff=i===7?' class="playoff-line"':"";
    return `<tr${cutoff} style="--team:${ui.color}">
     <td class="standings-rank">${r.rank}</td>
-    <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}${clinchMarker(r,rows)}${conditionalMarker(r)}</span></div></td>
+    <td><div class="standings-logo-name">${ui.logo?`<img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="${ui.logo}" alt="${r.team}">`:""}<span>${r.team}${clinchMarker(r,rows)}${eliminationMarker(r,rows)}${conditionalMarker(r)}</span></div></td>
     <td>${r.W}</td><td>${r.L}</td><td>${pct(r.PCT)}</td><td data-sort-value="${Number(r.GB||0)}">${gb(r.GB,r.rank)}</td>
     <td>${r.RS}</td><td>${r.RA}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${formHtml(r.team_id)}</td>
    </tr>`;
  }).join("");
  document.getElementById("standingsStatus").textContent=seriesCount
-   ? `Live standings from ${seriesCount} published 2026 ${seriesCount===1?"series":"series"}. Xⁿ indicates a clinched playoff berth, where n is the lowest seed the team can currently fall to. * indicates conditional forfeit wins/losses pending a possible makeup.`
+   ? `Live standings from ${seriesCount} published 2026 ${seriesCount===1?"series":"series"}. X (n) indicates a clinched playoff berth, where n is the lowest seed the team can currently fall to. E (n) indicates elimination, where n is the best seed the team can still reach. * indicates conditional forfeit wins/losses pending a possible makeup.`
    : "No 2026 series have been published yet.";
 }
 const num=v=>Number(v||0);
@@ -364,4 +385,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=125"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=126"></script></body></html>

@@ -104,26 +104,52 @@ function renderTable(){
 }
 
 const AWARD_TRACKERS=[
- {id:"MVP",label:"MVP",method:"Rate performance is the primary driver. Playing time is a small durability check rather than a major source of points. Batting and pitching are scored separately, then combined so two-way value is rewarded without letting raw PA/IP dominate."},
- {id:"CY",label:"Cy Young",method:"Pitching quality dominates the tracker: ERA, WHIP, strikeout rate and production per out carry 88% of the core score. Innings are only a 12% durability component, while wins and saves receive small bonuses because they are partly team-dependent."},
- {id:"SS",label:"Silver Slugger",method:"Offensive quality (OPS, average and production per PA) drives 85% of the score. Plate appearances are only a 15% durability component, so superior hitting rates are favored over simply accumulating more appearances."},
- {id:"ROTY",label:"ROTY",method:"The MVP-style rate-and-volume score among Class of 2030 players with published 2026 batting or pitching stats."},
- {id:"FOURTH",label:"4th Man",method:"MVP-style score among secondary-role players. The top three batters by PA on each team are excluded, and the team ace (most pitching outs) is also excluded. This keeps regulars and primary pitchers out of the 4th Man pool."}
+ {id:"MVP",label:"MVP",method:"MVP now follows the same value framework as the Stats page: offensive WAR from ND-wOBA, runs above average, replacement credit and playing time, plus normalized pitching WAR. Two-way players receive the sum of both components."},
+ {id:"CY",label:"Cy Young",method:"Cy Young remains pitching-only. The tracker is driven primarily by normalized pWAR, with small bonuses for wins and saves so run prevention and workload remain the core of the ranking."},
+ {id:"SS",label:"Silver Slugger",method:"Silver Slugger now ranks hitters directly by offensive WAR. This uses ND-wOBA linear weights, league context, replacement-level credit and plate appearances, so elite rate performance and meaningful playing time are both rewarded."},
+ {id:"ROTY",label:"ROTY",method:"Rookie of the Year uses total WAR among Class of 2030 players, combining the same offensive and pitching value models used elsewhere on the site."},
+ {id:"FOURTH",label:"4th Man",method:"4th Man uses total WAR among secondary-role players. The top three batters by PA on each team and the team ace by pitching outs remain excluded."}
 ];
 function pctRank(values,v,higher=true){const a=values.filter(Number.isFinite).sort((x,y)=>x-y);if(!a.length||!Number.isFinite(v))return 0;let below=0,equal=0;for(const x of a){if(x<v)below++;else if(x===v)equal++}let p=(below+(equal-1)/2)/Math.max(1,a.length-1);return higher?p:1-p}
 function awardCandidates(){
  const bm=new Map(DATA.batting.map(r=>[r.Player_ID,r])),pm=new Map(DATA.pitching.map(r=>[r.Player_ID,r])),tm=teamMap(),ids=[...new Set([...bm.keys(),...pm.keys()])];
- const all=ids.map(id=>{const b=bm.get(id)||{},p=pm.get(id)||{};return {id,b,p,team:b.Team||p.Team||tm.get(id)||null,name:b.Name||p.Name||id,cls:num(b.Class_Year||p.Class_Year),pa:num(b.PAs),outs:num(p.Outs),batPts:num(b.Fantasy),pitPts:num(p.Fantasy),ops:num(b.OPS),avg:num(b.BA),era:(p.ERA===null||p.ERA===undefined||p.ERA==="")?NaN:Number(p.ERA),whip:(p.WHIP===null||p.WHIP===undefined||p.WHIP==="")?NaN:Number(p.WHIP),kRate:num(p.Outs)>0?num(p.Ks)/num(p.Outs):0,batRate:num(b.PAs)>0?num(b.Fantasy)/num(b.PAs):0,pitRate:num(p.Outs)>0?num(p.Fantasy)/num(p.Outs):0};});
- const maxPA=Math.max(1,...all.map(x=>x.pa)),maxOuts=Math.max(1,...all.map(x=>x.outs));
- const opsVals=all.filter(x=>x.pa>0).map(x=>x.ops),avgVals=all.filter(x=>x.pa>0).map(x=>x.avg),batRateVals=all.filter(x=>x.pa>0).map(x=>x.batRate);
- const eraVals=all.filter(x=>x.outs>0&&Number.isFinite(x.era)).map(x=>x.era),whipVals=all.filter(x=>x.outs>0&&Number.isFinite(x.whip)).map(x=>x.whip),kVals=all.filter(x=>x.outs>0).map(x=>x.kRate),pitRateVals=all.filter(x=>x.outs>0).map(x=>x.pitRate);
+ const all=ids.map(id=>{const b=bm.get(id)||{},p=pm.get(id)||{};return {id,b,p,team:b.Team||p.Team||tm.get(id)||null,name:b.Name||p.Name||id,cls:num(b.Class_Year||p.Class_Year),pa:num(b.PAs),outs:num(p.Outs)};});
+
+ // Offensive value: identical 2026 ND-wOBA -> wRAA -> replacement -> wins model used on Stats.
+ const lgPA=all.reduce((a,x)=>a+x.pa,0);
+ const weighted=x=>.72*num(x.b.BB)+.90*num(x.b.Singles)+1.25*num(x.b.Doubles)+1.55*num(x.b.Triples)+2.05*num(x.b.HRs);
+ const lgWeighted=all.reduce((a,x)=>a+weighted(x),0);
+ const lgWoba=lgPA>0?lgWeighted/lgPA:0;
+ const wobaScale=1.15,runsPerWin=6.0,replacementRunsPerPA=(27.0*runsPerWin)/3200;
+
+ // Pitching value: same short-season soft-toss replacement framework used on Stats.
+ const lgOuts=all.reduce((a,x)=>a+x.outs,0);
+ const lgER=all.reduce((a,x)=>a+num(x.p.ER),0);
+ const lgErPerOut=lgOuts>0?lgER/lgOuts:0;
+ const softTossErPerOut=Math.max(.60,lgErPerOut*1.65);
+ const priorOuts=27,workloadWarPerIP=.035,preventionShare=.70,pitchingWarNormalization=.30;
+
  for(const x of all){
-   const batQ=x.pa>0?100*(.55*pctRank(opsVals,x.ops,true)+.25*pctRank(avgVals,x.avg,true)+.20*pctRank(batRateVals,x.batRate,true)):0;
-   const batV=100*Math.sqrt(x.pa/maxPA);x.batAward=x.pa>0?.85*batQ+.15*batV:0;
-   const pitQ=x.outs>0?100*(.35*pctRank(eraVals,x.era,false)+.25*pctRank(whipVals,x.whip,false)+.22*pctRank(kVals,x.kRate,true)+.18*pctRank(pitRateVals,x.pitRate,true)):0;
-   const pitV=100*Math.sqrt(x.outs/maxOuts);x.pitAward=x.outs>0?.88*pitQ+.12*pitV:0;
-   const hi=Math.max(x.batAward,x.pitAward),lo=Math.min(x.batAward,x.pitAward);x.mvp=hi+.35*lo;
-   x.cy=x.pitAward+.35*num(x.p.W)+.25*num(x.p.S);x.ss=x.batAward;
+   if(x.pa>0){
+     x.woba=weighted(x)/x.pa;
+     const wRAA=((x.woba-lgWoba)/wobaScale)*x.pa;
+     const replacementRuns=replacementRunsPerPA*x.pa;
+     x.oWAR=(wRAA+replacementRuns)/runsPerWin;
+     x.wRCplus=lgWoba>0?100*(x.woba/lgWoba):100;
+   }else{x.woba=0;x.oWAR=0;x.wRCplus=100}
+
+   if(x.outs>0){
+     const er=num(x.p.ER);
+     const regRate=(er+lgErPerOut*priorOuts)/(x.outs+priorOuts);
+     const prevented=Math.max(0,(softTossErPerOut-regRate)*x.outs);
+     const workload=(x.outs/3)*workloadWarPerIP;
+     const rawPWar=workload+(prevented/runsPerWin)*preventionShare;
+     x.pWAR=Math.max(0,rawPWar*pitchingWarNormalization);
+   }else x.pWAR=0;
+
+   x.war=x.oWAR+x.pWAR;
+   x.cy=x.pWAR+.035*num(x.p.W)+.025*num(x.p.S);
+   x.ss=x.oWAR;
  }
  const teamPA=new Map(),teamOuts=new Map();for(const x of all){const tid=x.team?.id;if(!tid)continue;if(!teamPA.has(tid))teamPA.set(tid,[]);if(!teamOuts.has(tid))teamOuts.set(tid,[]);teamPA.get(tid).push(x);teamOuts.get(tid).push(x)}
  const topBatUse=new Set(),acePitchers=new Set();for(const rows of teamPA.values())rows.slice().sort((a,b)=>b.pa-a.pa).slice(0,3).forEach(x=>{if(x.pa>0)topBatUse.add(x.id)});for(const rows of teamOuts.values()){const ace=rows.slice().sort((a,b)=>b.outs-a.outs)[0];if(ace&&ace.outs>0)acePitchers.add(ace.id)}
@@ -133,13 +159,13 @@ function awardCandidates(){
 function renderAwardTracker(){
  awardTabs.innerHTML=AWARD_TRACKERS.map(a=>`<button class="award-tab ${a.id===awardMetric?"active":""}" data-award="${a.id}" type="button">${a.label}</button>`).join("");
  awardTabs.querySelectorAll("[data-award]").forEach(btn=>btn.onclick=()=>{awardMetric=btn.dataset.award;renderAwardTracker()});
- let rows=awardCandidates(),score=x=>x.mvp,detail=x=>`${x.b.PAs||0} PA · ${x.p.IP||"0"} IP`;
- if(awardMetric==="CY"){rows=rows.filter(x=>x.outs>0);score=x=>x.cy;detail=x=>`${x.p.W||0}-${x.p.L||0}${num(x.p.S)?` · ${x.p.S} SV`:""} · ${x.p.Ks||0} K · ${x.p.ERA??"—"} ERA`}
- else if(awardMetric==="SS"){rows=rows.filter(x=>x.pa>0);score=x=>x.ss;detail=x=>`${x.b.HRs||0} HR · ${x.b.RBI||0} RBI · ${x.b.OPS||".000"} OPS · ${x.b.BA?Number(x.b.BA).toFixed(3).replace(/^0/,""):"—"} AVG`}
- else if(awardMetric==="ROTY"){rows=rows.filter(x=>x.rookie);score=x=>x.mvp;detail=x=>`Class ${x.cls} · ${x.b.PAs||0} PA · ${x.p.IP||"0"} IP`}
- else if(awardMetric==="FOURTH"){rows=rows.filter(x=>x.fourth);score=x=>x.mvp;detail=x=>`${x.b.PAs||0} PA · ${x.p.IP||"0"} IP · secondary usage role`}
+ let rows=awardCandidates(),score=x=>x.war,scoreLabel="WAR",detail=x=>`${x.b.PAs||0} PA · ${x.p.IP||"0"} IP · ${x.war.toFixed(2)} WAR`;
+ if(awardMetric==="CY"){rows=rows.filter(x=>x.outs>0);score=x=>x.cy;scoreLabel="value";detail=x=>`${x.p.W||0}-${x.p.L||0}${num(x.p.S)?` · ${x.p.S} SV`:""} · ${x.p.Ks||0} K · ${x.p.ERA??"—"} ERA · ${x.pWAR.toFixed(2)} pWAR`}
+ else if(awardMetric==="SS"){rows=rows.filter(x=>x.pa>0);score=x=>x.ss;scoreLabel="oWAR";detail=x=>`${x.b.PAs||0} PA · ${x.oWAR.toFixed(2)} oWAR · ${x.woba.toFixed(3).replace(/^0/,"")} wOBA · ${Math.round(x.wRCplus)} wRC+`}
+ else if(awardMetric==="ROTY"){rows=rows.filter(x=>x.rookie);score=x=>x.war;scoreLabel="WAR";detail=x=>`Class ${x.cls} · ${x.b.PAs||0} PA · ${x.p.IP||"0"} IP · ${x.war.toFixed(2)} WAR`}
+ else if(awardMetric==="FOURTH"){rows=rows.filter(x=>x.fourth);score=x=>x.war;scoreLabel="WAR";detail=x=>`${x.b.PAs||0} PA · ${x.p.IP||"0"} IP · ${x.war.toFixed(2)} WAR · secondary usage role`}
  rows.sort((a,b)=>score(b)-score(a)||num(b.b.PAs)-num(a.b.PAs)||a.name.localeCompare(b.name));
- awardList.innerHTML=rows.slice(0,10).map((x,i)=>`<div class="award-row"><div class="award-rank">${i+1}</div><div>${x.team&&LOGOS[x.team.id]?`<img src="${LOGOS[x.team.id]}" alt="">`:""}</div><div class="award-player"><strong>${esc(x.name)}</strong><small>${esc(x.team?.name||"")} · ${detail(x)}</small></div><div class="award-score">${score(x).toFixed(1)}<small>tracker score</small></div></div>`).join("")||'<div class="leaders-empty">No eligible players yet.</div>';
+ awardList.innerHTML=rows.slice(0,10).map((x,i)=>`<div class="award-row"><div class="award-rank">${i+1}</div><div>${x.team&&LOGOS[x.team.id]?`<img src="${LOGOS[x.team.id]}" alt="">`:""}</div><div class="award-player"><strong>${esc(x.name)}</strong><small>${esc(x.team?.name||"")} · ${detail(x)}</small></div><div class="award-score">${score(x).toFixed(2)}<small>${scoreLabel}</small></div></div>`).join("")||'<div class="leaders-empty">No eligible players yet.</div>';
  awardMethod.textContent=(AWARD_TRACKERS.find(a=>a.id===awardMetric)||AWARD_TRACKERS[0]).method;
 }
 function render(){
@@ -154,4 +180,4 @@ document.getElementById("allBtn").addEventListener("click",()=>{qualified=false;
 document.getElementById("qualBtn").addEventListener("click",()=>{qualified=true;document.getElementById("qualBtn").classList.add("active");document.getElementById("allBtn").classList.remove("active");render()});
 document.getElementById("teamFilter").addEventListener("change",render);
 fetch("/api/public/league?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})).then(({ok,j})=>{if(!ok||!j.ok)throw new Error(j.error||"Unable to load leaders");DATA=j;DATA.batting=(DATA.batting||[]).filter(r=>String(r.Name||"").trim().toLowerCase()!=="max partovi");DATA.pitching=(DATA.pitching||[]).filter(r=>String(r.Name||"").trim().toLowerCase()!=="max partovi");DATA.participants=(DATA.participants||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi");enrich();const teams=[...new Map((j.participants||[]).map(x=>[x.team_id,x.team_name])).entries()].sort((a,b)=>a[1].localeCompare(b[1]));document.getElementById("teamFilter").innerHTML='<option value="">All Teams</option>'+teams.map(([id,name])=>`<option value="${id}">${esc(name)}</option>`).join("");render()}).catch(err=>{console.error(err);document.getElementById("batLeaders").innerHTML='<div class="leaders-empty">Leaders are temporarily unavailable.</div>';document.getElementById("pitLeaders").innerHTML='<div class="leaders-empty">Leaders are temporarily unavailable.</div>'});
-</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=125"></script></body></html>
+</script><script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=126"></script></body></html>

@@ -443,9 +443,12 @@ function displayVal(c,v,r){
    if(v===null||v===undefined||v==="")return "—";
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"—";
  }
- if(["BA","OBP","SLG","OPS"].includes(c)){
+ if(["BA","OBP","SLG","OPS","NDwOBA"].includes(c)){
    if(v===null||v===undefined||v==="")return "—";
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(3):"—";
+ }
+ if(c==="wRCplus"){
+   const x=parseFloat(v);return Number.isFinite(x)?String(Math.round(x)):"—";
  }
  return v??"";
 }
@@ -572,4 +575,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=125"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=126"></script></body></html>
