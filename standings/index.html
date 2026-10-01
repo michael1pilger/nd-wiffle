@@ -278,8 +278,17 @@ function seededRandom(seed=20260904){let x=seed>>>0;return ()=>{x=(1664525*x+101
 function buildFuturePairs(teams,results,scheduled){
  const targetSeries=8, ids=teams.map(t=>t.team_id), completed=new Set(), planned=new Set(), pairs=[];
  const used=Object.fromEntries(ids.map(id=>[id,0]));
- for(const s of results.series||[]){const k=pairKey(s.away_team_id,s.home_team_id);if(completed.has(k))continue;completed.add(k);used[s.away_team_id]=(used[s.away_team_id]||0)+1;used[s.home_team_id]=(used[s.home_team_id]||0)+1;}
- for(const x of scheduled.scheduled||[]){const a=x.team_a_id,b=x.team_b_id,k=pairKey(a,b);if(completed.has(k)||planned.has(k)||!used.hasOwnProperty(a)||!used.hasOwnProperty(b))continue;if(used[a]>=targetSeries||used[b]>=targetSeries)continue;planned.add(k);pairs.push([a,b,true]);used[a]++;used[b]++;}
+ for(const sr of results.series||[]){
+   const k=pairKey(sr.away_team_id,sr.home_team_id);if(completed.has(k)||planned.has(k))continue;
+   const played=Math.max(0,Math.min(3,Number(sr.game_count??sr.games?.length??0)));
+   used[sr.away_team_id]=(used[sr.away_team_id]||0)+1;used[sr.home_team_id]=(used[sr.home_team_id]||0)+1;
+   if(played>=3)completed.add(k);else{planned.add(k);pairs.push([sr.away_team_id,sr.home_team_id,true,3-played]);}
+ }
+ for(const x of scheduled.scheduled||[]){
+   const a=x.team_a_id,b=x.team_b_id,k=pairKey(a,b);if(completed.has(k)||planned.has(k)||!used.hasOwnProperty(a)||!used.hasOwnProperty(b))continue;
+   if(used[a]>=targetSeries||used[b]>=targetSeries)continue;
+   planned.add(k);pairs.push([a,b,true,3]);used[a]++;used[b]++;
+ }
  let safety=0;
  while(safety++<500){
    const need=ids.filter(id=>used[id]<targetSeries).sort((a,b)=>(targetSeries-used[b])-(targetSeries-used[a])||a.localeCompare(b));
@@ -287,7 +296,7 @@ function buildFuturePairs(teams,results,scheduled){
    let best=null,bestScore=-1;
    for(let i=0;i<need.length;i++)for(let j=i+1;j<need.length;j++){
      const a=need[i],b=need[j],k=pairKey(a,b);if(completed.has(k)||planned.has(k))continue;
-     const score=(targetSeries-used[a])+(targetSeries-used[b]);if(score>bestScore){best=[a,b,false];bestScore=score;}
+     const score=(targetSeries-used[a])+(targetSeries-used[b]);if(score>bestScore){best=[a,b,false,3];bestScore=score;}
    }
    if(!best)break;
    planned.add(pairKey(best[0],best[1]));pairs.push(best);used[best[0]]++;used[best[1]]++;
@@ -343,12 +352,12 @@ function renderPlayoffOdds(league,results,scheduled,powerMetrics){
  for(let sim=0;sim<N;sim++){
    const state=Object.fromEntries(rows.map(r=>[r.team_id,{W:num(r.W),diff:num(r.DIFF)}]));
    const simStrength=Object.fromEntries(rows.map(r=>{const b=baseStrength[r.team_id];return [r.team_id,b.rating+gaussian()*b.uncertainty]}));
-   for(const [a,b] of pairs){
+   for(const [a,b,_scheduled,gamesRemaining=3] of pairs){
      const pa=simStrength[a]??60,pb=simStrength[b]??60;
      // A softer logistic curve and 28%-72% cap reflect the league's historical parity.
      const base=1/(1+Math.exp(-(pa-pb)/16));
      const p=Math.max(.28,Math.min(.72,base));
-     for(let g=0;g<3;g++){
+     for(let g=0;g<gamesRemaining;g++){
        const aWin=rng()<p,w=aWin?a:b,l=aWin?b:a;state[w].W++;
        const gap=Math.abs(pa-pb);
        const margin=1+(rng()<Math.min(.38,gap/50)?1:0)+(rng()<Math.min(.12,gap/90)?1:0);
@@ -385,4 +394,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=126"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=127"></script></body></html>

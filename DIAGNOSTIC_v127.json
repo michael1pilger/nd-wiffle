@@ -1,0 +1,13 @@
+{
+  "partial_series_entry": "PASS",
+  "default_games": 3,
+  "selectable_games": [
+    3,
+    2,
+    1
+  ],
+  "resume_method": "same original date + teams, upload only new games, append existing partial series",
+  "stats_and_standings_immediate": true,
+  "schema_migration_required": false,
+  "playoff_simulation_counts_unplayed_games_in_partial_series": true
+}

@@ -168,13 +168,15 @@ export async function onRequestGet(context){
       const home_wins=games.filter(g=>n(g.home_score)>n(g.away_score)).length;
       return {
         ...s,away_wins,home_wins,
+        game_count:games.length,
+        series_status:games.length>=3?"complete":"in_progress",
         games,
         batting:batBySeries.get(s.series_id)||[],
         pitching:pitBySeries.get(s.series_id)||[]
       };
     });
 
-    return json({ok:true,build:"v80",season,series_count:series.length,series});
+    return json({ok:true,build:"v127",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

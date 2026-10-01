@@ -88,14 +88,14 @@ function render(rows,count){
 const n=v=>Number(v||0);
 function pairKey(a,b){return [a,b].sort().join("__")}
 function scheduledRemaining(schedule,results){
- const completed=new Set((results?.series||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)));
+ const completed=new Set((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)>=3).map(x=>pairKey(x.away_team_id,x.home_team_id)));
  return (schedule?.scheduled||[]).filter(x=>!completed.has(pairKey(x.team_a_id,x.team_b_id)));
 }
 function logoFor(id){return LOGOS[id]||""}
 function teamNameById(rows,id){return rows.find(r=>r.team_id===id)?.team||id}
 function roundRobinRemaining(rows,results,schedule){
  const ids=rows.map(r=>r.team_id);
- const played=new Set((results?.series||[]).map(x=>pairKey(x.away_team_id,x.home_team_id)));
+ const played=new Set((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)>=3).map(x=>pairKey(x.away_team_id,x.home_team_id)));
  const scheduled=scheduledRemaining(schedule,results);
  const scheduledByPair=new Map(scheduled.map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));
  const info=new Map();
@@ -103,6 +103,7 @@ function roundRobinRemaining(rows,results,schedule){
  for(const id of ids){
    const playedOpp=new Set();
    for(const sr of (results?.series||[])){
+     if(Number(sr.game_count??sr.games?.length??0)<3)continue;
      if(sr.away_team_id===id)playedOpp.add(sr.home_team_id);
      else if(sr.home_team_id===id)playedOpp.add(sr.away_team_id);
    }
@@ -124,6 +125,7 @@ function roundRobinRemaining(rows,results,schedule){
      remaining=candidates.filter(opp=>scheduledOpp.has(opp));
    }
 
+   const partialByPair=new Map((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)<3).map(x=>[pairKey(x.away_team_id,x.home_team_id),3-Number(x.game_count??x.games?.length??0)]));
    const rowsForTeam=remaining.map(opp=>{
      const pair=pairKey(id,opp),sch=scheduledByPair.get(pair);
      return {
@@ -131,7 +133,8 @@ function roundRobinRemaining(rows,results,schedule){
        opp:teamNameById(rows,opp),
        scheduled:!!sch,
        date:sch?.series_date||"",
-       time:sch?.series_time||""
+       time:sch?.series_time||"",
+       games_remaining:partialByPair.get(pair)||3
      };
    }).sort((a,b)=>
      Number(b.scheduled)-Number(a.scheduled) ||
@@ -177,7 +180,7 @@ function clinchProfile(team,rows,rr){
  const three=byEase.slice(0,3);
  const limiting=three[2]||null;
  const magic=limiting?opponentMagic(team,limiting):0;
- const remainingGames=(rr.info.get(team.team_id)?.remaining?.length||0)*3;
+ const remainingGames=(rr.info.get(team.team_id)?.remaining||[]).reduce((a,x)=>a+Number(x.games_remaining||3),0);
  const ownWinsNeeded=Math.min(magic,remainingGames);
  const helpNeeded=Math.max(0,magic-remainingGames);
  return {three,limiting,magic,remainingGames,ownWinsNeeded,helpNeeded};
@@ -312,4 +315,4 @@ Promise.all([
  document.getElementById("pathGrid").innerHTML='<div class="picture-empty">Playoff paths are temporarily unavailable.</div>';
  document.getElementById("crucialSeries").innerHTML='<div class="picture-empty">Upcoming-series analysis is temporarily unavailable.</div>';
 });
-</script><script src="/assets/hof.js?v=126"></script></body></html>
+</script><script src="/assets/hof.js?v=127"></script></body></html>

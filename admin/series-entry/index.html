@@ -90,6 +90,15 @@
 <div class="field"><label>Entry Type</label><select id="entryType"><option value="played">Played Series</option><option value="conditional_forfeit">Conditional Forfeit</option></select></div>
 <div class="field"><label>Season</label><select id="season"><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select></div>
 <div class="field"><label>Series Date</label><input id="seriesDate" type="date"></div>
+<div class="field" id="gamesCompletedField">
+  <label>Games Completed in This Entry</label>
+  <select id="gamesCompleted">
+    <option value="3" selected>3 games</option>
+    <option value="2">2 games</option>
+    <option value="1">1 game</option>
+  </select>
+  <div class="detected">Defaults to a full 3-game series. For a delayed series, choose only the games completed in this upload. When play resumes, use the same original series date and teams and upload only the newly played game(s).</div>
+</div>
 <div class="field"><label>Away Team</label><select id="awayTeam"></select><div class="detected" id="awayDetected"></div></div>
 <div class="field"><label>Home Team</label><select id="homeTeam"></select><div class="detected" id="homeDetected"></div></div>
 </div>
@@ -113,7 +122,7 @@
 
 <section class="admin-panel" id="gameResultsSection">
 <h2>4. Game Results & Pitcher Decisions</h2>
-<p class="step-note">Scores and pitcher decisions are entered here instead of in a fifth CSV. Pitcher dropdowns are populated from the uploaded series participants.</p>
+<p class="step-note">Scores and pitcher decisions are entered here instead of in a fifth CSV. Only the number of games selected above are required. For a resumed series, upload only the newly played game(s); using the same original series date and teams lets the publisher append them to the existing partial series.</p>
 <div class="game-table">
 <div class="game-head"><div>Game</div><div>Away</div><div>Home</div><div>Winning Pitcher</div><div>Losing Pitcher</div><div>Save</div></div>
 <div class="game-row" data-game="1"><div class="game-label">Game 1</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
@@ -124,8 +133,8 @@
 
 <section class="admin-panel" id="gpSection">
 <h2>5. Games Played Overrides</h2>
-<p class="step-note">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to 3 GP. Add an override only if that player actually appeared in 1 or 2 games. Zero-stat roster entries are ignored.</p>
-<div id="gpEmpty" class="empty-state">No overrides. All active series participants will receive 3 GP.</div>
+<p class="step-note">Any player with PA &gt; 0, IP &gt; 0, or BF &gt; 0 defaults to the number of games in this entry. Add an override only if that player appeared in fewer of those games. Zero-stat roster entries are ignored.</p>
+<div id="gpEmpty" class="empty-state">No overrides. Active participants default to every game in this entry.</div>
 <div class="gp-controls" id="gpControls"></div>
 <div class="admin-actions"><button class="admin-btn" id="addGpBtn">+ Add Override</button></div>
 </section>
@@ -365,9 +374,24 @@ function populatePlayerSelects(){
   });
 }
 
+function gamesInEntry(){return Math.max(1,Math.min(3,Number(document.getElementById("gamesCompleted")?.value||3)))}
+function syncGamesCompleted(){
+  const count=gamesInEntry();
+  document.querySelectorAll(".game-row").forEach(r=>{
+    const active=Number(r.dataset.game)<=count;
+    r.classList.toggle("hidden",!active);
+    r.querySelectorAll("input,select").forEach(el=>el.disabled=!active);
+  });
+  document.getElementById("gamesCompletedField")?.classList.toggle("hidden",isConditionalForfeit());
+  const gpEmpty=document.getElementById("gpEmpty");
+  if(gpEmpty)gpEmpty.textContent=`No overrides. Active participants default to ${count} ${count===1?"game":"games"} in this entry.`;
+  if(parsed){refreshGpRows();renderPitchingMeta();}
+}
+document.getElementById("gamesCompleted")?.addEventListener("change",syncGamesCompleted);
 function isConditionalForfeit(){return document.getElementById("entryType")?.value==="conditional_forfeit"}
 function syncEntryMode(){
   const cf=isConditionalForfeit();
+  document.getElementById("gamesCompletedField")?.classList.toggle("hidden",cf);
   ["statsUploadSection","playerReviewSection","gameResultsSection","gpSection","pitchUsageSection","correctionsSection"].forEach(id=>{
     document.getElementById(id)?.classList.toggle("hidden",cf);
   });
@@ -380,6 +404,8 @@ function syncEntryMode(){
     const status=document.getElementById("publishStatus");
     if(status && !status.textContent.trim())status.textContent="Database publish is not ready until validation passes.";
   }
+
+  if(!cf)syncGamesCompleted();
 }
 document.getElementById("entryType").addEventListener("change",syncEntryMode);
 syncEntryMode();
@@ -435,11 +461,15 @@ document.getElementById("loadSampleBtn").onclick=()=>{
   }
 }));
 
-function addGpRow(name="",gp="2"){
+function addGpRow(name="",gp=""){
   if(!parsed){alert("Parse the four iScore files first.");return}
+  const count=gamesInEntry();
+  if(count<=1){alert("A one-game entry does not need GP overrides; every participant defaults to 1 GP.");return}
+  if(!gp)gp=String(Math.max(1,count-1));
   const row=document.createElement("div"); row.className="gp-row";
   const names=parsed.participants.slice().sort((a,b)=>a.name.localeCompare(b.name));
-  row.innerHTML=`<select class="gpPlayer"><option value="">Select player...</option>${names.map(p=>`<option ${p.name===name?"selected":""}>${p.name}</option>`).join("")}</select><select class="gpValue"><option value="1" ${gp==="1"?"selected":""}>1 game</option><option value="2" ${gp==="2"?"selected":""}>2 games</option></select><button class="gp-remove" type="button">×</button>`;
+  const gpOptions=Array.from({length:count-1},(_,i)=>i+1).map(v=>`<option value="${v}" ${String(v)===String(gp)?"selected":""}>${v} ${v===1?"game":"games"}</option>`).join("");
+  row.innerHTML=`<select class="gpPlayer"><option value="">Select player...</option>${names.map(p=>`<option ${p.name===name?"selected":""}>${p.name}</option>`).join("")}</select><select class="gpValue">${gpOptions}</select><button class="gp-remove" type="button">×</button>`;
   row.querySelector(".gp-remove").onclick=()=>{row.remove();syncGpEmpty()};
   document.getElementById("gpControls").appendChild(row);syncGpEmpty();
 }
@@ -476,8 +506,8 @@ function renderPitchingMeta(){
     return `<div class="pitching-meta-row" data-player="${p.name}">
       <div class="pitcher-name"><b>${p.name}</b></div>
       <div class="muted">${p.team}</div>
-      <input class="pitchApps" type="number" min="1" max="3" step="1" placeholder="Apps" value="${prior.appearances??""}">
-      <input class="pitchStarts" type="number" min="0" max="3" step="1" placeholder="Starts" value="${prior.starts??""}">
+      <input class="pitchApps" type="number" min="1" max="${gamesInEntry()}" step="1" placeholder="Apps" value="${prior.appearances??""}">
+      <input class="pitchStarts" type="number" min="0" max="${gamesInEntry()}" step="1" placeholder="Starts" value="${prior.starts??""}">
     </div>`;
   }).join("");
   document.getElementById("pitchingMetaEmpty").classList.toggle("hidden",pitchers.length>0);
@@ -512,7 +542,7 @@ function basePitchingRows(gpMap={}){
   const home=document.getElementById("homeTeam").value||"Home Team";
   const meta=readPitchingMeta();
   const make=(rows,team,side)=>rowsWithoutTotals(rows).filter(r=>n(r.IP)>0||n(r.BF)>0).map(r=>({
-    player:r.Name,team,side,games_played:gpMap[r.Name]||3,
+    player:r.Name,team,side,games_played:gpMap[r.Name]||gamesInEntry(),
     appearances:meta[r.Name]?.appearances??null,
     starts:meta[r.Name]?.starts??null,
     outs_recorded:ipToOuts(r.IP),
@@ -587,11 +617,11 @@ function ipToOuts(value){
 }
 function sumGameScores(){
   let away=0,home=0;
-  document.querySelectorAll(".game-row").forEach(r=>{away+=n(r.querySelector(".awayScore").value);home+=n(r.querySelector(".homeScore").value)});
+  [...document.querySelectorAll(".game-row")].filter(r=>Number(r.dataset.game)<=gamesInEntry()).forEach(r=>{away+=n(r.querySelector(".awayScore").value);home+=n(r.querySelector(".homeScore").value)});
   return {away,home};
 }
 function readGames(){
-  return [...document.querySelectorAll(".game-row")].map((r,i)=>({
+  return [...document.querySelectorAll(".game-row")].filter(r=>Number(r.dataset.game)<=gamesInEntry()).map((r,i)=>({
     game:i+1,
     away_score:n(r.querySelector(".awayScore").value),
     home_score:n(r.querySelector(".homeScore").value),
@@ -608,7 +638,7 @@ function readOverrides(){
 }
 function normalizedBatting(rows,team,side,gpMap){
   return rowsWithoutTotals(rows).filter(r=>n(r.PA)>0).map(r=>({
-    player:r.Name,team,side,games_played:gpMap[r.Name]||3,
+    player:r.Name,team,side,games_played:gpMap[r.Name]||gamesInEntry(),
     PA:n(r.PA),AB:n(r.AB),R:n(r.R),H:n(r.H),
     "1B":n(r["1B"]),"2B":n(r["2B"]),"3B":n(r["3B"]),HR:n(r.HR),
     RBI:n(r.RBI),BB:n(r.BB),SO:n(r.SO)
@@ -719,7 +749,7 @@ function renderReview(checks,payload){
   const games=payload.games||[];
   const aw=games.filter(g=>g.away_score>g.home_score).length, hw=games.filter(g=>g.home_score>g.away_score).length;
   const runs=payload.series_type==="conditional_forfeit"?{away:0,home:0}:sumGameScores();
-  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div>${payload.series_type==="conditional_forfeit"?`<div style="margin-top:8px;color:#d7ad48;font-weight:900">Conditional Forfeit</div><div class="muted">${payload.conditional_forfeit?.beneficiary_side==="away"?away:home} +3 conditional wins · ${payload.conditional_forfeit?.forfeiting_side==="away"?away:home} +3 conditional losses</div>`:""}<div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
+  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div>${payload.series_type==="conditional_forfeit"?`<div style="margin-top:8px;color:#d7ad48;font-weight:900">Conditional Forfeit</div><div class="muted">${payload.conditional_forfeit?.beneficiary_side==="away"?away:home} +3 conditional wins · ${payload.conditional_forfeit?.forfeiting_side==="away"?away:home} +3 conditional losses</div>`:""}<div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}${payload.series_type==="played"?` · ${payload.games?.length||0}/3 games in this entry${payload.series_status==="in_progress"?" · IN PROGRESS":""}`:""}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${aw}</td><td>${hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${hw}</td><td>${aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
   const reviewParticipants=payload.participants||[];
   const reviewBatting=payload.batting||[];
   const reviewPitching=payload.pitching||[];
@@ -868,10 +898,10 @@ document.getElementById("validateBtn").onclick=()=>{
     if(seenGp.has(o.player))check(checks,"error",`Duplicate GP override: ${o.player}`);
     seenGp.add(o.player);
     if(!parsed.participants.some(p=>p.name===o.player))check(checks,"error",`GP override player is not an active series participant: ${o.player}`);
-    else check(checks,"info",`GP override: ${o.player}`,`${o.games_played} games instead of the default 3.`);
+    else check(checks,"info",`GP override: ${o.player}`,`${o.games_played} games instead of the default ${gamesInEntry()}.`);
   });
   const overrideMap=Object.fromEntries(overrides.map(o=>[o.player,o.games_played]));
-  const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||3}));
+  const participants=parsed.participants.map(p=>({...p,games_played:overrideMap[p.name]||gamesInEntry()}));
 
   const pitchingUsage=readPitchingMeta();
   const pitchers=detectedPitchers();
@@ -880,15 +910,15 @@ document.getElementById("validateBtn").onclick=()=>{
     const u=pitchingUsage[p.name]||{};
     if(u.appearances===null||u.starts===null)check(checks,"error",`Enter Apps and Starts for ${p.name}`);
     else{
-      if(!Number.isInteger(u.appearances)||u.appearances<1||u.appearances>3)check(checks,"error",`${p.name}: Apps must be 1–3`);
-      if(!Number.isInteger(u.starts)||u.starts<0||u.starts>3)check(checks,"error",`${p.name}: Starts must be 0–3`);
+      if(!Number.isInteger(u.appearances)||u.appearances<1||u.appearances>gamesInEntry())check(checks,"error",`${p.name}: Apps must be 1–${gamesInEntry()}`);
+      if(!Number.isInteger(u.starts)||u.starts<0||u.starts>gamesInEntry())check(checks,"error",`${p.name}: Starts must be 0–${gamesInEntry()}`);
       if(Number.isInteger(u.appearances)&&Number.isInteger(u.starts)&&u.starts>u.appearances)check(checks,"error",`${p.name}: Starts cannot exceed Apps`);
     }
     startsByTeam[p.team]=(startsByTeam[p.team]||0)+(Number.isFinite(u.starts)?u.starts:0);
   });
   [away,home].forEach(team=>{
-    if((startsByTeam[team]||0)!==3)check(checks,"warn",`${team} has ${startsByTeam[team]||0} recorded pitching starts`,`A normal three-game series should total 3 team starts. Correct the Apps/Starts inputs or approve with explanation.`);
-    else check(checks,"pass",`${team} pitching starts total 3`);
+    if((startsByTeam[team]||0)!==gamesInEntry())check(checks,"warn",`${team} has ${startsByTeam[team]||0} recorded pitching starts`,`This ${gamesInEntry()}-game entry should total ${gamesInEntry()} team starts. Correct the Apps/Starts inputs or approve with explanation.`);
+    else check(checks,"pass",`${team} pitching starts total ${gamesInEntry()}`);
   });
 
   const HBt=totalRow(parsed.HB), HPt=totalRow(parsed.HP), ABt=totalRow(parsed.AB), APt=totalRow(parsed.AP);
@@ -915,7 +945,7 @@ document.getElementById("validateBtn").onclick=()=>{
     if(g.losing_pitcher && teamForPlayer(g.losing_pitcher)!==loserTeam)check(checks,"warn",`Game ${g.game}: losing pitcher appears to be on the winning team`,`${g.losing_pitcher} is associated with ${teamForPlayer(g.losing_pitcher)||"unknown team"}.`);
     if(g.save_pitcher && teamForPlayer(g.save_pitcher)!==winnerTeam)check(checks,"warn",`Game ${g.game}: save pitcher appears to be on the losing team`,`${g.save_pitcher} is associated with ${teamForPlayer(g.save_pitcher)||"unknown team"}.`);
   });
-  if(!gameError)check(checks,"pass","All three games have valid non-tied scores and pitcher decisions");
+  if(!gameError)check(checks,"pass",`All ${games.length} entered ${games.length===1?"game has":"games have"} valid non-tied scores and pitcher decisions`);
 
   const basePitching=basePitchingRows(overrideMap);
   const corrections=readCorrections(basePitching);
@@ -959,9 +989,12 @@ document.getElementById("validateBtn").onclick=()=>{
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v43",
+    source:"ndwiffle_admin_v127",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
+    series_type:"played",
+    series_status:gamesInEntry()<3?"in_progress":"complete",
+    games_in_entry:gamesInEntry(),
     games,
     gp_overrides:overrides,
     player_resolutions:playerResolutions,
@@ -1070,15 +1103,15 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 
     let result=await postPublish("/api/admin/publish",payload);
 
-    if(result.res.status===409 && result.body?.code==="SERIES_EXISTS"){
-      const ok=confirm("This series already exists in the database. Replace the existing series with this validated import?");
-      if(!ok){
-        statusEl.textContent="Publish canceled. Existing series was left unchanged.";
-        statusEl.className="file-state publish-status-box";
-        syncPublishState();
-        btn.textContent="Publish Series";
-        return;
-      }
+    if(result.res.status===409 && result.body?.code==="PARTIAL_SERIES_EXISTS"){
+      const existingGames=Number(result.body?.existing_game_count||0),incomingGames=Number(payload.games?.length||0);
+      const ok=confirm(`This series already has ${existingGames} of 3 games published. Append these ${incomingGames} new ${incomingGames===1?"game":"games"} to the existing partial series?`);
+      if(!ok){statusEl.textContent="Publish canceled. Existing partial series was left unchanged.";statusEl.className="file-state publish-status-box";syncPublishState();btn.textContent="Publish Series";return}
+      statusEl.textContent="Appending to existing partial series…";
+      result=await postPublish("/api/admin/publish?append=1",payload);
+    }else if(result.res.status===409 && result.body?.code==="SERIES_EXISTS"){
+      const ok=confirm("This complete series already exists in the database. Replace the existing series with this validated import?");
+      if(!ok){statusEl.textContent="Publish canceled. Existing series was left unchanged.";statusEl.className="file-state publish-status-box";syncPublishState();btn.textContent="Publish Series";return}
       statusEl.textContent="Replacing existing series…";
       result=await postPublish("/api/admin/publish?replace=1",payload);
     }
@@ -1104,7 +1137,7 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
     statusEl.textContent=`✓ Series ${result.body.action}: ${result.body.series_id} by ${result.body.actor_email}`;
     statusEl.className="file-state publish-success publish-status-box";
     btn.disabled=true;
-    btn.textContent=result.body.action==="replaced"?"Series Replaced":"Series Published";
+    btn.textContent=result.body.action==="replaced"?"Series Replaced":result.body.action==="appended"?"Partial Series Updated":"Series Published";
   }catch(err){
     const msg=err?.name==="AbortError"
       ?"Publish timed out after 30 seconds. The database may be unavailable or the request may have stalled."
@@ -1119,5 +1152,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=126"></script></body>
+<script src="/assets/hof.js?v=127"></script></body>
 </html>
