@@ -211,7 +211,7 @@ function render(){
    if(ba===1){
      const ra=resultsByPair.get(pairKey(a.base.away_id,a.base.home_id));
      const rb=resultsByPair.get(pairKey(b.base.away_id,b.base.home_id));
-     return String(rb?.series_date||"").localeCompare(String(ra?.series_date||""))||a.index-b.index;
+     return String(rb?.series_date||"").localeCompare(String(ra?.series_date||""))||sameDaySeriesOrder(b.base.away_id,b.base.home_id)-sameDaySeriesOrder(a.base.away_id,a.base.home_id)||a.index-b.index;
    }
    return a.index-b.index;
  });
@@ -270,4 +270,4 @@ Promise.all([
  console.error(err);render();
  document.getElementById("scheduleError").innerHTML='<div class="schedule-error">Live schedule data is temporarily unavailable. The 45-matchup pool is still shown below.</div>';
 });
-</script><script src="/assets/hof.js?v=128"></script></body></html>
+</script><script src="/assets/hof.js?v=129"></script></body></html>

@@ -68,7 +68,7 @@ export async function onRequestGet(context){
     exhibition_schema_ready=false;
   }
   const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
-  return json({ok:true,build:"v124",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v129",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

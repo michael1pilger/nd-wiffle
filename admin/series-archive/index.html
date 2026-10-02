@@ -6,7 +6,7 @@
 @media(max-width:760px){.archive-grid{grid-template-columns:1fr}.archive-status{width:100%;margin-left:0}.archive-summary{grid-template-columns:1fr}.archive-score{text-align:left}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
-<main class="archive-shell"><div class="container"><div class="eyebrow">Commissioner Tools · BUILD v128</div><h1>Series Archive</h1><p class="muted">Every published series remains available here. Fantasy points and Instagram Top 5 rankings are recalculated from the normalized D1 stats, so they remain recoverable even when a different commissioner handles the social post later.</p>
+<main class="archive-shell"><div class="container"><div class="eyebrow">Commissioner Tools · BUILD v129</div><h1>Series Archive</h1><p class="muted">Every published series remains available here. Fantasy points and Instagram Top 5 rankings are recalculated from the normalized D1 stats, so they remain recoverable even when a different commissioner handles the social post later.</p>
 <div class="archive-controls"><label>Season<select id="seasonSel"><option value="2026">2026</option></select></label><label>Search<input id="search" placeholder="Team or player"></label><div id="status" class="archive-status">Loading published series…</div></div>
 <div id="seriesList" class="archive-list"></div></div></main>
 <script>
@@ -46,4 +46,4 @@ async function deleteSeries(seriesId){
 }
 async function load(){status.textContent="Loading published series…";const season=Number(seasonSel.value||2026),r=await fetch(`/api/public/results?season=${season}`,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok){status.textContent=j.error||"Archive unavailable.";seriesList.innerHTML='<div class="empty">Unable to load the archive.</div>';return}SERIES=j.series||[];render()}
 seasonSel.addEventListener("change",load);search.addEventListener("input",render);load().catch(e=>{status.textContent=String(e.message||e)});
-</script><script src="/assets/hof.js?v=128"></script></body></html>
+</script><script src="/assets/hof.js?v=129"></script></body></html>

@@ -115,8 +115,9 @@ export async function onRequestGet(context){
       `).bind(season),
       DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=?").bind(season),
       DB.prepare(`
-        SELECT tr.player_id,tr.team_id,t.display_name AS team_name
+        SELECT tr.player_id,p.name,p.class_year,p.retired,tr.team_id,t.display_name AS team_name
         FROM team_rosters tr
+        JOIN players p ON p.player_id=tr.player_id
         JOIN teams t ON t.team_id=tr.team_id
         WHERE tr.season=?
       `).bind(season),
@@ -190,7 +191,7 @@ export async function onRequestGet(context){
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
         Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
-        GP:n(r.gp),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
+        GP:Math.max(0,n(r.gp)-(["gerard_sharkey","teddy_skendzel"].includes(r.player_id)?1:0)),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
         Singles:n(r.singles),Doubles:n(r.doubles),Triples:n(r.triples),HRs:n(r.hr),
         RBI:n(r.rbi),BB:bb,Ks:n(r.so),
         BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)
@@ -202,7 +203,7 @@ export async function onRequestGet(context){
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
         Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
-        GP:n(r.gp),Apps:n(r.apps),Starts:n(r.starts),
+        GP:Math.max(0,n(r.gp)-(["gerard_sharkey","teddy_skendzel"].includes(r.player_id)?1:0)),Apps:n(r.apps),Starts:n(r.starts),
         W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:outs,IP:ipDisplay(outs),
         BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
         HRs:n(r.hr),WP:n(r.wp),
@@ -212,12 +213,13 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v125",season,
+      ok:true,build:"v129",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,
       pitching,
       participants:participantsRes.results||[],
+      rosters:rosterRes.results||[],
       conditional_forfeits:conditionalForfeits,
       games
     });

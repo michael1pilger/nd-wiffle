@@ -3,7 +3,7 @@
 .standings-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .standings-tab{border:1px solid var(--border);background:#0b1525;color:var(--muted);border-radius:999px;padding:9px 14px;font-size:11px;font-weight:900;cursor:pointer}
 .standings-tab.active{background:var(--gold);border-color:var(--gold);color:#111}
-.power-panel,.playoff-panel{display:none}.power-panel.active,.playoff-panel.active{display:block}.standings-panel.hidden{display:none}
+.power-panel,.playoff-panel,.full-standings-panel{display:none}.power-panel.active,.playoff-panel.active,.full-standings-panel.active{display:block}.standings-panel.hidden{display:none}
 .playoff-pct{font-size:20px;font-weight:950}.playoff-bar{width:110px;height:7px;background:#17243a;border-radius:999px;overflow:hidden;margin-left:auto}.playoff-fill{height:100%;background:var(--gold);border-radius:999px}.playoff-note2{color:var(--muted);font-size:11px;line-height:1.6;margin-top:14px}
 .power-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
 .power-summary-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:13px 15px}
@@ -16,6 +16,7 @@
 .power-up{color:#7fd69a;font-weight:850}.power-down{color:#ff9f9f;font-weight:850}.power-flat{color:var(--muted);font-weight:850}
 .power-method{color:var(--muted);font-size:11px;line-height:1.6;margin-top:14px}
 @media(max-width:760px){.power-summary{grid-template-columns:1fr}.power-table th,.power-table td{padding:9px 7px;font-size:10px}}
+.full-standings-table{width:100%;border-collapse:collapse}.full-standings-table th,.full-standings-table td{padding:11px 9px;border-bottom:1px solid rgba(255,255,255,.07);text-align:center;white-space:nowrap}.full-standings-table th{font-size:9px;text-transform:uppercase;color:var(--muted)}.full-standings-table th:nth-child(2),.full-standings-table td:nth-child(2){text-align:left}.split-good{color:#71d49c;font-weight:850}.split-bad{color:#eb7884;font-weight:850}.split-neutral{color:var(--muted)}
 .conditional-marker{display:inline-flex;align-items:center;justify-content:center;margin-left:4px;color:var(--gold);font-size:13px;font-weight:950;cursor:help;vertical-align:super;line-height:1}.conditional-marker:hover{filter:brightness(1.2)}
 .clinch-marker,.elim-marker{display:inline-flex;align-items:center;margin-left:5px;font-size:9px;font-weight:900;cursor:help;line-height:1;letter-spacing:.1px}
 .clinch-marker{color:#71d49c}
@@ -25,7 +26,7 @@
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Standings</h1>
-<p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button><button class="standings-tab" type="button" data-standings-tab="playoff">Playoff %</button></div></div>
+<p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="full">Full Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button><button class="standings-tab" type="button" data-standings-tab="playoff">Playoff %</button></div></div>
 <section class="standings-shell standings-panel" id="standingsPanel"><div class="container"><div class="tablewrap"><table class="standings-table">
 <thead><tr><th class="standings-rank">RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>RS</th><th>RA</th><th>DIFF</th><th>FORM</th></tr></thead>
 <tbody id="standingsBody"><tr style="--team:90,98,110"><td class="standings-rank">—</td><td><div class="standings-logo-name"><img class="team-logo sm" style="width:30px;height:30px;max-width:30px;max-height:30px;object-fit:contain;display:block" src="/assets/logos/midnight.png?v=81" alt="Midnight"><span>Midnight</span></div></td>
@@ -59,7 +60,10 @@
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 <td class="blank">&nbsp;</td><td class="blank">&nbsp;</td><td class="blank">&nbsp;</td>
 </tr></tbody></table></div><div class="playoff-note">Top 7 teams qualify for the playoffs. The line above 8th place marks the playoff cutoff. Click any column header to sort; RK remains the default order. GB is measured from 7th place using the difference in each team's W-L differential, divided by two. Example: +7 versus -6 = +6.5 GB.</div></div></section>
-<section class="standings-shell power-panel" id="powerPanel"><div class="container">
+<section class="standings-shell full-standings-panel" id="fullStandingsPanel"><div class="container">
+  <div class="tablewrap"><table class="full-standings-table"><thead><tr><th>RK</th><th>Team</th><th>Overall</th><th>Home</th><th>Away</th><th>&lt;2 Run</th><th>vs &gt;.500</th><th>Series</th><th>Last 10</th><th>RD/G</th><th>SOS</th><th>Streak</th></tr></thead><tbody id="fullStandingsBody"><tr><td colspan="12" style="padding:24px;color:var(--muted)">Loading full standings…</td></tr></tbody></table></div>
+  <div class="playoff-note2"><strong>Full standings:</strong> Home/away and close-game records use played games only. “&lt;2 Run” means games decided by one run. “vs &gt;.500” uses each opponent’s current 2026 winning percentage. Series record counts completed series by series wins, with tied/in-progress series shown separately. SOS is the current average winning percentage of opponents faced.</div>
+</div></section><section class="standings-shell power-panel" id="powerPanel"><div class="container">
   <div class="power-summary">
     <div class="power-summary-card"><small>Model</small><strong>Opponent-adjusted 2026 form</strong></div>
     <div class="power-summary-card"><small>Player component</small><strong>Series performance vs own baseline</strong></div>
@@ -105,8 +109,10 @@ function buildLast6(results){
   const games=[];
   for(const sr of (results?.series||[])){
     for(const g of (sr.games||[])){
+      const pair=[sr.away_team_id,sr.home_team_id].sort().join("__");
+      const sameDayOrder=pair==="storm__twin-titans"?10:pair==="storm__underdawgs"?20:15;
       games.push({
-        date:sr.series_date||"",
+        date:sr.series_date||"",series_order:sameDayOrder,
         game_number:Number(g.game_number||0),
         away:sr.away_team_id,
         home:sr.home_team_id,
@@ -120,7 +126,7 @@ function buildLast6(results){
   // so Game 3 is considered more recent than Game 2, etc.
   games.sort((a,b)=>{
     const d=String(b.date).localeCompare(String(a.date));
-    return d || b.game_number-a.game_number;
+    return d || b.series_order-a.series_order || b.game_number-a.game_number;
   });
 
   const ids=[...new Set(games.flatMap(g=>[g.away,g.home]))];
@@ -165,45 +171,27 @@ function formHtml(teamId){
 }
 
 
-function tiebreakAhead(a,b){
- if(Number(a.DIFF||0)!==Number(b.DIFF||0))return Number(a.DIFF||0)>Number(b.DIFF||0);
- if(Number(a.RS||0)!==Number(b.RS||0))return Number(a.RS||0)>Number(b.RS||0);
- return String(a.team||"").localeCompare(String(b.team||""))<0;
-}
-function lowestPossibleSeed(team,rows){
- // Worst finish if this team wins no more games and every rival reaches its
- // maximum possible win total. At equal win totals, current DIFF then RS
- // applies as the standings tiebreak snapshot.
- let threats=0;
- for(const opp of rows){
-   if(opp.team_id===team.team_id)continue;
-   const oppMaxWins=24-Number(opp.L||0);
-   if(oppMaxWins>Number(team.W||0)){threats++;continue}
-   if(oppMaxWins===Number(team.W||0)&&tiebreakAhead(opp,team))threats++;
- }
- return Math.min(rows.length,threats+1);
-}
-function highestPossibleSeed(team,rows){
- // Best finish if this team reaches its maximum win total. Any rival already
- // guaranteed to finish above that mark still occupies a seed in front.
- const teamMaxWins=24-Number(team.L||0);
- let guaranteedAhead=0;
- for(const opp of rows){
-   if(opp.team_id===team.team_id)continue;
-   if(Number(opp.W||0)>teamMaxWins){guaranteedAhead++;continue}
-   if(Number(opp.W||0)===teamMaxWins&&tiebreakAhead(opp,team))guaranteedAhead++;
- }
- return Math.min(rows.length,guaranteedAhead+1);
+function playoffStatus(team,rows){
+ const teamWins=Number(team.W||0),teamMaxWins=24-Number(team.L||0);
+ // For a clinch, an opponent whose maximum wins can TIE the team remains a threat
+ // because future run differential is not fixed. This is intentionally conservative
+ // and matches the Playoff % tab's 100%/99.9% distinction.
+ const possibleThreats=rows.filter(o=>o.team_id!==team.team_id && (24-Number(o.L||0))>=teamWins).length;
+ const guaranteedAhead=rows.filter(o=>o.team_id!==team.team_id && Number(o.W||0)>teamMaxWins).length;
+ return {
+   clinched:possibleThreats<=6,
+   lowestSeed:Math.min(rows.length,possibleThreats+1),
+   eliminated:guaranteedAhead>=7,
+   bestSeed:Math.min(rows.length,guaranteedAhead+1)
+ };
 }
 function clinchMarker(r,rows){
- const seed=lowestPossibleSeed(r,rows);
- if(seed>7)return "";
- return `<span class="clinch-marker" title="Clinched playoff berth · lowest possible seed: ${seed}. Equal-win comparisons use current run differential, then runs scored.">X<span class="seed-note">(${seed})</span></span>`;
+ const x=playoffStatus(r,rows);if(!x.clinched)return "";
+ return `<span class="clinch-marker" title="Clinched playoff berth · lowest guaranteed seed: ${x.lowestSeed}. Equal-win futures remain unresolved because run differential can still change.">X<span class="seed-note">(${x.lowestSeed})</span></span>`;
 }
 function eliminationMarker(r,rows){
- const seed=highestPossibleSeed(r,rows);
- if(seed<=7)return "";
- return `<span class="elim-marker" title="Mathematically eliminated · best possible seed: ${seed}. Equal-win comparisons use current run differential, then runs scored.">E<span class="seed-note">(${seed})</span></span>`;
+ const x=playoffStatus(r,rows);if(!x.eliminated)return "";
+ return `<span class="elim-marker" title="Mathematically eliminated · best possible seed: ${x.bestSeed}.">E<span class="seed-note">(${x.bestSeed})</span></span>`;
 }
 function conditionalMarker(r){
  const w=Number(r.conditional_wins||0),l=Number(r.conditional_losses||0);
@@ -236,6 +224,36 @@ function zMap(values){
  const vals=values.filter(Number.isFinite),mean=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
  const variance=vals.length?vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length:0,sd=Math.sqrt(variance)||1;
  return v=>(Number.isFinite(v)?(v-mean)/sd:0);
+}
+function recordText(w,l,t=0){return `${w}-${l}${t?`-${t}`:""}`}
+function renderFullStandings(league,results){
+ const rows=(league.standings||[]).map(r=>({...r})), byId=new Map(rows.map(r=>[r.team_id,r]));
+ const stats=new Map(rows.map(r=>[r.team_id,{homeW:0,homeL:0,awayW:0,awayL:0,closeW:0,closeL:0,plusW:0,plusL:0,last:[],opp:[],seriesW:0,seriesL:0,seriesT:0}]));
+ const series=[...(results.series||[])].sort((a,b)=>String(a.series_date||"").localeCompare(String(b.series_date||""))||String(a.series_id||"").localeCompare(String(b.series_id||"")));
+ for(const sr of series){
+   let aw=0,hw=0;
+   for(const g of (sr.games||[])){
+     const a=Number(g.away_score||0),h=Number(g.home_score||0),awayWin=a>h,margin=Math.abs(a-h);
+     const A=stats.get(sr.away_team_id),H=stats.get(sr.home_team_id);if(!A||!H)continue;
+     if(awayWin){A.awayW++;H.homeL++;aw++;}else{A.awayL++;H.homeW++;hw++;}
+     if(margin<2){if(awayWin){A.closeW++;H.closeL++;}else{A.closeL++;H.closeW++;}}
+     const aOpp=byId.get(sr.home_team_id),hOpp=byId.get(sr.away_team_id);
+     if(Number(aOpp?.PCT||0)>.5){if(awayWin)A.plusW++;else A.plusL++;}
+     if(Number(hOpp?.PCT||0)>.5){if(!awayWin)H.plusW++;else H.plusL++;}
+     A.last.push(awayWin?"W":"L");H.last.push(awayWin?"L":"W");A.opp.push(sr.home_team_id);H.opp.push(sr.away_team_id);
+   }
+   const A=stats.get(sr.away_team_id),H=stats.get(sr.home_team_id);
+   if(A&&H&&(sr.games||[]).length>=3){if(aw>hw){A.seriesW++;H.seriesL++;}else if(hw>aw){H.seriesW++;A.seriesL++;}else{A.seriesT++;H.seriesT++;}}
+ }
+ const fmtSplit=(w,l)=>{const cls=w>l?"split-good":l>w?"split-bad":"split-neutral";return `<span class="${cls}">${w}-${l}</span>`};
+ document.getElementById("fullStandingsBody").innerHTML=rows.map(r=>{
+   const x=stats.get(r.team_id),ui=STANDING_TEAM_UI[r.team_id]||{logo:""};
+   const last=x.last.slice(-10),lw=last.filter(v=>v==="W").length,ll=last.length-lw;
+   const sos=x.opp.length?x.opp.reduce((a,id)=>a+Number(byId.get(id)?.PCT||0),0)/x.opp.length:0;
+   const rdg=Number(r.GP||0)?Number(r.DIFF||0)/Number(r.GP):0;
+   const streak=LAST6_BY_TEAM.get(r.team_id);const st=streak?.streakType?`${streak.streakType} ${streak.streak}`:"—";
+   return `<tr><td>${r.rank}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td>${r.W}-${r.L}</td><td>${fmtSplit(x.homeW,x.homeL)}</td><td>${fmtSplit(x.awayW,x.awayL)}</td><td>${fmtSplit(x.closeW,x.closeL)}</td><td>${fmtSplit(x.plusW,x.plusL)}</td><td>${recordText(x.seriesW,x.seriesL,x.seriesT)}</td><td>${lw}-${ll}</td><td>${rdg>0?"+":""}${rdg.toFixed(2)}</td><td>${sos.toFixed(3).replace(/^0/,"")}</td><td>${st}</td></tr>`;
+ }).join("");
 }
 function renderPowerRankings(league,results){
  const teams=(league.standings||[]).map(r=>({...r}));
@@ -375,7 +393,7 @@ function renderPlayoffOdds(league,results,scheduled,powerMetrics){
 
 document.querySelectorAll("[data-standings-tab]").forEach(btn=>btn.addEventListener("click",()=>{
  document.querySelectorAll("[data-standings-tab]").forEach(x=>x.classList.toggle("active",x===btn));
- const tab=btn.dataset.standingsTab;document.getElementById("standingsPanel").classList.toggle("hidden",tab!=="standings");document.getElementById("powerPanel").classList.toggle("active",tab==="power");document.getElementById("playoffPanel").classList.toggle("active",tab==="playoff");
+ const tab=btn.dataset.standingsTab;document.getElementById("standingsPanel").classList.toggle("hidden",tab!=="standings");document.getElementById("fullStandingsPanel").classList.toggle("active",tab==="full");document.getElementById("powerPanel").classList.toggle("active",tab==="power");document.getElementById("playoffPanel").classList.toggle("active",tab==="playoff");
 }));
 Promise.all([
  fetch("/api/public/league?season=2026",{cache:"no-store"}).then(r=>r.json().then(j=>({ok:r.ok,j}))),
@@ -385,8 +403,8 @@ Promise.all([
  if(!leagueRes.ok||!leagueRes.j.ok)throw new Error(leagueRes.j.error||"Live standings unavailable");
  if(resultRes.ok&&resultRes.j.ok)buildLast6(resultRes.j);
  renderLiveStandings(leagueRes.j.standings||[],leagueRes.j.series_count||0);
- if(resultRes.ok&&resultRes.j.ok){const powerMetrics=renderPowerRankings(leagueRes.j,resultRes.j);renderPlayoffOdds(leagueRes.j,resultRes.j,(scheduleRes.ok&&scheduleRes.j.ok)?scheduleRes.j:{scheduled:[]},powerMetrics);}
- else {document.getElementById("powerBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';document.getElementById("playoffBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';}
+ if(resultRes.ok&&resultRes.j.ok){renderFullStandings(leagueRes.j,resultRes.j);const powerMetrics=renderPowerRankings(leagueRes.j,resultRes.j);renderPlayoffOdds(leagueRes.j,resultRes.j,(scheduleRes.ok&&scheduleRes.j.ok)?scheduleRes.j:{scheduled:[]},powerMetrics);}
+ else {document.getElementById("fullStandingsBody").innerHTML='<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:24px">Full standings are temporarily unavailable.</td></tr>';document.getElementById("powerBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';document.getElementById("playoffBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Playoff odds are temporarily unavailable.</td></tr>';}
 }).catch(err=>{
  document.getElementById("standingsStatus").textContent="Live standings are temporarily unavailable. Showing the preseason table.";
  document.getElementById("powerBody").innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Power rankings are temporarily unavailable.</td></tr>';
@@ -394,4 +412,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=128"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=129"></script></body></html>

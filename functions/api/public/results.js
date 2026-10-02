@@ -9,6 +9,12 @@ function json(body,status=200){
   });
 }
 const n=v=>Number(v||0);
+function seriesOrderRank(away,home){
+  const k=[away,home].sort().join("__");
+  if(k==="storm__twin-titans")return 10;
+  if(k==="storm__underdawgs")return 20;
+  return 15;
+}
 function ipDisplay(outs){
   const whole=Math.floor(n(outs)/3),rem=n(outs)%3;
   return rem?`${whole}.${rem}`:String(whole);
@@ -39,7 +45,7 @@ export async function onRequestGet(context){
       `).bind(season),
       DB.prepare(`
         SELECT
-          g.series_id,s.series_date,g.game_number,g.away_score,g.home_score,
+          g.series_id,s.series_date,s.away_team_id,s.home_team_id,g.game_number,g.away_score,g.home_score,
           g.winning_pitcher_id,g.losing_pitcher_id,g.save_pitcher_id,
           wp.name AS winning_pitcher,
           lp.name AS losing_pitcher,
@@ -87,6 +93,7 @@ export async function onRequestGet(context){
     };
     const chronological=[...(gamesRes.results||[])].sort((a,b)=>
       String(a.series_date||"").localeCompare(String(b.series_date||"")) ||
+      seriesOrderRank(a.away_team_id,a.home_team_id)-seriesOrderRank(b.away_team_id,b.home_team_id) ||
       String(a.series_id).localeCompare(String(b.series_id)) ||
       n(a.game_number)-n(b.game_number)
     );
@@ -174,9 +181,9 @@ export async function onRequestGet(context){
         batting:batBySeries.get(s.series_id)||[],
         pitching:pitBySeries.get(s.series_id)||[]
       };
-    });
+    }).sort((a,b)=>String(b.series_date||"").localeCompare(String(a.series_date||"")) || seriesOrderRank(b.away_team_id,b.home_team_id)-seriesOrderRank(a.away_team_id,a.home_team_id) || String(b.series_id).localeCompare(String(a.series_id)));
 
-    return json({ok:true,build:"v127",season,series_count:series.length,series});
+    return json({ok:true,build:"v129",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

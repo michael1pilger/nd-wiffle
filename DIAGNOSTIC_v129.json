@@ -1,0 +1,21 @@
+{
+  "full_standings": [
+    "home/away",
+    "one-run games",
+    "vs >.500",
+    "series record",
+    "last 10",
+    "RD/G",
+    "SOS",
+    "streak"
+  ],
+  "storm_same_day_order": "Storm-TT before Storm-Underdawgs chronologically",
+  "gp_corrections": [
+    "gerard_sharkey -1 GP",
+    "teddy_skendzel -1 GP"
+  ],
+  "grid": "live 2026 rosters + batting/pitching season/career thresholds merged at runtime",
+  "playoff_x": "conservative clinch logic aligned with 100% simulation rule; ties remain threats because future DIFF can change",
+  "admin_schedule": "8-opponent target + remaining opponents + home/away left",
+  "migration_required": false
+}
