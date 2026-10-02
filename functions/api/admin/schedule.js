@@ -21,8 +21,14 @@ export async function onRequestGet(context){
     ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
    `).bind(season),
    DB.prepare(`
-    SELECT series_id,series_date,away_team_id,home_team_id
-    FROM series WHERE season=? ORDER BY series_date,series_id
+    SELECT s.series_id,s.series_date,s.away_team_id,s.home_team_id,
+           COUNT(g.game_number) AS game_count,
+           json_extract(s.payload_json,'$.series_type') AS series_type
+    FROM series s
+    LEFT JOIN games g ON g.series_id=s.series_id
+    WHERE s.season=?
+    GROUP BY s.series_id,s.series_date,s.away_team_id,s.home_team_id,s.payload_json
+    ORDER BY s.series_date,s.series_id
    `).bind(season),
    DB.prepare(`
     SELECT p.player_id,p.name
@@ -68,7 +74,7 @@ export async function onRequestGet(context){
     exhibition_schema_ready=false;
   }
   const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
-  return json({ok:true,build:"v129",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v130",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){

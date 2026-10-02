@@ -1,0 +1,19 @@
+{
+  "root_causes": {
+    "public_schedule": "v129 called sameDaySeriesOrder() without defining it; render crashed after live finals loaded, leaving the initial all-TBD state on screen.",
+    "commissioner_dashboard": "v129 renamed renderBalance() to renderBalanceTable() but existing render/event calls still invoked renderBalance(), so the scheduler render path threw before the new dashboard could appear."
+  },
+  "fixes": {
+    "sameDaySeriesOrder_defined": true,
+    "completed_series_result_map_robust": true,
+    "partial_series_display": true,
+    "renderBalance_defined": true,
+    "renderBalanceTable_removed": true,
+    "remaining_schedule_dashboard": true,
+    "remaining_opponents_column": true,
+    "partial_matchup_tracking": true,
+    "admin_api_game_count": true
+  },
+  "migration_required": false,
+  "syntax": "PASS"
+}
