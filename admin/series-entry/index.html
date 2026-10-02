@@ -989,7 +989,7 @@ document.getElementById("validateBtn").onclick=()=>{
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v127",
+    source:"ndwiffle_admin_v128",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     series_type:"played",
@@ -1081,6 +1081,9 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
     alert("Publish could not start because the validated payload is missing. Re-run validation.");
     return;
   }
+  const away=payload.series?.away_team||"Away",home=payload.series?.home_team||"Home",date=payload.series?.date||"No date",gameCount=Number(payload.games?.length||0);
+  const proceed=confirm(`FINAL PUBLISH CHECK\n\n${away} vs ${home}\nDate: ${date}\nGames in this upload: ${gameCount}\n\nPublishing immediately changes standings and player stats. Confirm the teams and date are correct.`);
+  if(!proceed)return;
 
   btn.disabled=true;
   btn.textContent="Publishing…";
@@ -1102,6 +1105,14 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
     statusEl.textContent="Database connection OK. Publishing series…";
 
     let result=await postPublish("/api/admin/publish",payload);
+
+    if(result.res.status===409 && result.body?.code==="MATCHUP_ALREADY_PUBLISHED"){
+      const existingGames=Number(result.body?.existing_game_count||0);
+      const ok=confirm(`WARNING: ${away} vs ${home} already has a published series this season.\n\nExisting: ${result.body.existing_series_date} · ${existingGames}/3 games\nSeries ID: ${result.body.existing_series_id}\n\nCreating another published series between the same teams can duplicate standings and player stats. Continue ONLY if this is intentionally a second matchup.`);
+      if(!ok){statusEl.textContent="Publish canceled. Existing matchup was left unchanged.";statusEl.className="file-state publish-status-box";syncPublishState();btn.textContent="Publish Series";return}
+      statusEl.textContent="Publishing intentional duplicate matchup…";
+      result=await postPublish("/api/admin/publish?force_matchup=1",payload);
+    }
 
     if(result.res.status===409 && result.body?.code==="PARTIAL_SERIES_EXISTS"){
       const existingGames=Number(result.body?.existing_game_count||0),incomingGames=Number(payload.games?.length||0);
@@ -1152,5 +1163,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=127"></script></body>
+<script src="/assets/hof.js?v=128"></script></body>
 </html>

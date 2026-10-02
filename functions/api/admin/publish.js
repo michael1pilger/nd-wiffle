@@ -248,6 +248,22 @@ export async function onRequestPost(context) {
   const actor=context.data.actorEmail || "unknown-access-user";
   const reg=await registry(DB);
   let existing=await DB.prepare("SELECT series_id,published_at,commissioner_email,payload_json FROM series WHERE series_id=?").bind(payload.series_id).first();
+  const forceMatchup=url.searchParams.get("force_matchup")==="1";
+  const candidateAway=reg.teamsByName.get(norm(payload.series?.away_team));
+  const candidateHome=reg.teamsByName.get(norm(payload.series?.home_team));
+  let matchupExisting=null;
+  if(!existing && candidateAway && candidateHome){
+    matchupExisting=await DB.prepare(`
+      SELECT s.series_id,s.series_date,s.payload_json,
+             (SELECT COUNT(*) FROM games g WHERE g.series_id=s.series_id) AS game_count
+      FROM series s
+      WHERE s.season=? AND ((s.away_team_id=? AND s.home_team_id=?) OR (s.away_team_id=? AND s.home_team_id=?))
+      ORDER BY s.series_date,s.series_id LIMIT 1
+    `).bind(Number(payload.series?.season||0),candidateAway,candidateHome,candidateHome,candidateAway).first();
+  }
+  if(matchupExisting && !forceMatchup){
+    return json({ok:false,code:"MATCHUP_ALREADY_PUBLISHED",error:"These teams already have a published series this season.",existing_series_id:matchupExisting.series_id,existing_series_date:matchupExisting.series_date,existing_game_count:Number(matchupExisting.game_count||0),can_force:true},409);
+  }
   let existingPayload=null;
   if(existing?.payload_json){try{existingPayload=JSON.parse(existing.payload_json)}catch{}}
   const existingGameCount=Array.isArray(existingPayload?.games)?existingPayload.games.length:0;
@@ -334,7 +350,7 @@ export async function onRequestPost(context) {
     ) VALUES(?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
   `).bind(
     payload.series_id,payload.series.season,payload.series.date,awayTeamId,homeTeamId,
-    payload.schema_version,payload.source||"ndwiffle_admin_v127",actor,payload.commissioner_notes||null,
+    payload.schema_version,payload.source||"ndwiffle_admin_v128",actor,payload.commissioner_notes||null,
     Number(payload.validation?.warning_count||0),JSON.stringify(payload)
   ));
 
@@ -386,7 +402,7 @@ export async function onRequestPost(context) {
   }
   statements.push(DB.prepare(`
     INSERT INTO import_history(series_id,action,actor_email,payload_json) VALUES(?,?,?,?)
-  `).bind(payload.series_id,append?"append":existing?"replace":"publish",actor,JSON.stringify(payload)));
+  `).bind(payload.series_id,append?"replace":existing?"replace":"publish",actor,JSON.stringify({...payload,_audit_operation:append?"append":existing?"replace":"publish"})));
 
   try{
     await DB.batch(statements);

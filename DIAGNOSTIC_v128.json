@@ -1,0 +1,10 @@
+{
+  "series_delete": "PASS: archive delete removes parent series; FK cascades active games/stats/participants/corrections/warnings",
+  "audit_history": "retained for recovery",
+  "delete_confirmation": "two-step confirm + exact Series ID typing",
+  "publish_final_warning": "PASS",
+  "duplicate_matchup_guard": "PASS: blocks same team pair in same season unless commissioner explicitly forces",
+  "partial_series_preservation": "delete is per exact series_id; original 2/3 partial series is unaffected when deleting the erroneous second series",
+  "append_history_compatibility": "append stored as legacy replace action with _audit_operation=append to satisfy existing D1 CHECK",
+  "schema_migration_required": false
+}
