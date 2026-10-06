@@ -1,0 +1,21 @@
+{
+  "numbers_analysis": {
+    "BABIP": "(H-HR)/(AB-K-HR), exactly matches visible sheet values",
+    "FIP_sheet": "(13*HR+3*BB-2*K)/(3*displayed_IP)",
+    "FIP_website": "(13*HR+3*BB-2*K)/outs_recorded",
+    "FIP_note": "The sheet formula is conceptually the 3-inning FIP scale, but decimal-style 1.1/1.2 IP causes small errors. Website uses exact outs."
+  },
+  "checks": {
+    "BABIP live API": true,
+    "FIP live API": true,
+    "BABIP stats column": true,
+    "FIP stats column": true,
+    "100 pct green": true,
+    "Historical BvP removed": true,
+    "BvP asset removed": true,
+    "Top two pitchers section": true,
+    "Rate comparisons": true
+  },
+  "migration_required": false,
+  "syntax": "PASS"
+}

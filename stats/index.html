@@ -50,7 +50,7 @@
   ND offensive WAR now uses a wOBA-based runs-above-replacement model. Walks, singles, doubles, triples, and home runs receive linear run values; wOBA is converted to runs above league average, replacement credit is added for playing time, and runs are converted to wins. A full 10-team, 24-game season is calibrated to roughly 27 offensive WAR, so both rate performance and PA matter. wRC+ is shown with 100 = league average. Pitching WAR remains on the short-season soft-toss replacement scale. Career WAR sums regular-season, inferred playoff, and live 2026 value.
 </div>
 <div id="table"></div>
- <div class="stats-footnote">Batting K and Pitching K are labeled separately. Click a header repeatedly to toggle ascending/descending sort.</div>
+ <div class="stats-footnote">Batting K and Pitching K are labeled separately. BABIP = (H − HR) / (AB − K − HR). FIP uses the ND three-inning scale: (13×HR + 3×BB − 2×K) / outs recorded. This preserves the spreadsheet’s intended formula while correctly treating .1/.2 innings as outs rather than decimal innings. Historical FIP is shown as — where HR allowed was not tracked. Click a header repeatedly to toggle ascending/descending sort.</div>
 </div>
 </main>
 <script src="/assets/data.js?v=102"></script>
@@ -409,21 +409,28 @@ function sourceRows(){
    rows=src.filter(r=>String(r.Season)===scope);
  }
  rows=attachWar(rows.filter(publicVisibleStatRow));
- if(mode==="pit"){
+ if(mode==="bat"){
    rows=rows.map(r=>{
-     const outs=(r.Outs!==undefined&&r.Outs!==null)?num(r.Outs):historicalIpToOuts(r.IP);
-     return num(r.Apps)>0&&outs===0?{...r,ERA:null,WHIP:null}:r;
+     const den=num(r.ABs)-num(r.Ks)-num(r.HRs);
+     return {...r,BABIP:den>0?(num(r.Hits)-num(r.HRs))/den:null};
+   });
+ }else{
+   rows=rows.map(r=>{
+     const outs=(r.Outs!==undefined&&r.Outs!==null&&r.Outs!=="")?num(r.Outs):historicalIpToOuts(r.IP);
+     const hasHr=r.HRs!==undefined&&r.HRs!==null&&r.HRs!=="";
+     const base=num(r.Apps)>0&&outs===0?{...r,ERA:null,WHIP:null}:r;
+     return {...base,FIP:outs>0&&hasHr?(13*num(r.HRs)+3*num(r.Walks)-2*num(r.Ks))/outs:null};
    });
  }
  return rows;
 }
 function columns(){
  if(viewMode==="standard")return mode==="bat"
-  ?["Name","Team","WAR","wRCplus","NDwOBA","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BB_pct","K_pct","Ks"]
-  :["Name","Team","WAR","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP"];
+  ?["Name","Team","WAR","wRCplus","NDwOBA","PAs","H_AB","HRs","BA","RBI","OBP","SLG","OPS","BABIP","BB_pct","K_pct","Ks"]
+  :["Name","Team","WAR","Apps","W","L","IP","Ks","K_pct","BB_pct","ERA","WHIP","FIP"];
  return mode==="bat"
-  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","wRCplus","NDwOBA","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","BA","OBP","SLG","OPS"]
-  :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","WP","ERA","WHIP"];
+  ?["Name","Team","Class_Year","WAR","oWAR","pWAR","wRCplus","NDwOBA","GP","PAs","ABs","Runs","Hits","Singles","Doubles","Triples","HRs","RBI","BB","BB_pct","Ks","K_pct","BA","OBP","SLG","OPS","BABIP"]
+  :["Name","Team","Class_Year","WAR","oWAR","pWAR","GP","Apps","Starts","W","L","S","IP","BF","Runs","ER","Hits","Walks","BB_pct","Ks","K_pct","HRs","WP","ERA","WHIP","FIP"];
 }
 function pctMetric(c,r){
  if(c!=="K_pct"&&c!=="BB_pct")return null;
@@ -439,11 +446,11 @@ function displayVal(c,v,r){
  if(["WAR","oWAR","pWAR"].includes(c)){
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"0.00";
  }
- if(c==="ERA"||c==="WHIP"){
+ if(c==="ERA"||c==="WHIP"||c==="FIP"){
    if(v===null||v===undefined||v==="")return "—";
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(2):"—";
  }
- if(["BA","OBP","SLG","OPS","NDwOBA"].includes(c)){
+ if(["BA","OBP","SLG","OPS","NDwOBA","BABIP"].includes(c)){
    if(v===null||v===undefined||v==="")return "—";
    const x=parseFloat(v);return Number.isFinite(x)?x.toFixed(3):"—";
  }
@@ -575,4 +582,4 @@ async function loadLive(){
 render();
 loadLive();
 </script>
-<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=130"></script></body></html>
+<footer><div class="container">ND Wiffle · League database · Historical regular season, inferred 2021–2025 playoffs, and live 2026 results.</div></footer><script src="/assets/table-tools.js?v=102"></script><script src="/assets/hof.js?v=131"></script></body></html>

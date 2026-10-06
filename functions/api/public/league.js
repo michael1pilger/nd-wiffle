@@ -188,18 +188,22 @@ export async function onRequestGet(context){
       const tb=n(r.singles)+2*n(r.doubles)+3*n(r.triples)+4*n(r.hr);
       const obpDen=pa || (ab+bb);
       const ba=ab?hits/ab:0,obp=obpDen?(hits+bb)/obpDen:0,slg=ab?tb/ab:0;
+      const babipDen=ab-n(r.so)-n(r.hr);
+      const babip=babipDen>0?(hits-n(r.hr))/babipDen:null;
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
         Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
         GP:Math.max(0,n(r.gp)-(["gerard_sharkey","teddy_skendzel"].includes(r.player_id)?1:0)),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
         Singles:n(r.singles),Doubles:n(r.doubles),Triples:n(r.triples),HRs:n(r.hr),
         RBI:n(r.rbi),BB:bb,Ks:n(r.so),
-        BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)
+        BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3),
+        BABIP:babip===null?null:babip.toFixed(3)
       };
     });
     const pitching=(pitRes.results||[]).map(r=>{
       const outs=n(r.outs_recorded),ip=outs/3,er=n(r.er),walks=n(r.bb),hits=n(r.hits);
       const d=decisions.get(r.player_id)||{};
+      const fip=outs>0?(13*n(r.hr)+3*walks-2*n(r.strikeouts))/outs:null;
       return {
         Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
         Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
@@ -208,12 +212,13 @@ export async function onRequestGet(context){
         BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
         HRs:n(r.hr),WP:n(r.wp),
         ERA:outs>0?((er*3)/ip).toFixed(2):null,
-        WHIP:outs>0?((walks+hits)/ip).toFixed(2):null
+        WHIP:outs>0?((walks+hits)/ip).toFixed(2):null,
+        FIP:fip===null?null:fip.toFixed(3)
       };
     });
 
     return json({
-      ok:true,build:"v129",season,
+      ok:true,build:"v131",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,
