@@ -74,7 +74,7 @@ export async function onRequestGet(context){
     exhibition_schema_ready=false;
   }
   const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
-  return json({ok:true,build:"v130",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v132",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
@@ -149,6 +149,55 @@ export async function onRequestPost(context){
    verifiedUmpireName=ur.name;
  }
  const key=pairKey(a,b),ids=[a,b].sort();
+
+ // A completed three-game regular-season matchup may never be scheduled again.
+ const completed=await DB.prepare(`
+   SELECT COUNT(g.game_number) AS games
+   FROM series s
+   LEFT JOIN games g ON g.series_id=s.series_id
+   WHERE s.season=? AND (
+     (s.away_team_id=? AND s.home_team_id=?) OR
+     (s.away_team_id=? AND s.home_team_id=?)
+   )
+ `).bind(season,a,b,b,a).first();
+ if(Number(completed?.games||0)>=3){
+   return json({ok:false,code:"MATCHUP_COMPLETE",error:"This regular-season matchup is complete. All 3 games have already been played, so it cannot be scheduled again."},409);
+ }
+
+ // Symmetric omitted-opponent inference. Count any opponent with at least one
+ // played game or a commissioner-scheduled series as accounted for.
+ const accountedRes=await DB.prepare(`
+   SELECT DISTINCT opponent_id FROM (
+     SELECT CASE WHEN s.away_team_id=? THEN s.home_team_id ELSE s.away_team_id END AS opponent_id
+     FROM series s
+     JOIN games g ON g.series_id=s.series_id
+     WHERE s.season=? AND (s.away_team_id=? OR s.home_team_id=?)
+     UNION
+     SELECT CASE WHEN ss.team_a_id=? THEN ss.team_b_id ELSE ss.team_a_id END AS opponent_id
+     FROM scheduled_series ss
+     WHERE ss.season=? AND (ss.team_a_id=? OR ss.team_b_id=?)
+   )
+ `).bind(a,season,a,a,a,season,a,a).all();
+ const accountedA=new Set((accountedRes.results||[]).map(x=>x.opponent_id));
+
+ const accountedResB=await DB.prepare(`
+   SELECT DISTINCT opponent_id FROM (
+     SELECT CASE WHEN s.away_team_id=? THEN s.home_team_id ELSE s.away_team_id END AS opponent_id
+     FROM series s
+     JOIN games g ON g.series_id=s.series_id
+     WHERE s.season=? AND (s.away_team_id=? OR s.home_team_id=?)
+     UNION
+     SELECT CASE WHEN ss.team_a_id=? THEN ss.team_b_id ELSE ss.team_a_id END AS opponent_id
+     FROM scheduled_series ss
+     WHERE ss.season=? AND (ss.team_a_id=? OR ss.team_b_id=?)
+   )
+ `).bind(b,season,b,b,b,season,b,b).all();
+ const accountedB=new Set((accountedResB.results||[]).map(x=>x.opponent_id));
+
+ if((accountedA.size>=8&&!accountedA.has(b))||(accountedB.size>=8&&!accountedB.has(a))){
+   return json({ok:false,code:"MATCHUP_OMITTED",error:"This matchup is the inferred omitted opponent pairing under the 8-opponent regular-season schedule. Remove a conflicting scheduled matchup first if the league schedule is being changed."},409);
+ }
+
  await DB.prepare(`
   INSERT INTO scheduled_series(season,pair_key,team_a_id,team_b_id,series_date,series_time,location,notes,updated_by,umpire_player_id,umpire_name)
   VALUES(?,?,?,?,?,?,?,?,?,?,?)

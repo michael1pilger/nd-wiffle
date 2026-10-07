@@ -1,0 +1,24 @@
+{
+  "schedule_logic": {
+    "omission_inference": "mutual/symmetric; if A omits B, B omits A",
+    "partial_series": "counts as an accounted opponent but remains open for its unplayed games",
+    "complete_series_admin_guard": "client and server both block rescheduling after 3 games",
+    "omitted_pair_admin_guard": "client and server block scheduling inferred omitted matchup"
+  },
+  "results_logos": {
+    "summary": "42px",
+    "expanded_boxscore": "36px"
+  },
+  "migration_required": false,
+  "checks": {
+    "playoff_symmetric_omission": true,
+    "partial_series_stays_remaining": true,
+    "admin_complete_pair_disabled": true,
+    "admin_omitted_pair_disabled": true,
+    "server_complete_pair_block": true,
+    "server_omitted_pair_block": true,
+    "results_summary_logo_42px": true,
+    "results_boxscore_logo_36px": true,
+    "syntax": "PASS"
+  }
+}

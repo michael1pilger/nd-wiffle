@@ -95,37 +95,78 @@ function logoFor(id){return LOGOS[id]||""}
 function teamNameById(rows,id){return rows.find(r=>r.team_id===id)?.team||id}
 function roundRobinRemaining(rows,results,schedule){
  const ids=rows.map(r=>r.team_id);
- const played=new Set((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)>=3).map(x=>pairKey(x.away_team_id,x.home_team_id)));
+ const seriesRows=results?.series||[];
  const scheduled=scheduledRemaining(schedule,results);
  const scheduledByPair=new Map(scheduled.map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));
- const info=new Map();
 
- for(const id of ids){
-   const playedOpp=new Set();
-   for(const sr of (results?.series||[])){
-     if(Number(sr.game_count??sr.games?.length??0)<3)continue;
-     if(sr.away_team_id===id)playedOpp.add(sr.home_team_id);
-     else if(sr.home_team_id===id)playedOpp.add(sr.away_team_id);
+ // Any matchup with at least one game played counts as an accounted opponent.
+ // A partial series still has remaining games, but it is not a new opponent.
+ const actualOpp=new Map(ids.map(id=>[id,new Set()]));
+ const completedPairs=new Set();
+ const partialByPair=new Map();
+
+ for(const sr of seriesRows){
+   const games=Number(sr.game_count??sr.games?.length??0);
+   if(games<=0)continue;
+   if(actualOpp.has(sr.away_team_id))actualOpp.get(sr.away_team_id).add(sr.home_team_id);
+   if(actualOpp.has(sr.home_team_id))actualOpp.get(sr.home_team_id).add(sr.away_team_id);
+   const k=pairKey(sr.away_team_id,sr.home_team_id);
+   if(games>=3)completedPairs.add(k);
+   else partialByPair.set(k,3-games);
+ }
+ for(const x of scheduled){
+   if(actualOpp.has(x.team_a_id))actualOpp.get(x.team_a_id).add(x.team_b_id);
+   if(actualOpp.has(x.team_b_id))actualOpp.get(x.team_b_id).add(x.team_a_id);
+ }
+
+ // Each team plays 8 of the other 9 teams, so each omitted matchup is mutual.
+ // Once either side has eight distinct opponents accounted for, its lone
+ // non-opponent is known. Propagate that omission to the other team too.
+ const omittedPairs=new Set();
+ const omittedByTeam=new Map(ids.map(id=>[id,new Set()]));
+ let changed=true,safety=0;
+ while(changed&&safety++<20){
+   changed=false;
+   for(const id of ids){
+     const current=actualOpp.get(id)||new Set();
+     const alreadyOmitted=omittedByTeam.get(id)||new Set();
+     if(alreadyOmitted.size)continue;
+     if(current.size>=8){
+       const omitted=ids.filter(opp=>opp!==id&&!current.has(opp));
+       if(omitted.length===1){
+         const opp=omitted[0],k=pairKey(id,opp);
+         if(!omittedPairs.has(k)){omittedPairs.add(k);changed=true}
+         omittedByTeam.get(id).add(opp);
+         omittedByTeam.get(opp)?.add(id);
+       }
+     }
    }
+ }
 
+ const info=new Map();
+ for(const id of ids){
+   const completedOpp=new Set();
+   const partialOpp=new Set();
+   for(const sr of seriesRows){
+     const games=Number(sr.game_count??sr.games?.length??0);
+     if(games<=0)continue;
+     const opp=sr.away_team_id===id?sr.home_team_id:sr.home_team_id===id?sr.away_team_id:null;
+     if(!opp)continue;
+     if(games>=3)completedOpp.add(opp); else partialOpp.add(opp);
+   }
    const scheduledOpp=new Set();
    for(const x of scheduled){
      if(x.team_a_id===id)scheduledOpp.add(x.team_b_id);
      else if(x.team_b_id===id)scheduledOpp.add(x.team_a_id);
    }
 
-   const candidates=ids.filter(opp=>opp!==id&&!playedOpp.has(opp));
-   // League format = eight opponent series. Until eight opponents are accounted
-   // for, assume every still-unplayed matchup is live. Once completed+scheduled
-   // reaches eight distinct opponents, any other unplayed opponent is inferred
-   // to be the omitted round-robin matchup.
-   const accounted=new Set([...playedOpp,...scheduledOpp]);
-   let remaining=candidates;
-   if(accounted.size>=8){
-     remaining=candidates.filter(opp=>scheduledOpp.has(opp));
-   }
+   const omitted=ids.filter(opp=>opp!==id&&omittedPairs.has(pairKey(id,opp)));
+   const remaining=ids.filter(opp=>
+     opp!==id &&
+     !completedOpp.has(opp) &&
+     !omittedPairs.has(pairKey(id,opp))
+   );
 
-   const partialByPair=new Map((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)<3).map(x=>[pairKey(x.away_team_id,x.home_team_id),3-Number(x.game_count??x.games?.length??0)]));
    const rowsForTeam=remaining.map(opp=>{
      const pair=pairKey(id,opp),sch=scheduledByPair.get(pair);
      return {
@@ -134,25 +175,26 @@ function roundRobinRemaining(rows,results,schedule){
        scheduled:!!sch,
        date:sch?.series_date||"",
        time:sch?.series_time||"",
-       games_remaining:partialByPair.get(pair)||3
+       games_remaining:partialByPair.get(pair)||3,
+       partial:partialOpp.has(opp)
      };
    }).sort((a,b)=>
+     Number(b.partial)-Number(a.partial) ||
      Number(b.scheduled)-Number(a.scheduled) ||
      String(a.date||"9999").localeCompare(String(b.date||"9999")) ||
      a.opp.localeCompare(b.opp)
    );
 
    info.set(id,{
-     playedOpp,
+     playedOpp:completedOpp,
+     partialOpp,
      scheduledOpp,
-     accounted,
+     accounted:new Set([...(actualOpp.get(id)||[])]),
      remaining:rowsForTeam,
-     omitted:accounted.size>=8
-       ? ids.filter(opp=>opp!==id&&!playedOpp.has(opp)&&!scheduledOpp.has(opp))
-       : []
+     omitted
    });
  }
- return {info,scheduled,scheduledByPair};
+ return {info,scheduled,scheduledByPair,omittedPairs};
 }
 function formatDate(d){
  if(!d)return "TBD";
@@ -160,7 +202,7 @@ function formatDate(d){
  return m&&day?`${m}/${day}`:d;
 }
 function opponentChips(items){
- return items.map(x=>`<span class="opp-chip ${x.scheduled?"scheduled":""}">${logoFor(x.opp_id)?`<img class="team-icon" src="${logoFor(x.opp_id)}" alt="">`:""}<span>${esc(x.opp)}</span><span class="date">${x.scheduled?formatDate(x.date):"TBD"}</span></span>`).join("");
+ return items.map(x=>`<span class="opp-chip ${x.scheduled?"scheduled":""}">${logoFor(x.opp_id)?`<img class="team-icon" src="${logoFor(x.opp_id)}" alt="">`:""}<span>${esc(x.opp)}</span><span class="date">${x.partial?`${x.games_remaining} game${x.games_remaining===1?"":"s"} left`:x.scheduled?formatDate(x.date):"TBD"}</span></span>`).join("");
 }
 function opponentMagic(team,opp){
  // Traditional elimination number against one opponent in a 24-game season:
@@ -223,7 +265,7 @@ function renderPaths(rows,results,schedule){
      : "";
 
    const omitted=x.omitted.length
-     ? `<div class="path-copy opp"><strong>Likely omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`
+     ? `<div class="path-copy opp"><strong>Omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`
      : "";
 
    return `<div class="path-row">
@@ -315,4 +357,4 @@ Promise.all([
  document.getElementById("pathGrid").innerHTML='<div class="picture-empty">Playoff paths are temporarily unavailable.</div>';
  document.getElementById("crucialSeries").innerHTML='<div class="picture-empty">Upcoming-series analysis is temporarily unavailable.</div>';
 });
-</script><script src="/assets/hof.js?v=131"></script></body></html>
+</script><script src="/assets/hof.js?v=132"></script></body></html>
