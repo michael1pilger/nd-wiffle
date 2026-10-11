@@ -1,0 +1,31 @@
+{
+  "scheduling_strategy": "Solve the five mutual omitted matchups as a minimum-cost perfect matching. Completed/partial series are immutable. Future scheduled series are preserved unless a valid 8-opponent schedule requires a future-only swap.",
+  "simulation": {
+    "engine": "plate-appearance level batter-vs-pitcher model",
+    "variance": "game-level hitter noise plus probabilistic PA outcomes",
+    "pitching_limits": {
+      "regular_season_ip": 6,
+      "first_round_ip": 6,
+      "semifinal_ip": 8,
+      "world_series_ip": 9
+    },
+    "stats": "full batting and pitching lines retained for every simulated series",
+    "progress": "PA-level progress updates",
+    "regular_season": "all solver-approved series included until 24-game / 8-opponent structure is complete"
+  },
+  "checks": {
+    "perfect_matching_solver": true,
+    "completed_partial_locked": true,
+    "future_schedule_min_disruption": true,
+    "all_remaining_series_generated": true,
+    "plate_appearance_engine": true,
+    "batter_pitcher_matchups": true,
+    "progress_bar": true,
+    "regular_pitch_limit_6": true,
+    "playoff_limits": true,
+    "series_stat_tables": true,
+    "remaining_roster_selection": true,
+    "syntax": "PASS"
+  },
+  "migration_required": false
+}
