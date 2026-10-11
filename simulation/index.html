@@ -5,7 +5,7 @@
 .sim-progress.active{display:block}.sim-progress-track{height:8px;border-radius:999px;background:#142238;overflow:hidden;margin-top:7px}.sim-progress-fill{height:100%;width:0;background:var(--gold);transition:width .12s ease}.sim-progress-text{font-size:9px;color:var(--muted)}
 .series-rosters{display:none;grid-column:1/-1;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.series-rosters.open{display:grid}.series-roster{border:1px solid var(--border);border-radius:9px;padding:9px;max-height:220px;overflow:auto}.series-roster h4{margin:0 0 6px;font-size:10px;color:var(--gold)}
 .schedule-resolution{border:1px solid rgba(215,173,72,.35);background:rgba(215,173,72,.07);border-radius:12px;padding:12px;margin-bottom:12px}.resolution-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.resolution-item{background:#0a1422;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:9px;font-size:10px}
-.sim-log{display:grid;gap:10px}.sim-log details{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:10px}.sim-log summary{cursor:pointer;font-weight:900}
+.sim-log{display:grid;gap:10px}.sim-log details{border:1px solid var(--border);border-radius:10px;background:var(--panel);padding:10px}.sim-log summary{cursor:pointer;font-weight:900;list-style:none}.sim-log summary::-webkit-details-marker{display:none}.series-summary{display:grid;grid-template-columns:minmax(180px,1.4fr) auto minmax(180px,1fr) minmax(180px,1fr);gap:12px;align-items:center}.series-summary-score{font-size:20px;font-weight:950;text-align:center}.series-mvp{font-size:9px;color:var(--muted)}.series-mvp b{display:block;color:var(--gold);font-size:8px;text-transform:uppercase;margin-bottom:2px}@media(max-width:760px){.series-summary{grid-template-columns:1fr}.series-summary-score{text-align:left}}
 .stat-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sim-subhead{font-size:11px;color:var(--gold);font-weight:900;margin:12px 0 5px}.sim-table td,.sim-table th{font-size:9px}
 .pitch-limit-note{font-size:8px;color:var(--muted);margin-top:4px}
 @media(max-width:760px){.series-rosters,.resolution-grid,.stat-pair{grid-template-columns:1fr}}
@@ -15,7 +15,7 @@
 <div class="sim-card"><h2>Remaining Regular Season</h2><p class="muted-sm">For 2026, completed, partial, and already-scheduled series are all locked. The simulator fills as many additional matchups as possible up to eight opponents per team. If the current schedule makes eight series impossible for everyone, some teams may finish with seven; seeding then uses winning percentage. Use Players to set who is active for each series.</p><div id="remainingSeries"></div></div>
 <div class="sim-card"><h2>Scenario Standings</h2><div id="scenarioStandings" class="scenario-standings"></div></div>
 <div class="sim-card"><h2>Simulation Log & Stats</h2><p class="muted-sm">Every simulated regular-season and playoff series is retained here with game-by-game batting and pitching totals.</p><div id="scenarioLog" class="sim-log"></div></div>
-<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine and enforce the league pitching limits: 6 IP in Round 1, 8 IP in the semifinals, and 9 IP in the World Series.</p><div id="bracket"></div></div>
+<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine. First Round is first to 2 wins (max 3 games, 6 IP/pitcher), Semifinals are first to 3 (max 5 games, 8 IP/pitcher), and the World Series is first to 4 (max 7 games, 9 IP/pitcher; Game 7 unlimited).</p><div id="bracket"></div></div>
 <div class="sim-actions"><button id="resetSeason" class="secondary">Reset season scenario</button></div></section></div></main><footer><div class="container">ND Wiffle · Simulation sandbox. Hypothetical results never alter official data.</div></footer><script>
 const LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
 let LEAGUE=null,RESULTS=null,SCHEDULE=null,scenario=null,playoffState={};
@@ -84,18 +84,38 @@ function lineupFor(team,sel){
  const source=hitters.length?hitters:active;
  return [...source].sort((a,b)=>n(b.bat?.PAs)-n(a.bat?.PAs)||a.name.localeCompare(b.name));
 }
-function pitchersFor(team,sel){
- const active=roster(team).filter(p=>sel.has(p.id)&&p.pit);
- return active.sort((a,b)=>n(b.pit?.Starts)-n(a.pit?.Starts)||n(b.pit?.Outs)-n(a.pit?.Outs)||a.name.localeCompare(b.name));
+function pitcherValue(p){
+ const q=p?.pit||{},bf=Math.max(1,n(q.BF)),rel=bf/(bf+25);
+ const era=rel*n(q.ERA||3.5)+(1-rel)*3.5,whip=rel*n(q.WHIP||2)+(1-rel)*2;
+ const kp=rel*(n(q.Ks)/bf)+(1-rel)*.25,bbp=rel*(n(q.Walks)/bf)+(1-rel)*.18;
+ return -era-.8*whip+3*kp-2*bbp+Math.min(.4,n(q.Starts)*.05+n(q.Outs)/300);
 }
-function choosePitcher(pool,usage,limitOuts,preferStarter=false){
- const available=pool.filter(p=>(usage.get(p.id)||0)<limitOuts);
- if(!available.length)return {id:"soft_toss",name:"Soft Toss",soft:true};
- return weightedPick(available,p=>{
-   const used=usage.get(p.id)||0,room=Math.max(1,limitOuts-used);
-   const starter=1+n(p.pit?.Starts)*.7+n(p.pit?.Outs)/25;
-   return room*(preferStarter?starter:1+n(p.pit?.Outs)/55);
- });
+function pitchersFor(team,sel){
+ const active=roster(team).filter(p=>sel.has(p.id)&&p.pit&&n(p.pit.Outs)>0);
+ return active.sort((a,b)=>pitcherValue(b)-pitcherValue(a)||n(b.pit.Starts)-n(a.pit.Starts)||n(b.pit.Outs)-n(a.pit.Outs)||a.name.localeCompare(b.name));
+}
+function seriesPitchPlan(team,sel,{mode="regular",limitIP=6}={}){
+ const ranked=pitchersFor(team,sel),plan=new Map();
+ if(mode==="regular"){
+   // A normal 3-game regular-season series contains 9 team innings.
+   // Ace receives 5 IP, No. 2 receives 4 IP.
+   if(ranked[0])plan.set(ranked[0].id,15);
+   if(ranked[1])plan.set(ranked[1].id,12);
+ }else{
+   // Playoffs: use the best pitchers first, bounded by the round-specific
+   // per-pitcher series limit. Additional selected pitchers are available only
+   // after the top two have exhausted their legal limits.
+   for(const p of ranked)plan.set(p.id,limitIP*3);
+ }
+ return {ranked,plan};
+}
+function choosePitcher(pool,usage,plan,{game7Unlimited=false,gameIndex=0}={}){
+ if(game7Unlimited&&gameIndex===6)return pool[0]||{id:"soft_toss",name:"Soft Toss",soft:true};
+ for(const p of pool){
+   const cap=plan.get(p.id)??0,used=usage.get(p.id)||0;
+   if(used<cap)return p;
+ }
+ return {id:"soft_toss",name:"Soft Toss",soft:true};
 }
 function ensureBat(map,p){if(!map.has(p.id))map.set(p.id,{name:p.name,...battingLine()});return map.get(p.id)}
 function ensurePit(map,p){if(!map.has(p.id))map.set(p.id,{name:p.name,...pitchingLine()});return map.get(p.id)}
@@ -140,9 +160,12 @@ async function simulateGamePA(a,b,selA,selB,context){
    for(const battingTeam of [a,b]){
      const fieldingTeam=battingTeam===a?b:a;
      let outs=0,bases=[null,null,null];
-     let pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],limitOuts,inn===1);
+     let pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
      while(outs<3){
-       if(!pitcher.soft && (usage[fieldingTeam].get(pitcher.id)||0)>=limitOuts)pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],limitOuts,false);
+       if(!pitcher.soft){
+         const cap=context.game7Unlimited&&context.gameIndex===6?Infinity:(context.pitchPlan[fieldingTeam].get(pitcher.id)??0);
+         if((usage[fieldingTeam].get(pitcher.id)||0)>=cap)pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
+       }
        const hitter=lineups[battingTeam][order[battingTeam]%lineups[battingTeam].length];order[battingTeam]++;
        const br=ensureBat(bat[battingTeam],hitter),pr=ensurePit(pit[fieldingTeam],pitcher);
        br.PA++;pr.BF++;paCounter++;
@@ -190,13 +213,21 @@ function forceSatisfied(games,forced,existingA,existingB,a,b){
  const wa=existingA+games.filter(g=>g.winner===a).length,wb=existingB+games.filter(g=>g.winner===b).length;
  return forced===a?wa>wb:wb>wa;
 }
-async function simulateSeriesAdvanced(a,b,selA,selB,{games=3,forced=null,existingA=0,existingB=0,pitchLimitIP=6,progressEl=null,label="Series"}={}){
+async function simulateSeriesAdvanced(a,b,selA,selB,{games=3,maxGames=null,winsNeeded=null,forced=null,existingA=0,existingB=0,pitchLimitIP=6,pitchMode="regular",game7Unlimited=false,progressEl=null,label="Series"}={}){
  const attempts=forced?30:1;
  let best=null;
+ const capGames=maxGames||games;
  for(let attempt=0;attempt<attempts;attempt++){
-   const context={pitchUsage:{[a]:new Map(),[b]:new Map()},pitchLimitOuts:pitchLimitIP*3,lineupIndex:{[a]:0,[b]:0},donePA:0,onPA:done=>progress(progressEl,Math.min(96,5+done/2),`${label}: simulating plate appearances…`)};
-   const out=[];
-   for(let i=0;i<games;i++){out.push(await simulateGamePA(a,b,selA,selB,context));progress(progressEl,Math.min(95,((i+1)/games)*90),`${label}: game ${i+1} of ${games}`)}
+   const planA=seriesPitchPlan(a,selA,{mode:pitchMode,limitIP:pitchLimitIP}),planB=seriesPitchPlan(b,selB,{mode:pitchMode,limitIP:pitchLimitIP});
+   const context={pitchUsage:{[a]:new Map(),[b]:new Map()},pitchPlan:{[a]:planA.plan,[b]:planB.plan},pitchLimitOuts:pitchLimitIP*3,lineupIndex:{[a]:0,[b]:0},donePA:0,game7Unlimited,onPA:done=>progress(progressEl,Math.min(96,5+done/2),`${label}: simulating plate appearances…`)};
+   const out=[];let wa=existingA,wb=existingB;
+   for(let i=0;i<capGames;i++){
+     context.gameIndex=i;
+     const g=await simulateGamePA(a,b,selA,selB,context);out.push(g);
+     g.winner===a?wa++:wb++;
+     progress(progressEl,Math.min(95,((i+1)/capGames)*90),`${label}: game ${i+1}${winsNeeded?` · first to ${winsNeeded}`:""}`);
+     if(winsNeeded&&(wa>=winsNeeded||wb>=winsNeeded))break;
+   }
    best=out;if(forceSatisfied(out,forced,existingA,existingB,a,b))break;
  }
  finishProgress(progressEl);
@@ -216,9 +247,24 @@ function battingTable(rows){
 function pitchingTable(rows){
  return `<div class="tablewrap"><table class="sim-table"><thead><tr><th>Pitcher</th><th>IP</th><th>BF</th><th>W</th><th>L</th><th>R</th><th>ER</th><th>H</th><th>HR</th><th>BB</th><th>K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody>${rows.map(r=>{const ip=r.IPouts/3,era=r.IPouts?r.ER*3/ip:0,whip=r.IPouts?(r.H+r.BB)/ip:0;return `<tr><td>${esc(r.name)}</td><td>${fmtIP(r.IPouts)}</td><td>${r.BF}</td><td>${r.W}</td><td>${r.L}</td><td>${r.R}</td><td>${r.ER}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.BB}</td><td>${r.K}</td><td>${r.IPouts?era.toFixed(2):"—"}</td><td>${r.IPouts?whip.toFixed(2):"—"}</td></tr>`}).join("")}</tbody></table></div>`;
 }
-function resultOutput(a,b,games,title="Simulated Series"){
- const wins=id=>games.filter(g=>g.winner===id).length;
- return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wins(a)}–${wins(b)}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div>${games.map((g,i)=>`<div class="muted-sm">Game ${i+1}: ${esc(teamName(a))} ${g.aScore}, ${esc(teamName(b))} ${g.bScore}</div>`).join("")}<div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(aggregateSeries(games,a,"bat"))}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(aggregateSeries(games,a,"pit"))}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(aggregateSeries(games,b,"bat"))}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(aggregateSeries(games,b,"pit"))}</div></div></div>`;
+function battingMVP(games,a,b){
+ const all=[...aggregateSeries(games,a,"bat").map(x=>({...x,team:a})),...aggregateSeries(games,b,"bat").map(x=>({...x,team:b}))];
+ return all.sort((x,y)=>(y.H+2*y["2B"]+3*y["3B"]+4*y.HR+1.2*y.BB+y.RBI-.35*y.K)-(x.H+2*x["2B"]+3*x["3B"]+4*x.HR+1.2*x.BB+x.RBI-.35*x.K)||y.HR-x.HR||y.H-x.H)[0]||null;
+}
+function pitchingMVP(games,a,b){
+ const all=[...aggregateSeries(games,a,"pit").map(x=>({...x,team:a})),...aggregateSeries(games,b,"pit").map(x=>({...x,team:b}))];
+ return all.filter(x=>x.IPouts>0).sort((x,y)=>(3*y.IPouts+2*y.K-3*y.ER-y.BB-y.H+5*y.W)-(3*x.IPouts+2*x.K-3*x.ER-x.BB-x.H+5*x.W)||y.IPouts-x.IPouts)[0]||null;
+}
+function seriesSummaryData(a,b,games,existingA=0,existingB=0){
+ const wa=existingA+games.filter(g=>g.winner===a).length,wb=existingB+games.filter(g=>g.winner===b).length;
+ const bm=battingMVP(games,a,b),pm=pitchingMVP(games,a,b);
+ return {wa,wb,bm,pm};
+}
+function mvpTextBat(x){return x?`${x.name} · ${x.H}/${x.AB}, ${x.HR} HR, ${x.RBI} RBI`:"—"}
+function mvpTextPit(x){return x?`${x.name} · ${fmtIP(x.IPouts)} IP, ${x.K} K, ${x.ER} ER`:"—"}
+function resultOutput(a,b,games,title="Simulated Series",existingA=0,existingB=0){
+ const {wa,wb}=seriesSummaryData(a,b,games,existingA,existingB);
+ return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wa}–${wb}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div><div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(aggregateSeries(games,a,"bat"))}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(aggregateSeries(games,a,"pit"))}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(aggregateSeries(games,b,"bat"))}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(aggregateSeries(games,b,"pit"))}</div></div></div></div>`;
 }
 function setupSandbox(){
  const teams=LEAGUE.standings||[],opts=teams.map(t=>`<option value="${t.team_id}">${esc(t.team)}</option>`).join("");
@@ -235,7 +281,7 @@ function setupSandbox(){
  };
 }
 
-function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8){
+function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8,maxAdditionalSeries=null){
  // 2026 exception policy:
  // 1. Every completed, partial, and commissioner-scheduled matchup is locked.
  // 2. No team may exceed eight distinct regular-season opponents.
@@ -246,6 +292,7 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8){
  // This is a maximum-cardinality b-matching on the remaining matchup graph.
  const deg=new Map(ids.map(id=>[id,0]));
  for(const k of lockedPairs){const [a,b]=k.split("__");if(deg.has(a)&&deg.has(b)){deg.set(a,deg.get(a)+1);deg.set(b,deg.get(b)+1)}}
+ const initialDeg=new Map(deg);
  const candidates=[];
  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
    const a=ids[i],b=ids[j],k=pairKey(a,b);
@@ -273,7 +320,9 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8){
      const sc=score(edges,d);if(better(sc,best))best={edges:[...edges],...sc};return;
    }
    const e=candidates[idx],da=d.get(e.a),db=d.get(e.b);
-   if(da<maxOpp&&db<maxOpp){
+   const capA=maxAdditionalSeries?.get(a),capB=maxAdditionalSeries?.get(b);
+   const addedA=da-(initialDeg.get(a)||0),addedB=db-(initialDeg.get(b)||0);
+   if(da<maxOpp&&db<maxOpp&&(capA===undefined||addedA<capA)&&(capB===undefined||addedB<capB)){
      d.set(e.a,da+1);d.set(e.b,db+1);edges.push(e);
      rec(idx+1,d,edges);
      edges.pop();d.set(e.a,da);d.set(e.b,db);
@@ -283,13 +332,14 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8){
  rec(0,new Map(deg),[]);
  const finalDeg=new Map(deg);
  for(const e of best.edges){finalDeg.set(e.a,finalDeg.get(e.a)+1);finalDeg.set(e.b,finalDeg.get(e.b)+1)}
- return {...best,finalDeg,initialDeg:deg};
+ return {...best,finalDeg,initialDeg};
 }
 function buildSchedulePlan(){
  const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),GP:n(x.GP),DIFF:n(x.DIFF)})),ids=rows.map(x=>x.team_id);
  const gameCounts=new Map(),seriesByPair=new Map();
  for(const sr of RESULTS.series||[]){
-   const k=pairKey(sr.away_team_id,sr.home_team_id),gc=n(sr.game_count??sr.games?.length);
+   const k=pairKey(sr.away_team_id,sr.home_team_id);
+   const physical=n(sr.game_count??sr.games?.length),gc=sr.series_type==="conditional_forfeit"?3:physical;
    if(gc>0){gameCounts.set(k,Math.max(gameCounts.get(k)||0,gc));seriesByPair.set(k,sr)}
  }
  const playedLocked=new Set([...gameCounts.keys()]);
@@ -297,7 +347,18 @@ function buildSchedulePlan(){
  // For 2026, scheduled means locked. Storm-Zyns and every other commissioner-
  // scheduled matchup must remain in the regular-season plan.
  const lockedPairs=new Set([...playedLocked,...scheduledLocked]);
- const solution=solveLocked2026Schedule(ids,lockedPairs,8);
+ const lockedFutureGames=new Map(ids.map(id=>[id,0]));
+ for(const k of lockedPairs){
+   const [a,b]=k.split("__"),gc=gameCounts.get(k)||0,left=Math.max(0,3-gc);
+   lockedFutureGames.set(a,(lockedFutureGames.get(a)||0)+left);
+   lockedFutureGames.set(b,(lockedFutureGames.get(b)||0)+left);
+ }
+ const rowById=new Map(rows.map(r=>[r.team_id,r]));
+ const maxAdditionalSeries=new Map(ids.map(id=>{
+   const gameBudget=Math.max(0,24-n(rowById.get(id)?.GP)-n(lockedFutureGames.get(id)));
+   return [id,Math.floor(gameBudget/3)];
+ }));
+ const solution=solveLocked2026Schedule(ids,lockedPairs,8,maxAdditionalSeries);
  const solverAdded=new Set(solution.edges.map(e=>e.k));
  const included=new Set([...lockedPairs,...solverAdded]);
  const remaining=[];
@@ -317,12 +378,15 @@ function buildSchedulePlan(){
  for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
    const k=pairKey(ids[i],ids[j]);if(!included.has(k))omitted.push(k);
  }
+ const projectedRemainingGames=new Map(ids.map(id=>[id,0]));
+ for(const x of remaining){projectedRemainingGames.set(x.a,(projectedRemainingGames.get(x.a)||0)+x.gamesLeft);projectedRemainingGames.set(x.b,(projectedRemainingGames.get(x.b)||0)+x.gamesLeft)}
+ const finalProjectedGP=new Map(ids.map(id=>[id,n(rowById.get(id)?.GP)+n(projectedRemainingGames.get(id))]));
  const shortTeams=ids.filter(id=>(solution.finalDeg.get(id)||0)<8).map(id=>({
-   id,opponents:solution.finalDeg.get(id)||0,series:solution.finalDeg.get(id)||0,games:(solution.finalDeg.get(id)||0)*3
+   id,opponents:solution.finalDeg.get(id)||0,series:solution.finalDeg.get(id)||0,games:finalProjectedGP.get(id)||0
  }));
  return {
    rows,invalid:false,gameCounts,scheduled:scheduledLocked,lockedPairs,solverAdded,
-   included,omitted:new Set(omitted),remaining,history:[],shortTeams,finalDegrees:solution.finalDeg,
+   included,omitted:new Set(omitted),remaining,history:[],shortTeams,finalDegrees:solution.finalDeg,finalProjectedGP,
    policy:"2026-locked-schedule-exception"
  };
 }
@@ -335,7 +399,7 @@ function resolutionHtml(sc){
  <div class="muted-sm">For 2026, every completed, partial, and already-scheduled regular-season series is locked. The simulator will not remove Storm–Zyns or any other scheduled matchup. It adds as many remaining series as possible without letting any team exceed eight opponents. If the current schedule makes eight opponents for everyone impossible, the smallest possible number of teams finish short.</div>
  <div class="resolution-grid">
    <div class="resolution-item"><b>Locked schedule preserved</b><br>${sc.lockedPairs.size} completed/partial/scheduled matchups cannot be removed.<br>${added.length?`Added by solver: ${added.map(esc).join("; ")}`:"No additional unscheduled matchup is required."}</div>
-   <div class="resolution-item"><b>Final opponent counts</b><br>${[...sc.finalDegrees.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,c])=>`${esc(teamName(id))}: ${c} series (${c*3} games)`).join("<br>")}${short.length?`<br><br><b>2026 exception:</b> ${short.map(x=>`${esc(teamName(x.id))} finishes with ${x.series} series`).join("; ")}`:"<br><br>All teams reach 8 series."}</div>
+   <div class="resolution-item"><b>Final opponent counts</b><br>${[...sc.finalDegrees.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,c])=>`${esc(teamName(id))}: ${c} opponents · ${sc.finalProjectedGP.get(id)} projected games`).join("<br>")}${short.length?`<br><br><b>2026 exception:</b> ${short.map(x=>`${esc(teamName(x.id))} finishes with ${x.series} series`).join("; ")}`:"<br><br>All teams reach 8 series."}</div>
  </div></div>`;
 }
 function rosterEditor(x,i){
@@ -354,11 +418,14 @@ function rankedScenario(){
  }).map((r,i)=>({...r,rank:i+1,PCT:n(r.GP)?n(r.W)/n(r.GP):0}));
 }
 function renderScenarioStandings(){scenarioStandings.innerHTML=rankedScenario().map(r=>`<div class="seed-row">${logo(r.team_id)}<span>#${r.rank} ${esc(r.team)}</span><b>${r.W}-${r.L} · ${r.PCT.toFixed(3).replace(/^0/,"")}</b></div>`).join("")}
-function logEntryHtml(h,idx){return `<details ${idx===scenario.history.length-1?"open":""}><summary>${esc(h.label)} · ${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</summary>${resultOutput(h.a,h.b,h.games,h.label)}</details>`}
+function logEntryHtml(h,idx){
+ const x=seriesSummaryData(h.a,h.b,h.games,h.existingA||0,h.existingB||0);
+ return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span></div><div class="series-summary-score">${x.wa}–${x.wb}</div><div class="series-mvp"><b>Batting MVP</b>${esc(mvpTextBat(x.bm))}</div><div class="series-mvp"><b>Pitching MVP</b>${esc(mvpTextPit(x.pm))}</div></div></summary>${resultOutput(h.a,h.b,h.games,h.label,h.existingA||0,h.existingB||0)}</details>`;
+}
 function renderScenarioLog(){scenarioLog.innerHTML=scenario.history.length?scenario.history.map(logEntryHtml).join(""):'<div class="muted-sm">No simulated series yet.</div>'}
 function renderRemaining(){
  scheduleIntegrity.innerHTML=resolutionHtml(scenario);
- remainingSeries.innerHTML=scenario.remaining.length?scenario.remaining.map((x,i)=>`<div class="scenario-series"><div><strong>${esc(teamName(x.a))} vs ${esc(teamName(x.b))}</strong><small>${x.gamesLeft} game${x.gamesLeft===1?"":"s"} remaining · ${x.source}${x.existingA||x.existingB?` · current series ${x.existingA}-${x.existingB}`:""}</small><div class="pitch-limit-note">Regular-season pitcher limit: 6 IP per pitcher across the simulated series.</div></div><div class="scenario-btns"><button data-players="${i}">Players</button><button data-one="${i}" class="primary">Sim game</button><button data-series="${i}">Sim rest</button><button data-force="${i}:${x.a}">${esc(teamName(x.a))} wins series</button><button data-force="${i}:${x.b}">${esc(teamName(x.b))} wins series</button></div>${rosterEditor(x,i)}</div>`).join(""):'<div class="muted-sm">Regular season complete in this scenario.</div>';
+ remainingSeries.innerHTML=scenario.remaining.length?scenario.remaining.map((x,i)=>`<div class="scenario-series"><div><strong>${esc(teamName(x.a))} vs ${esc(teamName(x.b))}</strong><small>${x.gamesLeft} game${x.gamesLeft===1?"":"s"} remaining · ${x.source}${x.existingA||x.existingB?` · current series ${x.existingA}-${x.existingB}`:""}</small><div class="pitch-limit-note">Pitch plan: No. 1 pitcher 5 IP, No. 2 pitcher 4 IP across a full 3-game regular-season series.</div></div><div class="scenario-btns"><button data-players="${i}">Players</button><button data-one="${i}" class="primary">Sim game</button><button data-series="${i}">Sim rest</button><button data-force="${i}:${x.a}">${esc(teamName(x.a))} wins series</button><button data-force="${i}:${x.b}">${esc(teamName(x.b))} wins series</button></div>${rosterEditor(x,i)}</div>`).join(""):'<div class="muted-sm">Regular season complete in this scenario.</div>';
  remainingSeries.querySelectorAll("[data-players]").forEach(b=>b.onclick=()=>document.getElementById(`seriesRoster_${b.dataset.players}`)?.classList.toggle("open"));
  remainingSeries.querySelectorAll("[data-active]").forEach(cb=>cb.onchange=()=>{const [i,side,id]=cb.dataset.active.split(":"),x=scenario.remaining[Number(i)],set=side==="a"?x.activeA:x.activeB;cb.checked?set.add(id):set.delete(id)});
  remainingSeries.querySelectorAll("[data-one]").forEach(b=>b.onclick=()=>simulateRemaining(Number(b.dataset.one),1));
@@ -380,20 +447,20 @@ async function simulateRemaining(i,count=null,forced=null){
    for(const g of sim)applyGame(x.a,x.b,g);
    const wa=sim.filter(g=>g.winner===x.a).length,wb=sim.filter(g=>g.winner===x.b).length;
    x.existingA+=wa;x.existingB+=wb;x.gamesLeft-=games;
-   scenario.history.push({label:"Regular Season",a:x.a,b:x.b,games:sim});
+   scenario.history.push({label:"Regular Season",a:x.a,b:x.b,games:sim,existingA:x.existingA-wa,existingB:x.existingB-wb});
    if(x.gamesLeft<=0)scenario.remaining.splice(i,1);
  }catch(e){alert(e.message||e)}
  renderRemaining();
 }
 function playoffSeriesSpec(id){
- if(id.startsWith("q"))return {label:"First Round",limit:6};
- if(id.startsWith("s"))return {label:"Semifinal",limit:8};
- return {label:"World Series",limit:9};
+ if(id.startsWith("q"))return {label:"First Round",limit:6,winsNeeded:2,maxGames:3,game7Unlimited:false};
+ if(id.startsWith("s"))return {label:"Semifinal",limit:8,winsNeeded:3,maxGames:5,game7Unlimited:false};
+ return {label:"World Series",limit:9,winsNeeded:4,maxGames:7,game7Unlimited:true};
 }
 async function simulatePlayoffMatch(g){
  const spec=playoffSeriesSpec(g.id),a=g.a.team_id,b=g.b.team_id,selA=new Set(roster(a).map(p=>p.id)),selB=new Set(roster(b).map(p=>p.id));
  progress(seasonProgress,2,`${spec.label}: preparing ${teamName(a)} vs ${teamName(b)}…`);
- const games=await simulateSeriesAdvanced(a,b,selA,selB,{games:3,pitchLimitIP:spec.limit,progressEl:seasonProgress,label:spec.label});
+ const games=await simulateSeriesAdvanced(a,b,selA,selB,{maxGames:spec.maxGames,winsNeeded:spec.winsNeeded,pitchLimitIP:spec.limit,pitchMode:"playoff",game7Unlimited:spec.game7Unlimited,progressEl:seasonProgress,label:spec.label});
  const wa=games.filter(x=>x.winner===a).length,wb=games.length-wa,winner=wa>wb?g.a:g.b;
  playoffState[g.id]={winner,games,a,b,label:spec.label};scenario.history.push({label:spec.label,a,b,games});renderRemaining();
 }
@@ -406,7 +473,7 @@ function renderBracket(){
  if(winners.length===3){const sorted=winners.sort((a,b)=>a.rank-b.rank);semis=[{id:"s1",a:bySeed(1),b:sorted[2],label:"Semifinal 1"},{id:"s2",a:sorted[0],b:sorted[1],label:"Semifinal 2"}];for(const g of semis)if(playoffState[g.id])g.winner=playoffState[g.id].winner}
  const sw=semis.filter(g=>g.winner).map(g=>g.winner),final=sw.length===2?{id:"ws",a:sw[0],b:sw[1],label:"World Series"}:null;if(final&&playoffState.ws)final.winner=playoffState.ws.winner;
  const card=g=>{const state=playoffState[g.id];return `<div class="bracket-game"><strong>${g.label}</strong><div>${g.a?`#${g.a.rank} ${esc(g.a.team)}`:"TBD"} vs ${g.b?`#${g.b.rank} ${esc(g.b.team)}`:"TBD"}</div>${g.a&&g.b&&!g.winner?`<button data-psim="${g.id}">Simulate full series</button>`:g.winner?`<div class="muted-sm">Winner: ${esc(g.winner.team)}${state?` · ${state.games.filter(x=>x.winner===g.a.team_id).length}-${state.games.filter(x=>x.winner===g.b.team_id).length}`:""}</div>`:""}</div>`};
- bracket.innerHTML=`<div class="bracket"><div class="round"><h3>First Round</h3><div class="bracket-game"><strong>#1 ${esc(bySeed(1).team)}</strong><div class="muted-sm">Bye</div></div>${games.map(card).join("")}</div><div class="round"><h3>Semifinals</h3>${semis.length?semis.map(card).join(""):'<div class="muted-sm">Complete first round.</div>'}</div><div class="round"><h3>World Series</h3>${final?card(final):'<div class="muted-sm">Complete semifinals.</div>'}</div></div>`;
+ bracket.innerHTML=`<div class="bracket"><div class="round"><h3>First Round · First to 2</h3><div class="bracket-game"><strong>#1 ${esc(bySeed(1).team)}</strong><div class="muted-sm">Bye</div></div>${games.map(card).join("")}</div><div class="round"><h3>Semifinals · First to 3</h3>${semis.length?semis.map(card).join(""):'<div class="muted-sm">Complete first round.</div>'}</div><div class="round"><h3>World Series · First to 4</h3>${final?card(final):'<div class="muted-sm">Complete semifinals.</div>'}</div></div>`;
  bracket.querySelectorAll("[data-psim]").forEach(b=>b.onclick=async()=>{const gid=b.dataset.psim,all=[...games,...semis,final].filter(Boolean),g=all.find(x=>x.id===gid);if(!g)return;b.disabled=true;try{await simulatePlayoffMatch(g)}finally{b.disabled=false}});
 }
 function setupSeason(){
@@ -419,4 +486,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=136"></script></body></html>
+</script><script src="/assets/hof.js?v=137"></script></body></html>

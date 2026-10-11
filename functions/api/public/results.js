@@ -36,6 +36,7 @@ export async function onRequestGet(context){
         SELECT
           s.series_id,s.series_date,s.away_team_id,s.home_team_id,
           at.display_name AS away_team,ht.display_name AS home_team,
+          json_extract(s.payload_json,'$.series_type') AS series_type,
           s.published_at,s.updated_at
         FROM series s
         JOIN teams at ON at.team_id=s.away_team_id
@@ -183,7 +184,7 @@ export async function onRequestGet(context){
       };
     }).sort((a,b)=>String(b.series_date||"").localeCompare(String(a.series_date||"")) || seriesOrderRank(b.away_team_id,b.home_team_id)-seriesOrderRank(a.away_team_id,a.home_team_id) || String(b.series_id).localeCompare(String(a.series_id)));
 
-    return json({ok:true,build:"v130",season,series_count:series.length,series});
+    return json({ok:true,build:"v137",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

@@ -1,0 +1,30 @@
+{
+  "fixes": {
+    "goobers_27_games": "Conditional forfeits now count as completed three-game schedule obligations in the simulator, and solver-added series are capped by each team's remaining path to 24 standings games.",
+    "regular_season_pitching": "Best current pitcher by a reliability-shrunk ERA/WHIP/K-BB composite gets 5 IP; No. 2 gets 4 IP over a full three-game series.",
+    "playoffs": {
+      "first_round": "first to 2; max 3 games; 6 IP/pitcher",
+      "semifinals": "first to 3; max 5 games; 8 IP/pitcher",
+      "world_series": "first to 4; max 7 games; 9 IP/pitcher; Game 7 unlimited"
+    },
+    "simulation_log": "Collapsed summary is series-level only and includes series score, Batting MVP, and Pitching MVP. Expanded view shows aggregate series batting/pitching tables, not a game-by-game list."
+  },
+  "migration_required": false,
+  "checks": {
+    "conditional_forfeit_exposed": true,
+    "conditional_counts_3": true,
+    "game_budget_24": true,
+    "regular_ace_5_ip": true,
+    "regular_second_4_ip": true,
+    "top_pitchers_ranked": true,
+    "first_round_first_to_2": true,
+    "semis_first_to_3": true,
+    "ws_first_to_4": true,
+    "round_limits": true,
+    "game7_unlimited": true,
+    "log_series_only": true,
+    "summary_batting_mvp": true,
+    "summary_pitching_mvp": true,
+    "syntax": "PASS"
+  }
+}
