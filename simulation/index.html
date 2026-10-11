@@ -12,10 +12,10 @@
 </style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a class="active" href="/simulation/">Simulation</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div><main><div class="container pagehead"><div class="eyebrow">2026 Scenario Lab</div><h1>Simulation</h1><p class="muted">Run hypothetical series without changing the real database. Player selection, simulated stats, standings, seeding, and playoff progression exist only in your browser session.</p></div><div class="container"><div class="sim-tabs"><button class="active" data-tab="sandbox">Sandbox</button><button data-tab="season">Remaining Season</button></div><section id="sandbox" class="sim-panel active"><div class="sim-card"><h2>Sandbox Series</h2><p class="muted-sm">Choose any two teams, select the players who are active for the hypothetical series, and simulate three games. Outcomes use a blend of 2026 team offense, selected hitters, and the selected team's top available pitchers.</p><div class="sim-grid"><div class="sim-field"><label>Team A</label><select id="sandA"></select><div id="rosterA" class="roster-box"></div></div><div class="sim-field"><label>Team B</label><select id="sandB"></select><div id="rosterB" class="roster-box"></div></div></div><div class="sim-actions"><button id="simSandbox">Simulate 3-game series</button><button id="resetSandbox" class="secondary">Reset players</button></div><div id="sandboxProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div></div><div id="sandboxOutput"></div></section><section id="season" class="sim-panel">
 <div id="scheduleIntegrity"></div>
 <div id="seasonProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div>
-<div class="sim-card"><h2>Remaining Regular Season</h2><p class="muted-sm">Every matchup needed to finish an eight-opponent regular season is included. The schedule solver never changes completed or partial series; if the current future schedule cannot produce a valid mutual-omission structure, it makes the minimum number of future-only swaps for this simulation. Use Players to set who is active for each series.</p><div id="remainingSeries"></div></div>
+<div class="sim-card"><h2>Remaining Regular Season</h2><p class="muted-sm">For 2026, completed, partial, and already-scheduled series are all locked. The simulator fills as many additional matchups as possible up to eight opponents per team. If the current schedule makes eight series impossible for everyone, some teams may finish with seven; seeding then uses winning percentage. Use Players to set who is active for each series.</p><div id="remainingSeries"></div></div>
 <div class="sim-card"><h2>Scenario Standings</h2><div id="scenarioStandings" class="scenario-standings"></div></div>
 <div class="sim-card"><h2>Simulation Log & Stats</h2><p class="muted-sm">Every simulated regular-season and playoff series is retained here with game-by-game batting and pitching totals.</p><div id="scenarioLog" class="sim-log"></div></div>
-<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates only after the simulated regular season is complete. Playoff simulations use the same plate-appearance engine and enforce the league pitching limits: 6 IP in Round 1, 8 IP in the semifinals, and 9 IP in the World Series.</p><div id="bracket"></div></div>
+<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine and enforce the league pitching limits: 6 IP in Round 1, 8 IP in the semifinals, and 9 IP in the World Series.</p><div id="bracket"></div></div>
 <div class="sim-actions"><button id="resetSeason" class="secondary">Reset season scenario</button></div></section></div></main><footer><div class="container">ND Wiffle · Simulation sandbox. Hypothetical results never alter official data.</div></footer><script>
 const LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
 let LEAGUE=null,RESULTS=null,SCHEDULE=null,scenario=null,playoffState={};
@@ -234,44 +234,109 @@ function setupSandbox(){
    finally{simSandbox.disabled=false}
  };
 }
-function enumeratePerfectMatchings(ids,blocked,preferred,inferred){
- let best=null;
- function rec(rem,pairs,cost){
-   if(best&&cost>best.cost)return;
-   if(!rem.length){if(!best||cost<best.cost){best={pairs:[...pairs],cost}}return}
-   const a=rem[0];
-   for(let i=1;i<rem.length;i++){
-     const b=rem[i],k=pairKey(a,b);if(blocked.has(k))continue;
-     // Omitting a scheduled future matchup is costly; preserving an already
-     // inferred omission receives a small reward. Completed/partial are blocked.
-     const c=(preferred.has(k)?100:0)+(inferred.has(k)?-5:0);
-     rec(rem.filter(x=>x!==a&&x!==b),[...pairs,[a,b]],cost+c);
-   }
+
+function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8){
+ // 2026 exception policy:
+ // 1. Every completed, partial, and commissioner-scheduled matchup is locked.
+ // 2. No team may exceed eight distinct regular-season opponents.
+ // 3. Add the largest feasible set of still-unplayed matchups.
+ // 4. If exact 8-for-everyone is impossible, allow the minimum unavoidable
+ //    number of teams to finish below eight opponents.
+ //
+ // This is a maximum-cardinality b-matching on the remaining matchup graph.
+ const deg=new Map(ids.map(id=>[id,0]));
+ for(const k of lockedPairs){const [a,b]=k.split("__");if(deg.has(a)&&deg.has(b)){deg.set(a,deg.get(a)+1);deg.set(b,deg.get(b)+1)}}
+ const candidates=[];
+ for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
+   const a=ids[i],b=ids[j],k=pairKey(a,b);
+   if(!lockedPairs.has(k))candidates.push({a,b,k});
  }
- rec(ids,[],0);return best;
+ // Prioritize edges that help the most schedule-starved teams, but optimize
+ // globally by total additional series first.
+ candidates.sort((x,y)=>(deg.get(x.a)+deg.get(x.b))-(deg.get(y.a)+deg.get(y.b))||x.k.localeCompare(y.k));
+ let best={edges:[],count:-1,minDegree:-1,variance:Infinity};
+ function score(edges,d){
+   const vals=ids.map(id=>d.get(id));
+   const minDegree=Math.min(...vals),mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+   const variance=vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length;
+   return {count:edges.length,minDegree,variance};
+ }
+ function better(sc,b){
+   return sc.count>b.count ||
+     (sc.count===b.count&&sc.minDegree>b.minDegree) ||
+     (sc.count===b.count&&sc.minDegree===b.minDegree&&sc.variance<b.variance-1e-9);
+ }
+ function rec(idx,d,edges){
+   const possible=edges.length+(candidates.length-idx);
+   if(possible<best.count)return;
+   if(idx>=candidates.length){
+     const sc=score(edges,d);if(better(sc,best))best={edges:[...edges],...sc};return;
+   }
+   const e=candidates[idx],da=d.get(e.a),db=d.get(e.b);
+   if(da<maxOpp&&db<maxOpp){
+     d.set(e.a,da+1);d.set(e.b,db+1);edges.push(e);
+     rec(idx+1,d,edges);
+     edges.pop();d.set(e.a,da);d.set(e.b,db);
+   }
+   rec(idx+1,d,edges);
+ }
+ rec(0,new Map(deg),[]);
+ const finalDeg=new Map(deg);
+ for(const e of best.edges){finalDeg.set(e.a,finalDeg.get(e.a)+1);finalDeg.set(e.b,finalDeg.get(e.b)+1)}
+ return {...best,finalDeg,initialDeg:deg};
 }
 function buildSchedulePlan(){
- const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),DIFF:n(x.DIFF)})),ids=rows.map(x=>x.team_id);
+ const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),GP:n(x.GP),DIFF:n(x.DIFF)})),ids=rows.map(x=>x.team_id);
  const gameCounts=new Map(),seriesByPair=new Map();
- for(const sr of RESULTS.series||[]){const k=pairKey(sr.away_team_id,sr.home_team_id),gc=n(sr.game_count??sr.games?.length);if(gc>0){gameCounts.set(k,Math.max(gameCounts.get(k)||0,gc));seriesByPair.set(k,sr)}}
- const locked=new Set([...gameCounts.keys()]),scheduled=new Set((SCHEDULE.scheduled||[]).map(x=>pairKey(x.team_a_id,x.team_b_id)));
- const accounted=new Map(ids.map(id=>[id,new Set()]));
- for(const k of new Set([...locked,...scheduled])){const [a,b]=k.split("__");accounted.get(a)?.add(b);accounted.get(b)?.add(a)}
- const inferred=new Set();
- for(const id of ids){const x=accounted.get(id)||new Set();if(x.size>=8){const miss=ids.filter(o=>o!==id&&!x.has(o));if(miss.length===1)inferred.add(pairKey(id,miss[0]))}}
- const match=enumeratePerfectMatchings(ids,locked,scheduled,inferred);
- if(!match)return {rows,invalid:true,reason:"No valid eight-opponent schedule can be formed without changing a completed/partial series."};
- const omitted=new Set(match.pairs.map(([a,b])=>pairKey(a,b))),included=[];
- for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){const a=ids[i],b=ids[j],k=pairKey(a,b);if(omitted.has(k))continue;included.push({a,b,k})}
- const remaining=included.map(x=>{const gc=gameCounts.get(x.k)||0;if(gc>=3)return null;const sr=seriesByPair.get(x.k),aw=sr?.away_team_id===x.a?n(sr.away_wins):sr?.home_team_id===x.a?n(sr.home_wins):0,bw=sr?.away_team_id===x.b?n(sr.away_wins):sr?.home_team_id===x.b?n(sr.home_wins):0;return {...x,gamesLeft:3-gc,existingA:aw,existingB:bw,source:gc>0?"partial":scheduled.has(x.k)?"scheduled":"solver-added",activeA:new Set(roster(x.a).map(p=>p.id)),activeB:new Set(roster(x.b).map(p=>p.id))}}).filter(Boolean);
- const removedScheduled=[...scheduled].filter(k=>omitted.has(k)),added=remaining.filter(x=>x.source==="solver-added").map(x=>x.k);
- return {rows,invalid:false,gameCounts,scheduled,omitted,omissionPairs:match.pairs,remaining,removedScheduled,added,history:[]};
+ for(const sr of RESULTS.series||[]){
+   const k=pairKey(sr.away_team_id,sr.home_team_id),gc=n(sr.game_count??sr.games?.length);
+   if(gc>0){gameCounts.set(k,Math.max(gameCounts.get(k)||0,gc));seriesByPair.set(k,sr)}
+ }
+ const playedLocked=new Set([...gameCounts.keys()]);
+ const scheduledLocked=new Set((SCHEDULE.scheduled||[]).map(x=>pairKey(x.team_a_id,x.team_b_id)));
+ // For 2026, scheduled means locked. Storm-Zyns and every other commissioner-
+ // scheduled matchup must remain in the regular-season plan.
+ const lockedPairs=new Set([...playedLocked,...scheduledLocked]);
+ const solution=solveLocked2026Schedule(ids,lockedPairs,8);
+ const solverAdded=new Set(solution.edges.map(e=>e.k));
+ const included=new Set([...lockedPairs,...solverAdded]);
+ const remaining=[];
+ for(const k of included){
+   const [a,b]=k.split("__"),gc=gameCounts.get(k)||0;
+   if(gc>=3)continue;
+   const sr=seriesByPair.get(k);
+   const aw=sr?.away_team_id===a?n(sr.away_wins):sr?.home_team_id===a?n(sr.home_wins):0;
+   const bw=sr?.away_team_id===b?n(sr.away_wins):sr?.home_team_id===b?n(sr.home_wins):0;
+   remaining.push({
+     a,b,k,gamesLeft:3-gc,existingA:aw,existingB:bw,
+     source:gc>0?"partial":scheduledLocked.has(k)?"scheduled":"solver-added",
+     activeA:new Set(roster(a).map(p=>p.id)),activeB:new Set(roster(b).map(p=>p.id))
+   });
+ }
+ const omitted=[];
+ for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
+   const k=pairKey(ids[i],ids[j]);if(!included.has(k))omitted.push(k);
+ }
+ const shortTeams=ids.filter(id=>(solution.finalDeg.get(id)||0)<8).map(id=>({
+   id,opponents:solution.finalDeg.get(id)||0,series:solution.finalDeg.get(id)||0,games:(solution.finalDeg.get(id)||0)*3
+ }));
+ return {
+   rows,invalid:false,gameCounts,scheduled:scheduledLocked,lockedPairs,solverAdded,
+   included,omitted:new Set(omitted),remaining,history:[],shortTeams,finalDegrees:solution.finalDeg,
+   policy:"2026-locked-schedule-exception"
+ };
 }
 function resolutionHtml(sc){
  if(sc.invalid)return `<div class="warning"><strong>Schedule cannot be solved:</strong> ${esc(sc.reason)}</div>`;
  const pairName=k=>{const [a,b]=k.split("__");return `${teamName(a)} ↔ ${teamName(b)}`};
- const omitted=[...sc.omitted].map(pairName),removed=sc.removedScheduled.map(pairName),added=sc.added.map(pairName);
- return `<div class="schedule-resolution"><strong>Minimum-disruption schedule resolution used by this simulation</strong><div class="muted-sm">Completed and partial series are locked. The solver chooses five mutual omitted pairings and minimizes changes to future scheduled series. This is hypothetical and does not alter the official schedule.</div><div class="resolution-grid"><div class="resolution-item"><b>Mutual omissions</b><br>${omitted.map(esc).join("<br>")}</div><div class="resolution-item"><b>Future-only adjustments</b><br>${removed.length?`Reclassify/remove: ${removed.map(esc).join("; ")}`:"No scheduled series must be removed."}${added.length?`<br>Add as regular series: ${added.map(esc).join("; ")}`:""}</div></div></div>`;
+ const added=[...sc.solverAdded].map(pairName);
+ const short=sc.shortTeams||[];
+ return `<div class="schedule-resolution"><strong>2026 locked-schedule exception</strong>
+ <div class="muted-sm">For 2026, every completed, partial, and already-scheduled regular-season series is locked. The simulator will not remove Storm–Zyns or any other scheduled matchup. It adds as many remaining series as possible without letting any team exceed eight opponents. If the current schedule makes eight opponents for everyone impossible, the smallest possible number of teams finish short.</div>
+ <div class="resolution-grid">
+   <div class="resolution-item"><b>Locked schedule preserved</b><br>${sc.lockedPairs.size} completed/partial/scheduled matchups cannot be removed.<br>${added.length?`Added by solver: ${added.map(esc).join("; ")}`:"No additional unscheduled matchup is required."}</div>
+   <div class="resolution-item"><b>Final opponent counts</b><br>${[...sc.finalDegrees.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,c])=>`${esc(teamName(id))}: ${c} series (${c*3} games)`).join("<br>")}${short.length?`<br><br><b>2026 exception:</b> ${short.map(x=>`${esc(teamName(x.id))} finishes with ${x.series} series`).join("; ")}`:"<br><br>All teams reach 8 series."}</div>
+ </div></div>`;
 }
 function rosterEditor(x,i){
  const box=(team,set,side)=>`<div class="series-roster"><h4>${esc(teamName(team))} active players</h4>${roster(team).map(p=>`<div class="roster-row"><label><input type="checkbox" data-active="${i}:${side}:${p.id}" ${set.has(p.id)?"checked":""}> ${esc(p.name)}</label><span class="roster-rate">${p.bat?`${p.bat.PAs} PA`:""}${p.pit?` · ${p.pit.IP} IP`:""}</span></div>`).join("")}</div>`;
@@ -279,10 +344,16 @@ function rosterEditor(x,i){
 }
 function applyGame(a,b,g){
  const W=scenario.rows.find(x=>x.team_id===g.winner),L=scenario.rows.find(x=>x.team_id===(g.winner===a?b:a));
- W.W++;L.L++;const margin=Math.abs(g.aScore-g.bScore);W.DIFF+=margin;L.DIFF-=margin;
+ W.W++;L.L++;W.GP=n(W.GP)+1;L.GP=n(L.GP)+1;
+ const margin=Math.abs(g.aScore-g.bScore);W.DIFF+=margin;L.DIFF-=margin;
 }
-function rankedScenario(){return [...scenario.rows].sort((a,b)=>b.W-a.W||b.DIFF-a.DIFF||a.team.localeCompare(b.team)).map((r,i)=>({...r,rank:i+1}))}
-function renderScenarioStandings(){scenarioStandings.innerHTML=rankedScenario().map(r=>`<div class="seed-row">${logo(r.team_id)}<span>#${r.rank} ${esc(r.team)}</span><b>${r.W}-${r.L}</b></div>`).join("")}
+function rankedScenario(){
+ return [...scenario.rows].sort((a,b)=>{
+   const ap=n(a.GP)?n(a.W)/n(a.GP):0,bp=n(b.GP)?n(b.W)/n(b.GP):0;
+   return bp-ap||b.DIFF-a.DIFF||b.W-a.W||a.team.localeCompare(b.team);
+ }).map((r,i)=>({...r,rank:i+1,PCT:n(r.GP)?n(r.W)/n(r.GP):0}));
+}
+function renderScenarioStandings(){scenarioStandings.innerHTML=rankedScenario().map(r=>`<div class="seed-row">${logo(r.team_id)}<span>#${r.rank} ${esc(r.team)}</span><b>${r.W}-${r.L} · ${r.PCT.toFixed(3).replace(/^0/,"")}</b></div>`).join("")}
 function logEntryHtml(h,idx){return `<details ${idx===scenario.history.length-1?"open":""}><summary>${esc(h.label)} · ${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</summary>${resultOutput(h.a,h.b,h.games,h.label)}</details>`}
 function renderScenarioLog(){scenarioLog.innerHTML=scenario.history.length?scenario.history.map(logEntryHtml).join(""):'<div class="muted-sm">No simulated series yet.</div>'}
 function renderRemaining(){
@@ -348,4 +419,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=135"></script></body></html>
+</script><script src="/assets/hof.js?v=136"></script></body></html>

@@ -1,0 +1,22 @@
+{
+  "2026_policy": {
+    "locked": "all completed, partial, and already-scheduled series",
+    "storm_zyns": "locked and always simulated",
+    "completion": "maximum-cardinality remaining matchup solution with max 8 opponents/team",
+    "uneven_schedule": "allowed; minimum unavoidable number of teams may finish with 7 series",
+    "seeding": "winning percentage, then run differential, then wins"
+  },
+  "future_seasons": "The exact mutual-omission/perfect-matching concept remains the preferred future-season scheduling rule; this exception is specifically labeled 2026 in the simulator.",
+  "migration_required": false,
+  "checks": {
+    "scheduled_series_locked": true,
+    "storm_zyns_cannot_be_removed": true,
+    "max_8_opponents": true,
+    "allows_7_series": true,
+    "max_cardinality_completion": true,
+    "seeding_uses_pct": true,
+    "gp_updates_on_sim": true,
+    "future_exact_logic_not_deleted": true,
+    "syntax": "PASS"
+  }
+}
