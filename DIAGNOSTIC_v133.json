@@ -1,0 +1,13 @@
+{
+  "root_cause": "The main standings X/E marker and the Playoff % tab maintained separate implementations of the mathematical clinch test. They were intended to be equivalent, but duplicated logic allowed the two views to diverge.",
+  "resolution": "The Playoff % tab now calls the exact same playoffStatus() function used by the main standings table. A team with X is forcibly 100.0%; a team without X is capped below 100%.",
+  "checks": {
+    "single_status_function_for_both_views": true,
+    "duplicate_clinch_formula_removed": true,
+    "max_wins_same_basis": true,
+    "playoff_tab_shows_seed_marker": true,
+    "green_bar_uses_clinched_flag": true,
+    "syntax": "PASS"
+  },
+  "migration_required": false
+}

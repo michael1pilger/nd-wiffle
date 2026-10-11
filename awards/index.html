@@ -23,7 +23,7 @@
 @media(max-width:800px){.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feat-leaders{grid-template-columns:1fr}.feat-years{grid-template-columns:repeat(6,150px)}}.feat-grid{grid-template-columns:1fr}}@media(max-width:520px){.hof-grid{grid-template-columns:1fr}}
 </style>
 </head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main>
 <div class="container pagehead awards-pagehead">
   <div class="eyebrow">League History</div>
@@ -185,7 +185,7 @@ const roundOrder=["Play-in","Quarters","Semis","WS"];
 const roundLabel={"Play-in":"Play-in","Quarters":"Quarterfinals","Semis":"Semifinals","WS":"World Series"};
 function renderBracket(y){
   if(String(y)==="2026"){
-    document.getElementById("playoffBracket").innerHTML='<div class="current-season-note">The 2026 regular season is still underway. The live postseason picture is available on the <a href="/playoffs/">Playoffs</a> page.</div>';
+    document.getElementById("playoffBracket").innerHTML='<div class="current-season-note">The 2026 regular season is still underway. The live postseason picture is available on the <a href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a> page.</div>';
     return;
   }
   const yr=PLAYOFF_SERIES.filter(s=>String(s.season)===String(y));
@@ -217,4 +217,4 @@ function renderSeason(){
 }
 renderSeason();
 </script>
-<script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=132"></script></body></html>
+<script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=134"></script></body></html>

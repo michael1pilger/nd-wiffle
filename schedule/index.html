@@ -50,14 +50,20 @@
 .calendar-event-top{display:flex;align-items:center;gap:4px;min-width:0}.calendar-event-logos{display:flex;flex:0 0 auto}.calendar-event-logos img{width:19px;height:19px;object-fit:contain;background:#09111d;border-radius:50%;padding:1px}.calendar-event-logos img+img{margin-left:-5px}.calendar-event-name{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendar-event-time{font-size:8px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .calendar-empty{padding:16px;color:var(--muted);font-size:12px}.calendar-legend{padding:8px 14px 10px;color:var(--muted);font-size:10px;border-top:1px solid rgba(255,255,255,.05)}
 @media(max-width:720px){.calendar-day{min-height:72px;padding:4px}.calendar-event-name{display:none}.calendar-event-time{font-size:7px}.calendar-toolbar{align-items:flex-start}.calendar-event-logos img{width:17px;height:17px}.calendar-weekdays div{padding:6px 2px}}
+
+/* Integrated Results view */
+.result-series{grid-column:1/-1;border:1px solid var(--border);border-radius:16px;background:var(--panel);overflow:hidden;--winner-rgb:90,98,110}.result-series .result-summary{background:linear-gradient(90deg,rgba(var(--winner-rgb),.15),transparent 48%)}.result-series.open{border-color:rgba(var(--winner-rgb),.46)}
+.result-summary{display:grid;grid-template-columns:130px minmax(0,1fr) 165px 28px;gap:16px;align-items:center;padding:16px 18px;cursor:pointer}.result-date{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase}.result-matchup{display:flex;align-items:center;gap:11px;min-width:0}.result-team{display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}.result-team img{width:42px;height:42px;object-fit:contain;flex:0 0 42px}.result-vs{color:var(--muted);font-size:10px;font-weight:800}.result-outcome{text-align:right;color:var(--gold);font-size:11px;font-weight:900;text-transform:uppercase}.result-chevron{font-size:18px;transition:transform .18s}.result-series.open .result-chevron{transform:rotate(180deg)}
+.result-detail{display:none;border-top:1px solid var(--border);padding:18px}.result-series.open .result-detail{display:block}.result-score-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.result-game{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px}.result-game .game-num{font-size:8px;color:var(--gold);font-weight:900;text-transform:uppercase}.result-game .game-score{font-size:17px;font-weight:950;margin:5px 0}.result-game .decision{font-size:9px;color:var(--muted);line-height:1.5}.result-stars{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}.result-star{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:11px}.result-star small{display:block;color:var(--gold);font-size:8px;font-weight:900;text-transform:uppercase}.result-star strong{display:block;margin-top:4px}.result-star span{display:block;color:var(--muted);font-size:10px;margin-top:3px}.boxscore-title{font-size:13px;font-weight:900;margin:16px 0 7px}.result-table{width:100%;font-size:10px;border-collapse:collapse}.result-table th,.result-table td{padding:6px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right;white-space:nowrap}.result-table th:first-child,.result-table td:first-child{text-align:left}.result-table th{color:var(--muted);font-size:8px;text-transform:uppercase}.result-team-heading{display:flex;align-items:center;gap:9px;margin-top:13px;font-weight:900}.result-team-heading img{width:36px;height:36px;object-fit:contain}.tablewrap{overflow:auto}
+@media(max-width:760px){.result-summary{grid-template-columns:1fr 28px;gap:8px}.result-date,.result-matchup,.result-outcome{grid-column:1}.result-outcome{text-align:left}.result-chevron{grid-column:2;grid-row:1/4;align-self:center}.result-score-strip,.result-stars{grid-template-columns:1fr}}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
-<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">The page lists the 2026 regular-season matchup pool plus commissioner-scheduled All-Star and exhibition games. Special events are calendar-only and do not affect standings or player statistics.</p></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Schedule</h1><p class="muted">Schedule, calendar, and published 2026 results in one place. Completed series expand into full game results and box scores. Special events are calendar-only and do not affect standings or player statistics.</p></div>
 <div class="container">
 <div class="schedule-controls">
 <button type="button" class="active" data-filter="all">All</button>
 <button type="button" data-filter="upcoming">Upcoming</button>
-<button type="button" data-filter="final">Final</button>
+<button type="button" data-filter="final">Results</button>
 <select id="teamFilter" aria-label="Filter schedule by team"><option value="">All teams</option></select>
 <div id="scheduleCount" class="schedule-count"></div>
 </div>
@@ -76,7 +82,7 @@ const LOGOS={
 };
 const SCHEDULE_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
-let resultsByPair=new Map(),scheduledByPair=new Map(),exhibitionEvents=[],activeFilter="all";
+let resultsByPair=new Map(),scheduledByPair=new Map(),exhibitionEvents=[],activeFilter=new URLSearchParams(location.search).get("filter")||"all";
 const pairKey=(a,b)=>[a,b].sort().join("__");
 function sameDaySeriesOrder(a,b){
  const k=pairKey(a,b);
@@ -111,6 +117,21 @@ function buildResultMap(series){
  return m;
 }
 function scheduleTopBatter(rows){return [...(rows||[])].filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi").sort((a,b)=>(Number(b.H)+2*Number(b.HR)+Number(b.RBI)+Number(b.BB))-(Number(a.H)+2*Number(a.HR)+Number(a.RBI)+Number(a.BB))||Number(b.HR)-Number(a.HR)||Number(b.H)-Number(a.H))[0]||null}
+function scheduleTopPitcher(rows){return [...(rows||[])].filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi").sort((a,b)=>(6*Number(b.W)+3*Number(b.S)+Number(b.K)-2*Number(b.ER)-.5*Number(b.BB))-(6*Number(a.W)+3*Number(a.S)+Number(a.K)-2*Number(a.ER)-.5*Number(a.BB))||Number(b.K)-Number(a.K)||Number(a.ER)-Number(b.ER))[0]||null}
+function resultLogo(id,name){return LOGOS[id]?`<img src="${LOGOS[id]}" alt="${esc(name)}">`:""}
+function resultTeamHeader(id,name){return `<div class="result-team-heading">${resultLogo(id,name)}<span>${esc(name)}</span></div>`}
+function resultBatTable(rows){return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OPS</th></tr></thead><tbody>${(rows||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi").map(r=>`<tr><td>${esc(r.name)}</td><td>${r.PA}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.RBI}</td><td>${r.BB}</td><td>${r.SO}</td><td>${r.BA}</td><td>${r.OPS}</td></tr>`).join("")}</tbody></table></div>`}
+function resultPitTable(rows){return `<div class="tablewrap"><table class="result-table"><thead><tr><th>Pitcher</th><th>W</th><th>L</th><th>SV</th><th>IP</th><th>K</th><th>ER</th><th>BB</th><th>ERA</th></tr></thead><tbody>${(rows||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi").map(r=>`<tr><td>${esc(r.name)}</td><td>${r.W}</td><td>${r.L}</td><td>${r.S}</td><td>${r.IP}</td><td>${r.K}</td><td>${r.ER}</td><td>${r.BB}</td><td>${r.ERA??"—"}</td></tr>`).join("")}</tbody></table></div>`}
+function detailedResultCard(result){
+ const games=[...(result.games||[])].sort((a,b)=>Number(a.game_number)-Number(b.game_number)),sw=seriesWins(games),awayWon=sw.away>sw.home;
+ const winner=awayWon?result.away_team:result.home_team,bat=scheduleTopBatter(result.batting||[]),pit=scheduleTopPitcher(result.pitching||[]);
+ const rgb=SCHEDULE_TEAM_RGB[awayWon?result.away_team_id:result.home_team_id]||"90,98,110";
+ const gameHtml=games.map(g=>`<div class="result-game"><div class="game-num">Game ${g.game_number}</div><div class="game-score">${esc(result.away_team)} ${g.away_score} · ${esc(result.home_team)} ${g.home_score}</div><div class="decision">W - ${esc(g.winning_pitcher)}${g.winning_pitcher_record?` (${esc(g.winning_pitcher_record)})`:""} · L - ${esc(g.losing_pitcher)}${g.losing_pitcher_record?` (${esc(g.losing_pitcher_record)})`:""}${g.save_pitcher?` · SV - ${esc(g.save_pitcher)}`:""}</div></div>`).join("");
+ const boxes=[["away",result.away_team_id,result.away_team],["home",result.home_team_id,result.home_team]].map(([side,id,name])=>`${resultTeamHeader(id,name)}${resultBatTable((result.batting||[]).filter(x=>x.side===side))}${resultPitTable((result.pitching||[]).filter(x=>x.side===side))}`).join("");
+ return `<article class="result-series" style="--winner-rgb:${rgb}" data-result-series="${esc(result.series_id)}"><div class="result-summary" role="button" tabindex="0"><div class="result-date">${fmtDate(result.series_date)}</div><div class="result-matchup"><div class="result-team">${resultLogo(result.away_team_id,result.away_team)}<span>${esc(result.away_team)}</span></div><span class="result-vs">vs</span><div class="result-team">${resultLogo(result.home_team_id,result.home_team)}<span>${esc(result.home_team)}</span></div></div><div class="result-outcome">${esc(winner)} wins ${Math.max(sw.away,sw.home)}-${Math.min(sw.away,sw.home)}</div><div class="result-chevron">⌄</div></div><div class="result-detail"><div class="result-score-strip">${gameHtml}</div><div class="result-stars"><div class="result-star"><small>Top batter</small><strong>${bat?esc(bat.name):"—"}</strong><span>${bat?`${bat.H}/${bat.AB} · ${bat.HR} HR · ${bat.RBI} RBI`:"—"}</span></div><div class="result-star"><small>Top pitcher</small><strong>${pit?esc(pit.name):"—"}</strong><span>${pit?`${pit.W}-${pit.L} · ${pit.IP} IP · ${pit.K} K · ${pit.ER} ER`:"—"}</span></div></div>${boxes}</div></article>`;
+}
+function bindResultCards(){document.querySelectorAll(".result-series .result-summary").forEach(el=>{const toggle=()=>el.closest(".result-series")?.classList.toggle("open");el.onclick=toggle;el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle()}}})}
+
 function orientResultToSchedule(result,item){
  if(!result)return null;
  const same=result.away_team_id===item.away_id && result.home_team_id===item.home_id;
@@ -255,10 +276,10 @@ function render(){
        html+=`<div class="schedule-section-title" data-schedule-section="${section}">${label}</div>`;
        lastSection=section;
      }
-     html+=card(x.base);
+     if(x.isFinal){const rr=resultsByPair.get(pairKey(x.base.away_id,x.base.home_id));html+=rr?detailedResultCard(rr):card(x.base)}else html+=card(x.base);
    }
  }
- document.getElementById("scheduleGrid").innerHTML=html;
+ document.getElementById("scheduleGrid").innerHTML=html;bindResultCards();
  const parts=[];
  if(scheduledCount)parts.push(`${scheduledCount} scheduled`);
  if(!team&&activeFilter!=="final"&&(exhibitionEvents||[]).length)parts.push(`${exhibitionEvents.length} special`);
@@ -275,7 +296,8 @@ function setup(){
  document.getElementById("calPrev").addEventListener("click",()=>{if(calendarWeekStart){calendarWeekStart=new Date(calendarWeekStart);calendarWeekStart.setDate(calendarWeekStart.getDate()-7);renderCalendar(document.getElementById("teamFilter").value)}});
  document.getElementById("calNext").addEventListener("click",()=>{if(calendarWeekStart){calendarWeekStart=new Date(calendarWeekStart);calendarWeekStart.setDate(calendarWeekStart.getDate()+7);renderCalendar(document.getElementById("teamFilter").value)}});
  document.getElementById("calToday").addEventListener("click",()=>{calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);renderCalendar(document.getElementById("teamFilter").value)});
- document.querySelectorAll("[data-filter]").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll("[data-filter]").forEach(btn=>btn.classList.toggle("active",btn.dataset.filter===activeFilter));
+document.querySelectorAll("[data-filter]").forEach(btn=>btn.addEventListener("click",()=>{
    activeFilter=btn.dataset.filter;
    document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===btn));
    render();
@@ -293,4 +315,4 @@ Promise.all([
  console.error(err);render();
  document.getElementById("scheduleError").innerHTML='<div class="schedule-error">Live schedule data is temporarily unavailable. The 45-matchup pool is still shown below.</div>';
 });
-</script><script src="/assets/hof.js?v=132"></script></body></html>
+</script><script src="/assets/hof.js?v=134"></script></body></html>

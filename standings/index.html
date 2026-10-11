@@ -23,7 +23,7 @@
 .elim-marker{color:#eb7884}
 .clinch-marker .seed-note,.elim-marker .seed-note{font-size:8px;font-weight:800;margin-left:1px;opacity:.9}
 </style></head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="active" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>2026 Standings</h1>
 <p class="muted" id="standingsStatus">Standings update automatically from commissioner-published 2026 results.</p><div class="standings-tabs"><button class="standings-tab active" type="button" data-standings-tab="standings">Standings</button><button class="standings-tab" type="button" data-standings-tab="full">Full Standings</button><button class="standings-tab" type="button" data-standings-tab="power">Power Rankings</button><button class="standings-tab" type="button" data-standings-tab="playoff">Playoff %</button></div></div>
@@ -79,7 +79,7 @@
     <div class="power-summary-card"><small>Tiebreaker</small><strong>Point differential first</strong></div>
   </div>
   <div class="tablewrap"><table class="power-table"><thead><tr><th>RK</th><th>Team</th><th>Playoff %</th><th>W-L</th><th>Games Left</th><th>DIFF</th><th>Future SOS</th></tr></thead><tbody id="playoffBody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading playoff odds…</td></tr></tbody></table></div>
-  <div class="playoff-note2"><strong>Playoff probability model:</strong> 20,000 simulations of the remaining 24-game regular-season schedule. Early-season results are deliberately regressed toward league parity, with that regression fading as teams play more games. Each simulation also includes team-strength uncertainty, so a 0-6 start matters without being treated as proof that a team is permanently weak. Current record, point differential, future SOS, known future opponents, unscheduled matchups, and games remaining are still included. Seven teams qualify, so probabilities total exactly 700%. A team is shown at 100% only when mathematically clinched and at 0% only when mathematically eliminated.</div>
+  <div class="playoff-note2"><strong>Playoff probability model:</strong> 20,000 simulations of the remaining 24-game regular-season schedule. Early-season results are deliberately regressed toward league parity, with that regression fading as teams play more games. Each simulation also includes team-strength uncertainty, so a 0-6 start matters without being treated as proof that a team is permanently weak. Current record, point differential, future SOS, known future opponents, unscheduled matchups, and games remaining are still included. Seven teams qualify, so probabilities total exactly 700%. A team is shown at 100% only when the same mathematical clinch test used by the main Standings table returns X, and at 0% only when that same test returns E. Equal-win futures remain unresolved because run differential can still change.</div>
 </div></section>
 </main>
 <script>
@@ -346,17 +346,18 @@ function renderPlayoffOdds(league,results,scheduled,powerMetrics){
  const {pairs}=buildFuturePairs(teams,results,scheduled||{scheduled:[]});
  const futureOpp=Object.fromEntries(teams.map(t=>[t.team_id,[]]));for(const [a,b] of pairs){futureOpp[a].push(b);futureOpp[b].push(a)}
  const rows=teams.map(t=>{
-   const rem=Math.max(0,24-num(t.GP)), maxW=num(t.W)+rem;
+   const rem=Math.max(0,24-num(t.GP)), maxW=Math.max(num(t.W),24-num(t.L));
    const opps=futureOpp[t.team_id]||[], fsos=opps.length?opps.reduce((a,id)=>a+num(byId.get(id)?.PCT||.5),0)/opps.length:.5;
    return {...t,rem,maxW,fsos,rawProb:0,clinched:false,eliminated:false};
  });
- // Conservative mathematical clinch/elimination checks. Ties are intentionally not treated as clinched/eliminated because DIFF is the first tiebreaker.
+ // Use the exact same canonical mathematical status as the main Standings
+ // table. This prevents X/E markers and the Playoff % tab from ever disagreeing.
  for(const r of rows){
-   const others=rows.filter(x=>x.team_id!==r.team_id);
-   const otherMax=others.map(x=>x.maxW).sort((a,b)=>b-a); // 7 teams would have to beat r for r to miss.
-   const otherMin=others.map(x=>num(x.W)).sort((a,b)=>b-a);
-   r.clinched=otherMax.length>=7 && num(r.W)>otherMax[6];
-   r.eliminated=otherMin.length>=7 && r.maxW<otherMin[6];
+   const status=playoffStatus(r,rows);
+   r.clinched=status.clinched;
+   r.eliminated=status.eliminated;
+   r.lowestSeed=status.lowestSeed;
+   r.bestSeed=status.bestSeed;
  }
  const rng=seededRandom(20260907),N=20000,tallies=Object.fromEntries(rows.map(r=>[r.team_id,0]));
  const gaussian=()=>{const u=Math.max(1e-9,rng()),v=Math.max(1e-9,rng());return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
@@ -388,7 +389,7 @@ function renderPlayoffOdds(league,results,scheduled,powerMetrics){
  for(const r of rows)r.rawProb=tallies[r.team_id]/N*100;
  normalizePlayoffProbabilities(rows);
  rows.sort((a,b)=>b.displayProb-a.displayProb||b.PCT-a.PCT||b.DIFF-a.DIFF);
- document.getElementById("playoffBody").innerHTML=rows.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td><div class="playoff-pct">${r.displayProb.toFixed(1)}%</div><div class="playoff-bar"><div class="playoff-fill ${r.displayProb>=99.95?"clinched":""}" style="width:${r.displayProb}%"></div></div></td><td>${r.W}-${r.L}</td><td>${r.rem}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${r.fsos.toFixed(3).replace(/^0/,"")}</td></tr>`}).join("");
+ document.getElementById("playoffBody").innerHTML=rows.map((r,i)=>{const ui=STANDING_TEAM_UI[r.team_id]||{logo:""};return `<tr><td>${i+1}</td><td><div class="power-team">${ui.logo?`<img src="${ui.logo}" alt="">`:""}<strong>${r.team}</strong></div></td><td><div class="playoff-pct">${r.displayProb.toFixed(1)}%${r.clinched?` <span style="font-size:9px;color:#71d49c">X (${r.lowestSeed})</span>`:r.eliminated?` <span style="font-size:9px;color:#eb7884">E (${r.bestSeed})</span>`:""}</div><div class="playoff-bar"><div class="playoff-fill ${r.clinched?"clinched":""}" style="width:${r.displayProb}%"></div></div></td><td>${r.W}-${r.L}</td><td>${r.rem}</td><td>${r.DIFF>0?"+":""}${r.DIFF}</td><td>${r.fsos.toFixed(3).replace(/^0/,"")}</td></tr>`}).join("");
 }
 
 document.querySelectorAll("[data-standings-tab]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -412,4 +413,4 @@ Promise.all([
  console.error(err);
 });
 </script>
-<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=132"></script></body></html>
+<footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer><script src="/assets/table-tools.js?v=114"></script><script src="/assets/hof.js?v=134"></script></body></html>

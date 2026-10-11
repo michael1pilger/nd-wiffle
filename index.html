@@ -110,7 +110,7 @@
 .pace-progress{height:10px;border-radius:999px;background:#09111e;overflow:hidden;margin-top:15px;border:1px solid rgba(255,255,255,.06)}.pace-progress span{display:block;height:100%;background:var(--gold);border-radius:999px}
 .pace-note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:11px}
 @media(max-width:800px){.pace-hero{grid-template-columns:1fr 1fr}.pace-main{grid-column:1/-1}}@media(max-width:480px){.pace-hero{grid-template-columns:1fr}.pace-main{grid-column:auto}}
-</style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a class="" href="/results/">Results</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+</style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 
 <div class="game-ticker" aria-label="Upcoming events">
   <div class="game-ticker-inner">
@@ -147,7 +147,7 @@
 <div class="home-results" aria-live="polite">
   <div class="home-results-head">
     <div><div class="eyebrow">2026 Results</div><h2>Recent Series</h2></div>
-    <a class="home-results-link" href="/results/">View All Results →</a>
+    <a class="home-results-link" href="/schedule/?filter=final">View All Results →</a>
   </div>
   <div class="home-results-tabs"><button class="home-results-tab active" type="button" data-home-results-tab="recent">Recent Series</button><button class="home-results-tab" type="button" data-home-results-tab="pace">Season Pace</button></div>
   <div id="homeSeriesResults" class="series-loading home-series-pane">Loading published 2026 results…</div>
@@ -306,4 +306,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
 })();
 </script><script>
 fetch("/api/public/fantasy?date="+(()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`})(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(!j.ok)return;const n=(j.scheduled||[]).length,e=(j.leaderboard||[]).length;homeFantasyMeta.textContent=j.locked?`${e} entries · Slate locked`:`${n} ${n===1?"series":"series"} today · ${e} entries · Locks ${j.slate?.lock_time||"TBD"}`;homeFantasyLink.textContent=j.locked?"View Leaderboard →":"Build Your Lineup →"}).catch(()=>{});
-</script><script src="/assets/hof.js?v=132"></script></body></html>
+</script><script src="/assets/hof.js?v=134"></script></body></html>

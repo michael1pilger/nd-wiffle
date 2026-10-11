@@ -1,0 +1,18 @@
+{
+  "changes": {
+    "jerry_out_migration": true,
+    "results_nav_removed": true,
+    "simulation_nav_added": true,
+    "results_integrated_schedule": true,
+    "results_redirect": true,
+    "simulation_sandbox": true,
+    "simulation_remaining": true,
+    "simulation_player_selection": true,
+    "simulation_stats": true,
+    "simulation_playoffs": true,
+    "syntax": "PASS"
+  },
+  "migration": "0029_jerry_vielhauer_one_out.sql",
+  "simulation": "client-side only; never writes official DB",
+  "schedule_issue": "simulation flags unresolved schedule topology rather than inventing opponents"
+}
