@@ -1,0 +1,12 @@
+{
+  "root_cause": "The v137 schedule solver referenced variables a and b inside the recursive branch even though the current candidate matchup was stored as e.a/e.b. That caused buildSchedulePlan() to throw before the Simulation page finished loading.",
+  "grid": "Reloaded to a new default 3x3 puzzle while preserving the 2026-aware player/stat eligibility logic.",
+  "migration_required": false,
+  "checks": {
+    "undefined_a_fixed": true,
+    "undefined_b_fixed": true,
+    "solver_uses_edge_ids": true,
+    "grid_reloaded": true,
+    "syntax": "PASS"
+  }
+}

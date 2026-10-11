@@ -320,8 +320,8 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8,maxAdditionalSeries=nu
      const sc=score(edges,d);if(better(sc,best))best={edges:[...edges],...sc};return;
    }
    const e=candidates[idx],da=d.get(e.a),db=d.get(e.b);
-   const capA=maxAdditionalSeries?.get(a),capB=maxAdditionalSeries?.get(b);
-   const addedA=da-(initialDeg.get(a)||0),addedB=db-(initialDeg.get(b)||0);
+   const capA=maxAdditionalSeries?.get(e.a),capB=maxAdditionalSeries?.get(e.b);
+   const addedA=da-(initialDeg.get(e.a)||0),addedB=db-(initialDeg.get(e.b)||0);
    if(da<maxOpp&&db<maxOpp&&(capA===undefined||addedA<capA)&&(capB===undefined||addedB<capB)){
      d.set(e.a,da+1);d.set(e.b,db+1);edges.push(e);
      rec(idx+1,d,edges);
@@ -486,4 +486,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=137"></script></body></html>
+</script><script src="/assets/hof.js?v=138"></script></body></html>
