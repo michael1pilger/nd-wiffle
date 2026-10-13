@@ -153,6 +153,7 @@ async function simulateGamePA(a,b,selA,selB,context){
  const pitchPools={[a]:pitchersFor(a,selA),[b]:pitchersFor(b,selB)};
  const usage=context.pitchUsage,limitOuts=context.pitchLimitOuts,bat={[a]:new Map(),[b]:new Map()},pit={[a]:new Map(),[b]:new Map()};
  const score={[a]:0,[b]:0},order={[a]:context.lineupIndex[a]||0,[b]:context.lineupIndex[b]||0};
+ const playByPlay=[];
  const gameNoise=new Map();
  for(const t of [a,b])for(const h of lineups[t])gameNoise.set(h.id,(Math.random()+Math.random()-1)*.45);
  let paCounter=0;
@@ -188,10 +189,12 @@ async function simulateGamePA(a,b,selA,selB,context){
        else{br.AB++;if(event==="K"){br.K++;pr.K++;outs++;pr.IPouts++;if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1)}
        else if(event==="OUT"){outs++;pr.IPouts++;if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1)}
        else{br.H++;br[event]++;pr.H++;if(event==="HR")pr.HR++}}
+       let runsOnPlay=0;
        if(["BB","1B","2B","3B","HR"].includes(event)){
-         const adv=advanceRunners(bases,event,hitter.id);bases=adv.bases;br.RBI+=adv.rbi;
+         const adv=advanceRunners(bases,event,hitter.id);bases=adv.bases;br.RBI+=adv.rbi;runsOnPlay=adv.runs.length;
          for(const rid of adv.runs){score[battingTeam]++;const rr=lineups[battingTeam].find(x=>x.id===rid);if(rr)ensureBat(bat[battingTeam],rr).R++;pr.R++;pr.ER++}
        }
+       playByPlay.push({inning:inn,half:battingTeam===a?"Top":"Bottom",battingTeam,batter:hitter.name,pitcher:pitcher.name,event,runs:runsOnPlay,outs,scoreA:score[a],scoreB:score[b]});
        if(context.onPA && paCounter%2===0){context.donePA++;context.onPA(context.donePA)}
        if(paCounter%12===0)await sleep(0);
      }
@@ -200,13 +203,14 @@ async function simulateGamePA(a,b,selA,selB,context){
  // Tie breaker: one extra run awarded through a final PA-level tiebreak result.
  if(score[a]===score[b]){
    const win=Math.random()<.5?a:b;score[win]++;const h=lineups[win][order[win]%lineups[win].length];const row=ensureBat(bat[win],h);row.R++;row.RBI++;
+   playByPlay.push({inning:3,half:"Tiebreak",battingTeam:win,batter:h.name,pitcher:"Tiebreak",event:"TB",runs:1,outs:3,scoreA:score[a],scoreB:score[b]});
  }
  context.lineupIndex[a]=order[a];context.lineupIndex[b]=order[b];
  const winner=score[a]>score[b]?a:b,loser=winner===a?b:a;
  // Pitcher decisions: first pitcher with recorded outs for each side.
  const wp=[...pit[winner].values()].find(x=>x.IPouts>0);if(wp)wp.W++;
  const lp=[...pit[loser].values()].find(x=>x.IPouts>0);if(lp)lp.L++;
- return {a,b,aScore:score[a],bScore:score[b],winner,bat,pit};
+ return {a,b,aScore:score[a],bScore:score[b],winner,bat,pit,playByPlay};
 }
 function forceSatisfied(games,forced,existingA,existingB,a,b){
  if(!forced)return true;
@@ -334,73 +338,70 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8,maxAdditionalSeries=nu
  for(const e of best.edges){finalDeg.set(e.a,finalDeg.get(e.a)+1);finalDeg.set(e.b,finalDeg.get(e.b)+1)}
  return {...best,finalDeg,initialDeg};
 }
+
 function buildSchedulePlan(){
- const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),GP:n(x.GP),DIFF:n(x.DIFF)})),ids=rows.map(x=>x.team_id);
- const gameCounts=new Map(),seriesByPair=new Map();
- for(const sr of RESULTS.series||[]){
-   const k=pairKey(sr.away_team_id,sr.home_team_id);
-   const physical=n(sr.game_count??sr.games?.length),gc=sr.series_type==="conditional_forfeit"?3:physical;
-   if(gc>0){gameCounts.set(k,Math.max(gameCounts.get(k)||0,gc));seriesByPair.set(k,sr)}
+ const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),GP:n(x.GP),DIFF:n(x.DIFF)}));
+ const byId=new Map(rows.map(r=>[r.team_id,r]));
+ const results=RESULTS.series||[];
+ const completedPair=k=>results.some(sr=>pairKey(sr.away_team_id,sr.home_team_id)===k&&n(sr.game_count??sr.games?.length)>=3);
+
+ // 2026 simulation-only standings corrections / predetermined results.
+ // These do not write to D1 or appear elsewhere on the public site.
+ const tt=byId.get("twin-titans"),gg=byId.get("goofy-goobers");
+ if(tt){tt.W=11;tt.L=7;tt.GP=18}
+ if(gg){gg.W=6;gg.L=12;gg.GP=18}
+
+ const bb=byId.get("ball-busters"),zyns=byId.get("zyns"),sb=byId.get("silverbacks");
+ if(!completedPair(pairKey("ball-busters","zyns"))){
+   if(bb){bb.W+=3;bb.GP+=3}
+   if(zyns){zyns.L+=3;zyns.GP+=3}
  }
- const playedLocked=new Set([...gameCounts.keys()]);
- const scheduledLocked=new Set((SCHEDULE.scheduled||[]).map(x=>pairKey(x.team_a_id,x.team_b_id)));
- // For 2026, scheduled means locked. Storm-Zyns and every other commissioner-
- // scheduled matchup must remain in the regular-season plan.
- const lockedPairs=new Set([...playedLocked,...scheduledLocked]);
- const lockedFutureGames=new Map(ids.map(id=>[id,0]));
- for(const k of lockedPairs){
-   const [a,b]=k.split("__"),gc=gameCounts.get(k)||0,left=Math.max(0,3-gc);
-   lockedFutureGames.set(a,(lockedFutureGames.get(a)||0)+left);
-   lockedFutureGames.set(b,(lockedFutureGames.get(b)||0)+left);
+ if(!completedPair(pairKey("ball-busters","silverbacks"))){
+   if(sb){sb.W+=2;sb.L+=1;sb.GP+=3}
+   if(bb){bb.W+=1;bb.L+=2;bb.GP+=3}
  }
- const rowById=new Map(rows.map(r=>[r.team_id,r]));
- const maxAdditionalSeries=new Map(ids.map(id=>{
-   const gameBudget=Math.max(0,24-n(rowById.get(id)?.GP)-n(lockedFutureGames.get(id)));
-   return [id,Math.floor(gameBudget/3)];
- }));
- const solution=solveLocked2026Schedule(ids,lockedPairs,8,maxAdditionalSeries);
- const solverAdded=new Set(solution.edges.map(e=>e.k));
- const included=new Set([...lockedPairs,...solverAdded]);
- const remaining=[];
- for(const k of included){
-   const [a,b]=k.split("__"),gc=gameCounts.get(k)||0;
-   if(gc>=3)continue;
-   const sr=seriesByPair.get(k);
-   const aw=sr?.away_team_id===a?n(sr.away_wins):sr?.home_team_id===a?n(sr.home_wins):0;
-   const bw=sr?.away_team_id===b?n(sr.away_wins):sr?.home_team_id===b?n(sr.home_wins):0;
-   remaining.push({
-     a,b,k,gamesLeft:3-gc,existingA:aw,existingB:bw,
-     source:gc>0?"partial":scheduledLocked.has(k)?"scheduled":"solver-added",
-     activeA:new Set(roster(a).map(p=>p.id)),activeB:new Set(roster(b).map(p=>p.id))
-   });
+
+ const exactRemaining=[
+   ["stiff-wifflers","twin-titans",3,"scheduled"],
+   ["storm","zyns",3,"scheduled"],
+   ["midnight","dirty-dawgs",3,"scheduled"],
+   ["stiff-wifflers","midnight",1,"partial"],
+   ["goofy-goobers","stiff-wifflers",3,"scheduled"],
+   ["goofy-goobers","twin-titans",3,"scheduled"]
+ ];
+
+ const remaining=exactRemaining.map(([a,b,gamesLeft,source])=>{
+   const k=pairKey(a,b);
+   const sr=results.find(x=>pairKey(x.away_team_id,x.home_team_id)===k&&n(x.game_count??x.games?.length)>0);
+   let existingA=0,existingB=0;
+   if(sr){
+     existingA=sr.away_team_id===a?n(sr.away_wins):n(sr.home_wins);
+     existingB=sr.away_team_id===b?n(sr.away_wins):n(sr.home_wins);
+   }
+   return {a,b,k,gamesLeft,existingA,existingB,source,
+     activeA:new Set(roster(a).map(p=>p.id)),activeB:new Set(roster(b).map(p=>p.id))};
+ });
+
+ const finalProjectedGP=new Map(rows.map(r=>[r.team_id,n(r.GP)]));
+ for(const x of remaining){
+   finalProjectedGP.set(x.a,n(finalProjectedGP.get(x.a))+x.gamesLeft);
+   finalProjectedGP.set(x.b,n(finalProjectedGP.get(x.b))+x.gamesLeft);
  }
- const omitted=[];
- for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++){
-   const k=pairKey(ids[i],ids[j]);if(!included.has(k))omitted.push(k);
- }
- const projectedRemainingGames=new Map(ids.map(id=>[id,0]));
- for(const x of remaining){projectedRemainingGames.set(x.a,(projectedRemainingGames.get(x.a)||0)+x.gamesLeft);projectedRemainingGames.set(x.b,(projectedRemainingGames.get(x.b)||0)+x.gamesLeft)}
- const finalProjectedGP=new Map(ids.map(id=>[id,n(rowById.get(id)?.GP)+n(projectedRemainingGames.get(id))]));
- const shortTeams=ids.filter(id=>(solution.finalDeg.get(id)||0)<8).map(id=>({
-   id,opponents:solution.finalDeg.get(id)||0,series:solution.finalDeg.get(id)||0,games:finalProjectedGP.get(id)||0
- }));
  return {
-   rows,invalid:false,gameCounts,scheduled:scheduledLocked,lockedPairs,solverAdded,
-   included,omitted:new Set(omitted),remaining,history:[],shortTeams,finalDegrees:solution.finalDeg,finalProjectedGP,
-   policy:"2026-locked-schedule-exception"
+   rows,remaining,history:[],policy:"2026-commissioner-fixed-finish",
+   finalProjectedGP,
+   predetermined:[
+     {a:"ball-busters",b:"zyns",score:"3-0"},
+     {a:"silverbacks",b:"ball-busters",score:"2-1"}
+   ]
  };
 }
 function resolutionHtml(sc){
- if(sc.invalid)return `<div class="warning"><strong>Schedule cannot be solved:</strong> ${esc(sc.reason)}</div>`;
- const pairName=k=>{const [a,b]=k.split("__");return `${teamName(a)} ↔ ${teamName(b)}`};
- const added=[...sc.solverAdded].map(pairName);
- const short=sc.shortTeams||[];
- return `<div class="schedule-resolution"><strong>2026 locked-schedule exception</strong>
- <div class="muted-sm">For 2026, every completed, partial, and already-scheduled regular-season series is locked. The simulator will not remove Storm–Zyns or any other scheduled matchup. It adds as many remaining series as possible without letting any team exceed eight opponents. If the current schedule makes eight opponents for everyone impossible, the smallest possible number of teams finish short.</div>
- <div class="resolution-grid">
-   <div class="resolution-item"><b>Locked schedule preserved</b><br>${sc.lockedPairs.size} completed/partial/scheduled matchups cannot be removed.<br>${added.length?`Added by solver: ${added.map(esc).join("; ")}`:"No additional unscheduled matchup is required."}</div>
-   <div class="resolution-item"><b>Final opponent counts</b><br>${[...sc.finalDegrees.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,c])=>`${esc(teamName(id))}: ${c} opponents · ${sc.finalProjectedGP.get(id)} projected games`).join("<br>")}${short.length?`<br><br><b>2026 exception:</b> ${short.map(x=>`${esc(teamName(x.id))} finishes with ${x.series} series`).join("; ")}`:"<br><br>All teams reach 8 series."}</div>
- </div></div>`;
+ const pred=(sc.predetermined||[]).map(x=>`${esc(teamName(x.a))} ${x.score} ${esc(teamName(x.b))}`).join("<br>");
+ const projected=[...sc.finalProjectedGP.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,gp])=>`${esc(teamName(id))}: ${gp} games`).join("<br>");
+ return `<div class="schedule-resolution"><strong>2026 simulation starting state</strong>
+ <div class="muted-sm">For this simulation only, Ball Busters–Zyns and Silverbacks–Ball Busters are treated as already completed, and the earlier Goobers–Twin Titans conditional forfeit is removed. The remaining regular-season slate is fixed to the six commissioner-approved series below.</div>
+ <div class="resolution-grid"><div class="resolution-item"><b>Predetermined results</b><br>${pred}</div><div class="resolution-item"><b>Projected final games played</b><br>${projected}</div></div></div>`;
 }
 function rosterEditor(x,i){
  const box=(team,set,side)=>`<div class="series-roster"><h4>${esc(teamName(team))} active players</h4>${roster(team).map(p=>`<div class="roster-row"><label><input type="checkbox" data-active="${i}:${side}:${p.id}" ${set.has(p.id)?"checked":""}> ${esc(p.name)}</label><span class="roster-rate">${p.bat?`${p.bat.PAs} PA`:""}${p.pit?` · ${p.pit.IP} IP`:""}</span></div>`).join("")}</div>`;
@@ -418,9 +419,16 @@ function rankedScenario(){
  }).map((r,i)=>({...r,rank:i+1,PCT:n(r.GP)?n(r.W)/n(r.GP):0}));
 }
 function renderScenarioStandings(){scenarioStandings.innerHTML=rankedScenario().map(r=>`<div class="seed-row">${logo(r.team_id)}<span>#${r.rank} ${esc(r.team)}</span><b>${r.W}-${r.L} · ${r.PCT.toFixed(3).replace(/^0/,"")}</b></div>`).join("")}
+function eventLabel(e){
+ return e==="BB"?"walk":e==="K"?"strikeout":e==="1B"?"single":e==="2B"?"double":e==="3B"?"triple":e==="HR"?"home run":e==="OUT"?"out":e==="TB"?"tiebreak run":e;
+}
+function playByPlayHtml(h){
+ if(!["First Round","Semifinal","World Series"].includes(h.label))return "";
+ return `<div class="sim-subhead">Play-by-play</div>${h.games.map((g,i)=>`<details><summary>Game ${i+1} · ${esc(teamName(h.a))} ${g.aScore}, ${esc(teamName(h.b))} ${g.bScore}</summary><div style="padding:8px 0">${(g.playByPlay||[]).map(p=>`<div class="muted-sm" style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)"><strong>${esc(p.half)} ${p.inning}</strong> · ${esc(p.batter)} vs ${esc(p.pitcher)} · ${esc(eventLabel(p.event))}${p.runs?` · ${p.runs} run${p.runs===1?"":"s"}`:""} · ${esc(teamName(h.a))} ${p.scoreA}-${p.scoreB} ${esc(teamName(h.b))}</div>`).join("")}</div></details>`).join("")}`;
+}
 function logEntryHtml(h,idx){
  const x=seriesSummaryData(h.a,h.b,h.games,h.existingA||0,h.existingB||0);
- return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span></div><div class="series-summary-score">${x.wa}–${x.wb}</div><div class="series-mvp"><b>Batting MVP</b>${esc(mvpTextBat(x.bm))}</div><div class="series-mvp"><b>Pitching MVP</b>${esc(mvpTextPit(x.pm))}</div></div></summary>${resultOutput(h.a,h.b,h.games,h.label,h.existingA||0,h.existingB||0)}</details>`;
+ return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span></div><div class="series-summary-score">${x.wa}–${x.wb}</div><div class="series-mvp"><b>Batting MVP</b>${esc(mvpTextBat(x.bm))}</div><div class="series-mvp"><b>Pitching MVP</b>${esc(mvpTextPit(x.pm))}</div></div></summary>${resultOutput(h.a,h.b,h.games,h.label,h.existingA||0,h.existingB||0)}${playByPlayHtml(h)}</details>`;
 }
 function renderScenarioLog(){scenarioLog.innerHTML=scenario.history.length?scenario.history.map(logEntryHtml).join(""):'<div class="muted-sm">No simulated series yet.</div>'}
 function renderRemaining(){
@@ -486,4 +494,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=138"></script></body></html>
+</script><script src="/assets/hof.js?v=139"></script></body></html>

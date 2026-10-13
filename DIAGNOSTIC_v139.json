@@ -1,0 +1,38 @@
+{
+  "simulation_only_current_state": {
+    "predetermined_results": [
+      "Ball Busters 3-0 Zyns",
+      "Silverbacks 2-1 Ball Busters"
+    ],
+    "conditional_forfeit_removed": {
+      "Twin Titans": "11-7",
+      "Goofy Goobers": "6-12"
+    },
+    "remaining_series": [
+      "Stiff Wifflers vs Twin Titans",
+      "Storm vs Zyns",
+      "Midnight vs Dirty Dawgs",
+      "Stiff Wifflers vs Midnight (1 game)",
+      "Goofy Goobers vs Stiff Wifflers",
+      "Goofy Goobers vs Twin Titans"
+    ]
+  },
+  "playoffs": {
+    "best_of_5": "8 IP/pitcher series limit",
+    "best_of_7": "9 IP/pitcher series limit; Game 7 unlimited",
+    "play_by_play": "captured plate appearance by plate appearance and shown for playoff games"
+  },
+  "database_changed": false,
+  "migration_required": false,
+  "checks": {
+    "predetermined_bb_zyns": true,
+    "predetermined_sb_bb": true,
+    "conditional_removed_sim": true,
+    "exact_remaining_six": true,
+    "best_of_5_limit_8": true,
+    "best_of_7_limit_9": true,
+    "play_by_play_capture": true,
+    "play_by_play_render": true,
+    "syntax": "PASS"
+  }
+}
