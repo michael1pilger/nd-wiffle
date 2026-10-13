@@ -1,0 +1,22 @@
+{
+  "simulation_changes": {
+    "regular_pitching": "5 IP per pitcher maximum in a 3-game series; best pitcher used first, then No. 2",
+    "playoff_pbp": "run-scoring plays are bold/highlighted with the scoring team's color",
+    "series_scores": "individual game scores are shown as chips in the collapsed series summary",
+    "predetermined_series": [
+      "Ball Busters 3-0 Zyns is seeded into simulation history as a predetermined series",
+      "Silverbacks 2-1 Ball Busters is also retained as a predetermined series"
+    ]
+  },
+  "database_changed": false,
+  "migration_required": false,
+  "checks": {
+    "three_game_cap_5": true,
+    "remaining_uses_5": true,
+    "run_scoring_colored": true,
+    "game_scores_on_summary": true,
+    "bb_zyns_predetermined_history": true,
+    "sb_bb_predetermined_history": true,
+    "syntax": "PASS"
+  }
+}

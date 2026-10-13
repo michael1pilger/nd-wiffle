@@ -9,6 +9,7 @@
 .stat-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sim-subhead{font-size:11px;color:var(--gold);font-weight:900;margin:12px 0 5px}.sim-table td,.sim-table th{font-size:9px}
 .pitch-limit-note{font-size:8px;color:var(--muted);margin-top:4px}
 @media(max-width:760px){.series-rosters,.resolution-grid,.stat-pair{grid-template-columns:1fr}}
+.game-score-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.game-score-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:#091321;font-size:8px;font-weight:900}.game-score-chip b{color:#fff}.pbp-play{padding:5px 7px;border-bottom:1px solid rgba(255,255,255,.05);border-left:3px solid transparent}.pbp-play.scoring{font-weight:900;background:rgba(var(--score-rgb),.14);border-left-color:rgb(var(--score-rgb));color:rgb(var(--score-rgb))}.predetermined-note{font-size:9px;color:var(--muted);margin-top:4px}
 </style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a class="active" href="/simulation/">Simulation</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div><main><div class="container pagehead"><div class="eyebrow">2026 Scenario Lab</div><h1>Simulation</h1><p class="muted">Run hypothetical series without changing the real database. Player selection, simulated stats, standings, seeding, and playoff progression exist only in your browser session.</p></div><div class="container"><div class="sim-tabs"><button class="active" data-tab="sandbox">Sandbox</button><button data-tab="season">Remaining Season</button></div><section id="sandbox" class="sim-panel active"><div class="sim-card"><h2>Sandbox Series</h2><p class="muted-sm">Choose any two teams, select the players who are active for the hypothetical series, and simulate three games. Outcomes use a blend of 2026 team offense, selected hitters, and the selected team's top available pitchers.</p><div class="sim-grid"><div class="sim-field"><label>Team A</label><select id="sandA"></select><div id="rosterA" class="roster-box"></div></div><div class="sim-field"><label>Team B</label><select id="sandB"></select><div id="rosterB" class="roster-box"></div></div></div><div class="sim-actions"><button id="simSandbox">Simulate 3-game series</button><button id="resetSandbox" class="secondary">Reset players</button></div><div id="sandboxProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div></div><div id="sandboxOutput"></div></section><section id="season" class="sim-panel">
 <div id="scheduleIntegrity"></div>
 <div id="seasonProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div>
@@ -18,6 +19,11 @@
 <div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine. First Round is first to 2 wins (max 3 games, 6 IP/pitcher), Semifinals are first to 3 (max 5 games, 8 IP/pitcher), and the World Series is first to 4 (max 7 games, 9 IP/pitcher; Game 7 unlimited).</p><div id="bracket"></div></div>
 <div class="sim-actions"><button id="resetSeason" class="secondary">Reset season scenario</button></div></section></div></main><footer><div class="container">ND Wiffle · Simulation sandbox. Hypothetical results never alter official data.</div></footer><script>
 const LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
+const TEAM_RGB={
+ "midnight":"90,98,110","storm":"96,0,160","stiff-wifflers":"24,49,83",
+ "ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112",
+ "goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"
+};
 let LEAGUE=null,RESULTS=null,SCHEDULE=null,scenario=null,playoffState={};
 const n=v=>Number(v||0),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const pairKey=(a,b)=>[a,b].sort().join("__"),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -94,17 +100,16 @@ function pitchersFor(team,sel){
  const active=roster(team).filter(p=>sel.has(p.id)&&p.pit&&n(p.pit.Outs)>0);
  return active.sort((a,b)=>pitcherValue(b)-pitcherValue(a)||n(b.pit.Starts)-n(a.pit.Starts)||n(b.pit.Outs)-n(a.pit.Outs)||a.name.localeCompare(b.name));
 }
-function seriesPitchPlan(team,sel,{mode="regular",limitIP=6}={}){
+function seriesPitchPlan(team,sel,{mode="regular",limitIP=5}={}){
  const ranked=pitchersFor(team,sel),plan=new Map();
  if(mode==="regular"){
-   // A normal 3-game regular-season series contains 9 team innings.
-   // Ace receives 5 IP, No. 2 receives 4 IP.
+   // Three-game regular season: 5 IP maximum per pitcher across the series.
+   // Pitchers are ordered best-first, so the ace is used through 5 IP and
+   // the No. 2 pitcher handles the remaining innings of a normal 9-IP series.
    if(ranked[0])plan.set(ranked[0].id,15);
-   if(ranked[1])plan.set(ranked[1].id,12);
+   if(ranked[1])plan.set(ranked[1].id,15);
  }else{
-   // Playoffs: use the best pitchers first, bounded by the round-specific
-   // per-pitcher series limit. Additional selected pitchers are available only
-   // after the top two have exhausted their legal limits.
+   // Playoffs: best pitchers are used first, each bounded by the round cap.
    for(const p of ranked)plan.set(p.id,limitIP*3);
  }
  return {ranked,plan};
@@ -217,7 +222,7 @@ function forceSatisfied(games,forced,existingA,existingB,a,b){
  const wa=existingA+games.filter(g=>g.winner===a).length,wb=existingB+games.filter(g=>g.winner===b).length;
  return forced===a?wa>wb:wb>wa;
 }
-async function simulateSeriesAdvanced(a,b,selA,selB,{games=3,maxGames=null,winsNeeded=null,forced=null,existingA=0,existingB=0,pitchLimitIP=6,pitchMode="regular",game7Unlimited=false,progressEl=null,label="Series"}={}){
+async function simulateSeriesAdvanced(a,b,selA,selB,{games=3,maxGames=null,winsNeeded=null,forced=null,existingA=0,existingB=0,pitchLimitIP=5,pitchMode="regular",game7Unlimited=false,progressEl=null,label="Series"}={}){
  const attempts=forced?30:1;
  let best=null;
  const capGames=maxGames||games;
@@ -424,16 +429,24 @@ function eventLabel(e){
 }
 function playByPlayHtml(h){
  if(!["First Round","Semifinal","World Series"].includes(h.label))return "";
- return `<div class="sim-subhead">Play-by-play</div>${h.games.map((g,i)=>`<details><summary>Game ${i+1} · ${esc(teamName(h.a))} ${g.aScore}, ${esc(teamName(h.b))} ${g.bScore}</summary><div style="padding:8px 0">${(g.playByPlay||[]).map(p=>`<div class="muted-sm" style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)"><strong>${esc(p.half)} ${p.inning}</strong> · ${esc(p.batter)} vs ${esc(p.pitcher)} · ${esc(eventLabel(p.event))}${p.runs?` · ${p.runs} run${p.runs===1?"":"s"}`:""} · ${esc(teamName(h.a))} ${p.scoreA}-${p.scoreB} ${esc(teamName(h.b))}</div>`).join("")}</div></details>`).join("")}`;
+ return `<div class="sim-subhead">Play-by-play</div>${h.games.map((g,i)=>`<details><summary>Game ${i+1} · ${esc(teamName(h.a))} ${g.aScore}, ${esc(teamName(h.b))} ${g.bScore}</summary><div style="padding:8px 0">${(g.playByPlay||[]).map(p=>{const rgb=TEAM_RGB[p.battingTeam]||"255,255,255";return `<div class="muted-sm pbp-play ${p.runs?"scoring":""}" style="--score-rgb:${rgb}"><strong>${esc(p.half)} ${p.inning}</strong> · ${esc(p.batter)} vs ${esc(p.pitcher)} · ${esc(eventLabel(p.event))}${p.runs?` · ${p.runs} run${p.runs===1?"":"s"}`:""} · ${esc(teamName(h.a))} ${p.scoreA}-${p.scoreB} ${esc(teamName(h.b))}</div>`}).join("")}</div></details>`).join("")}`;
+}
+function gameScoreChips(h){
+ if(!h.games?.length)return "";
+ return `<div class="game-score-chips">${h.games.map((g,i)=>`<span class="game-score-chip"><span>G${i+1}</span><b>${esc(teamName(h.a))} ${g.aScore}–${g.bScore} ${esc(teamName(h.b))}</b></span>`).join("")}</div>`;
+}
+function predeterminedSummary(h){
+ return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span><div class="predetermined-note">Predetermined result for the 2026 simulation; individual game scores and player stats have not been entered.</div></div><div class="series-summary-score">${h.seriesA}–${h.seriesB}</div><div class="series-mvp"><b>Status</b>Predetermined</div><div class="series-mvp"><b>Series</b>${h.seriesA===3&&h.seriesB===0?"Sweep":"Final"}</div></div></summary><div class="sim-card"><div class="scoreline"><div class="score-team">${logo(h.a)}${esc(teamName(h.a))}</div><div class="score-num">${h.seriesA}–${h.seriesB}</div><div class="score-team">${esc(teamName(h.b))}${logo(h.b)}</div></div><div class="muted-sm">Series result is included in the simulated standings only. No game-level scores or player statistics were supplied.</div></div></details>`;
 }
 function logEntryHtml(h,idx){
+ if(h.predetermined)return predeterminedSummary(h);
  const x=seriesSummaryData(h.a,h.b,h.games,h.existingA||0,h.existingB||0);
- return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span></div><div class="series-summary-score">${x.wa}–${x.wb}</div><div class="series-mvp"><b>Batting MVP</b>${esc(mvpTextBat(x.bm))}</div><div class="series-mvp"><b>Pitching MVP</b>${esc(mvpTextPit(x.pm))}</div></div></summary>${resultOutput(h.a,h.b,h.games,h.label,h.existingA||0,h.existingB||0)}${playByPlayHtml(h)}</details>`;
+ return `<details><summary><div class="series-summary"><div><strong>${esc(h.label)}</strong><br><span class="muted-sm">${esc(teamName(h.a))} vs ${esc(teamName(h.b))}</span>${gameScoreChips(h)}</div><div class="series-summary-score">${x.wa}–${x.wb}</div><div class="series-mvp"><b>Batting MVP</b>${esc(mvpTextBat(x.bm))}</div><div class="series-mvp"><b>Pitching MVP</b>${esc(mvpTextPit(x.pm))}</div></div></summary>${resultOutput(h.a,h.b,h.games,h.label,h.existingA||0,h.existingB||0)}${playByPlayHtml(h)}</details>`;
 }
 function renderScenarioLog(){scenarioLog.innerHTML=scenario.history.length?scenario.history.map(logEntryHtml).join(""):'<div class="muted-sm">No simulated series yet.</div>'}
 function renderRemaining(){
  scheduleIntegrity.innerHTML=resolutionHtml(scenario);
- remainingSeries.innerHTML=scenario.remaining.length?scenario.remaining.map((x,i)=>`<div class="scenario-series"><div><strong>${esc(teamName(x.a))} vs ${esc(teamName(x.b))}</strong><small>${x.gamesLeft} game${x.gamesLeft===1?"":"s"} remaining · ${x.source}${x.existingA||x.existingB?` · current series ${x.existingA}-${x.existingB}`:""}</small><div class="pitch-limit-note">Pitch plan: No. 1 pitcher 5 IP, No. 2 pitcher 4 IP across a full 3-game regular-season series.</div></div><div class="scenario-btns"><button data-players="${i}">Players</button><button data-one="${i}" class="primary">Sim game</button><button data-series="${i}">Sim rest</button><button data-force="${i}:${x.a}">${esc(teamName(x.a))} wins series</button><button data-force="${i}:${x.b}">${esc(teamName(x.b))} wins series</button></div>${rosterEditor(x,i)}</div>`).join(""):'<div class="muted-sm">Regular season complete in this scenario.</div>';
+ remainingSeries.innerHTML=scenario.remaining.length?scenario.remaining.map((x,i)=>`<div class="scenario-series"><div><strong>${esc(teamName(x.a))} vs ${esc(teamName(x.b))}</strong><small>${x.gamesLeft} game${x.gamesLeft===1?"":"s"} remaining · ${x.source}${x.existingA||x.existingB?` · current series ${x.existingA}-${x.existingB}`:""}</small><div class="pitch-limit-note">Pitching cap: 5 IP per pitcher across a 3-game regular-season series. The best pitcher is used first, then the No. 2 pitcher.</div></div><div class="scenario-btns"><button data-players="${i}">Players</button><button data-one="${i}" class="primary">Sim game</button><button data-series="${i}">Sim rest</button><button data-force="${i}:${x.a}">${esc(teamName(x.a))} wins series</button><button data-force="${i}:${x.b}">${esc(teamName(x.b))} wins series</button></div>${rosterEditor(x,i)}</div>`).join(""):'<div class="muted-sm">Regular season complete in this scenario.</div>';
  remainingSeries.querySelectorAll("[data-players]").forEach(b=>b.onclick=()=>document.getElementById(`seriesRoster_${b.dataset.players}`)?.classList.toggle("open"));
  remainingSeries.querySelectorAll("[data-active]").forEach(cb=>cb.onchange=()=>{const [i,side,id]=cb.dataset.active.split(":"),x=scenario.remaining[Number(i)],set=side==="a"?x.activeA:x.activeB;cb.checked?set.add(id):set.delete(id)});
  remainingSeries.querySelectorAll("[data-one]").forEach(b=>b.onclick=()=>simulateRemaining(Number(b.dataset.one),1));
@@ -451,7 +464,7 @@ async function simulateRemaining(i,count=null,forced=null){
  }
  [...remainingSeries.querySelectorAll("button")].forEach(b=>b.disabled=true);
  try{
-   const sim=await simulateSeriesAdvanced(x.a,x.b,x.activeA,x.activeB,{games,forced,existingA:x.existingA,existingB:x.existingB,pitchLimitIP:6,progressEl:seasonProgress,label:`${teamName(x.a)} vs ${teamName(x.b)}`});
+   const sim=await simulateSeriesAdvanced(x.a,x.b,x.activeA,x.activeB,{games,forced,existingA:x.existingA,existingB:x.existingB,pitchLimitIP:5,progressEl:seasonProgress,label:`${teamName(x.a)} vs ${teamName(x.b)}`});
    for(const g of sim)applyGame(x.a,x.b,g);
    const wa=sim.filter(g=>g.winner===x.a).length,wb=sim.filter(g=>g.winner===x.b).length;
    x.existingA+=wa;x.existingB+=wb;x.gamesLeft-=games;
@@ -484,9 +497,15 @@ function renderBracket(){
  bracket.innerHTML=`<div class="bracket"><div class="round"><h3>First Round · First to 2</h3><div class="bracket-game"><strong>#1 ${esc(bySeed(1).team)}</strong><div class="muted-sm">Bye</div></div>${games.map(card).join("")}</div><div class="round"><h3>Semifinals · First to 3</h3>${semis.length?semis.map(card).join(""):'<div class="muted-sm">Complete first round.</div>'}</div><div class="round"><h3>World Series · First to 4</h3>${final?card(final):'<div class="muted-sm">Complete semifinals.</div>'}</div></div>`;
  bracket.querySelectorAll("[data-psim]").forEach(b=>b.onclick=async()=>{const gid=b.dataset.psim,all=[...games,...semis,final].filter(Boolean),g=all.find(x=>x.id===gid);if(!g)return;b.disabled=true;try{await simulatePlayoffMatch(g)}finally{b.disabled=false}});
 }
+function seedPredeterminedHistory(sc){
+ sc.history=[
+   {label:"Predetermined Regular Season",a:"ball-busters",b:"zyns",seriesA:3,seriesB:0,predetermined:true},
+   {label:"Predetermined Regular Season",a:"silverbacks",b:"ball-busters",seriesA:2,seriesB:1,predetermined:true}
+ ];
+}
 function setupSeason(){
- scenario=buildSchedulePlan();playoffState={};renderRemaining();
- resetSeason.onclick=()=>{scenario=buildSchedulePlan();playoffState={};renderRemaining()};
+ scenario=buildSchedulePlan();seedPredeterminedHistory(scenario);playoffState={};renderRemaining();
+ resetSeason.onclick=()=>{scenario=buildSchedulePlan();seedPredeterminedHistory(scenario);playoffState={};renderRemaining()};
 }
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".sim-panel").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});
 Promise.all([
@@ -494,4 +513,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=139"></script></body></html>
+</script><script src="/assets/hof.js?v=140"></script></body></html>
