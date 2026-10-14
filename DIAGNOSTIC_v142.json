@@ -1,0 +1,237 @@
+{
+  "historical_records": "2021-2025 season W-L now comes from commissioner-verified records.",
+  "ryan_mccain_2021": "Moved historical team assignment from Underdawgs to Storm in batting season data and roster metadata.",
+  "team_summary_updates": {
+    "ball-busters": {
+      "old_rs": [
+        42,
+        30
+      ],
+      "new_rs": [
+        37,
+        35
+      ],
+      "old_all": [
+        53,
+        41
+      ],
+      "new_all": [
+        48,
+        46
+      ],
+      "playoff_kept": [
+        11,
+        11
+      ]
+    },
+    "dirty-dawgs": {
+      "old_rs": [
+        23,
+        25
+      ],
+      "new_rs": [
+        24,
+        24
+      ],
+      "old_all": [
+        27,
+        30
+      ],
+      "new_all": [
+        28,
+        29
+      ],
+      "playoff_kept": [
+        4,
+        5
+      ]
+    },
+    "goofy-goobers": {
+      "old_rs": [
+        34,
+        38
+      ],
+      "new_rs": [
+        28,
+        44
+      ],
+      "old_all": [
+        35,
+        45
+      ],
+      "new_all": [
+        29,
+        51
+      ],
+      "playoff_kept": [
+        1,
+        7
+      ]
+    },
+    "midnight": {
+      "old_rs": [
+        38,
+        85
+      ],
+      "new_rs": [
+        34,
+        89
+      ],
+      "old_all": [
+        46,
+        95
+      ],
+      "new_all": [
+        42,
+        99
+      ],
+      "playoff_kept": [
+        8,
+        10
+      ]
+    },
+    "silverbacks": {
+      "old_rs": [
+        86,
+        37
+      ],
+      "new_rs": [
+        87,
+        36
+      ],
+      "old_all": [
+        115,
+        62
+      ],
+      "new_all": [
+        116,
+        61
+      ],
+      "playoff_kept": [
+        29,
+        25
+      ]
+    },
+    "stiff-wifflers": {
+      "old_rs": [
+        41,
+        55
+      ],
+      "new_rs": [
+        35,
+        58
+      ],
+      "old_all": [
+        42,
+        62
+      ],
+      "new_all": [
+        36,
+        65
+      ],
+      "playoff_kept": [
+        1,
+        7
+      ]
+    },
+    "storm": {
+      "old_rs": [
+        69,
+        54
+      ],
+      "new_rs": [
+        66,
+        57
+      ],
+      "old_all": [
+        87,
+        69
+      ],
+      "new_all": [
+        84,
+        72
+      ],
+      "playoff_kept": [
+        18,
+        15
+      ]
+    },
+    "twin-titans": {
+      "old_rs": [
+        26,
+        70
+      ],
+      "new_rs": [
+        29,
+        46
+      ],
+      "old_all": [
+        28,
+        73
+      ],
+      "new_all": [
+        31,
+        49
+      ],
+      "playoff_kept": [
+        2,
+        3
+      ]
+    },
+    "underdawgs": {
+      "old_rs": [
+        50,
+        46
+      ],
+      "new_rs": [
+        47,
+        46
+      ],
+      "old_all": [
+        66,
+        55
+      ],
+      "new_all": [
+        63,
+        55
+      ],
+      "playoff_kept": [
+        16,
+        9
+      ]
+    },
+    "zyns": {
+      "old_rs": [
+        78,
+        45
+      ],
+      "new_rs": [
+        75,
+        48
+      ],
+      "old_all": [
+        93,
+        58
+      ],
+      "new_all": [
+        90,
+        61
+      ],
+      "playoff_kept": [
+        15,
+        13
+      ]
+    }
+  },
+  "checks": {
+    "ryan_2021_storm": true,
+    "official_records_on_teams_page": true,
+    "2023_yard_goats_1_2": true,
+    "audit_zero_unexplained_gaps": true,
+    "syntax": "PASS"
+  },
+  "historical_record_exceptions": {
+    "2022_twin_titans_yard_goats": "6-18 over 24 games, preserved as commissioner-verified",
+    "2023_twin_titans_yard_goats": "1-2; franchise folded after three games"
+  }
+}

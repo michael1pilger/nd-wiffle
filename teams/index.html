@@ -48,7 +48,7 @@
   <div id="teamStatOverall" class="team-stat-panel active"><div class="tablewrap"><table><thead><tr><th>Team</th><th>W</th><th>L</th><th>Win%</th><th>PA</th><th>H</th><th>HR</th><th>BA</th><th>OPS</th><th>IP</th><th>Pitch K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody id="teamOverallBody"></tbody></table></div></div>
   <div id="teamStatBatting" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>PA</th><th>AB</th><th>H</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>BA</th><th>OBP</th><th>SLG</th><th>OPS</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamBattingBody"></tbody></table></div></div>
   <div id="teamStatPitching" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>Apps</th><th>Starts</th><th>W</th><th>L</th><th>S</th><th>IP</th><th>BF</th><th>H</th><th>BB</th><th>K</th><th>ER</th><th>ERA</th><th>WHIP</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamPitchingBody"></tbody></table></div></div>
-  <p class="muted team-stat-note">Season views aggregate only years with recorded player-season data. Historical W-L is reconstructed from recorded pitching decisions and is incomplete where old decisions/forfeits are missing; 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
+  <p class="muted team-stat-note">Season views aggregate only years with recorded player-season data. Historical W-L uses commissioner-verified season records; historical player batting/pitching totals remain sourced from the preserved player-season data. 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
 </div></section>
 </main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script src="/assets/data.js?v=87"></script>
@@ -66,6 +66,7 @@ const TEAM_INFO={
  'underdawgs':{name:'Underdawgs',logo:'/assets/logos/underdawgs.png',baseW:66,baseL:55},
  'zyns':{name:'Zyns',logo:'/assets/logos/zyns.png',baseW:93,baseL:58}
 };
+const HISTORICAL_RECORDS={"2021":{"midnight":[7,23],"silverbacks":[19,11],"storm":[14,16],"zyns":[22,8]},"2022":{"midnight":[6,15],"silverbacks":[15,6],"storm":[14,7],"stiff-wifflers":[7,14],"underdawgs":[11,10],"twin-titans":[6,18],"zyns":[12,9]},"2023":{"midnight":[6,18],"silverbacks":[19,5],"storm":[14,10],"zyns":[20,4],"stiff-wifflers":[10,14],"underdawgs":[12,12],"twin-titans":[1,2],"ball-busters":[7,17],"goofy-goobers":[7,17]},"2024":{"ball-busters":[15,9],"dirty-dawgs":[9,15],"goofy-goobers":[13,11],"midnight":[9,15],"silverbacks":[20,4],"stiff-wifflers":[10,14],"storm":[18,6],"twin-titans":[3,21],"underdawgs":[11,13],"zyns":[11,13]},"2025":{"ball-busters":[15,9],"dirty-dawgs":[15,9],"goofy-goobers":[8,16],"midnight":[6,18],"silverbacks":[14,10],"stiff-wifflers":[8,16],"storm":[6,18],"twin-titans":[19,5],"underdawgs":[13,11],"zyns":[10,14]}};
 const alias=n=>{n=String(n||'').trim().toLowerCase();if(['goobers'].includes(n))return'goofy-goobers';if(['stiffies'].includes(n))return'stiff-wifflers';if(['saudi arabian yard goats','drunken sluggers','dr'].includes(n))return'twin-titans';if(['south bend wifflers','seven deadly zyns','zyns'].includes(n))return'zyns';for(const [id,x] of Object.entries(TEAM_INFO))if(n===x.name.toLowerCase())return id;return null};
 const n=v=>Number(String(v??'').replace(/[% ,]/g,''))||0;
 const ipOuts=v=>{const x=Number(v)||0,w=Math.floor(x),f=Math.round((x-w)*100);return w*3+(f>=60?2:f>=30?1:0)};
@@ -88,8 +89,10 @@ function rowsFor(mode){
    for(const [id,x] of Object.entries(rows)){x.w=TEAM_INFO[id].baseW;x.l=TEAM_INFO[id].baseL}
  }else if(Number(mode)<2026){
    const y=Number(mode);
-   for(const r of histBat){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;if(y===2021&&id==="underdawgs")continue;addBat(rows[id].bat,r);rows[id].has=true}
-   for(const r of histPit){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;if(y===2021&&id==="underdawgs")continue;addPit(rows[id].pit,r);rows[id].w+=n(r.W);rows[id].l+=n(r.L);rows[id].has=true}
+   for(const r of histBat){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;addBat(rows[id].bat,r);rows[id].has=true}
+   for(const r of histPit){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;addPit(rows[id].pit,r);rows[id].has=true}
+   const official=HISTORICAL_RECORDS[String(y)]||{};
+   for(const [id,wl] of Object.entries(official)){if(rows[id]){rows[id].w=n(wl[0]);rows[id].l=n(wl[1]);rows[id].has=true}}
  }
  if((mode==='career'||Number(mode)===2026)&&LIVE?.ok){
    for(const st of (LIVE.standings||[])){if(rows[st.team_id]){if(mode==='career'){rows[st.team_id].w+=n(st.W);rows[st.team_id].l+=n(st.L)}else{rows[st.team_id].w=n(st.W);rows[st.team_id].l=n(st.L)}rows[st.team_id].has=true}}
@@ -117,4 +120,4 @@ fetch('/api/public/league?season=2026',{cache:'no-store'}).then(r=>r.json()).the
 document.querySelectorAll('.team-stat-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.team-stat-tab').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.team-stat-panel').forEach(p=>p.classList.remove('active'));document.getElementById('teamStat'+btn.dataset.teamStat[0].toUpperCase()+btn.dataset.teamStat.slice(1)).classList.add('active')}));
 })();
 </script>
-<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=141"></script></body></html>
+<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=142"></script></body></html>
