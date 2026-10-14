@@ -1,0 +1,31 @@
+{
+  "migration": "0030 consolidates the unapplied Jerry Vielhauer +1 out correction and Brady Cahill's latest-series batting correction.",
+  "mutual_agreement": "Third series-entry mode; selectable 3-0/2-1/1-2/0-3 outcome; three virtual 6-0 games; no player stats or pitcher decisions; public standings/results synthesize the games from payload.",
+  "historical_records": {
+    "2021_underdawgs_source": [
+      {
+        "Player_ID": "ryan_mccain",
+        "Name": "Ryan McCain",
+        "PAs": "15",
+        "ABs": "15",
+        "Hits": "8",
+        "HRs": "1",
+        "RBI": ""
+      }
+    ],
+    "display_fix": "Suppress impossible 2021 Underdawgs row pending correct Ryan McCain franchise assignment.",
+    "gap_report": "HISTORICAL_RECORD_GAPS_v141.csv"
+  },
+  "checks": {
+    "migration_0030": true,
+    "jerry_in_0030": true,
+    "brady_line_correct": true,
+    "mutual_ui": true,
+    "mutual_server": true,
+    "mutual_standings": true,
+    "mutual_results": true,
+    "2021_underdawgs_suppressed": true,
+    "gap_csv": true,
+    "syntax": "PASS"
+  }
+}

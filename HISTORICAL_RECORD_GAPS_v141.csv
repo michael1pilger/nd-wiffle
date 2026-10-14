@@ -1,0 +1,41 @@
+Season,Team,Recorded_W,Recorded_L,Recorded_Games,Expected_Regular_Season_Games,Gap_to_Regular_Season_Target,Status
+2021,Midnight,3,18,21,30,9,missing
+2021,Silverbacks,17,9,26,30,4,missing
+2021,Storm,14,16,30,30,0,complete
+2021,Zyns,18,6,24,30,6,missing
+2022,Midnight,3,12,15,21,6,missing
+2022,Silverbacks,15,6,21,21,0,complete
+2022,Storm,13,7,20,21,1,missing
+2022,Zyns,12,9,21,21,0,complete
+2022,Stiff Wifflers,6,13,19,21,2,missing
+2022,Underdawgs,10,8,18,21,3,missing
+2022,Twin Titans,3,9,12,21,9,missing
+2023,Midnight,1,10,11,24,13,missing
+2023,Silverbacks,12,3,15,24,9,missing
+2023,Storm,12,9,21,24,3,missing
+2023,Zyns,20,5,25,24,-1,over target / inspect duplicate or non-regular decision
+2023,Stiff Wifflers,5,7,12,24,12,missing
+2023,Underdawgs,9,8,17,24,7,missing
+2023,Twin Titans,1,2,3,24,21,missing
+2023,Ball Busters,2,12,14,24,10,missing
+2023,Goofy Goobers,5,11,16,24,8,missing
+2024,Midnight,9,15,24,24,0,complete
+2024,Silverbacks,20,4,24,24,0,complete
+2024,Storm,18,6,24,24,0,complete
+2024,Zyns,11,11,22,24,2,missing
+2024,Stiff Wifflers,8,13,21,24,3,missing
+2024,Underdawgs,9,12,21,24,3,missing
+2024,Twin Titans,3,18,21,24,3,missing
+2024,Ball Busters,15,9,24,24,0,complete
+2024,Goofy Goobers,13,11,24,24,0,complete
+2024,Dirty Dawgs,7,14,21,24,3,missing
+2025,Midnight,6,17,23,24,1,missing
+2025,Silverbacks,11,10,21,24,3,missing
+2025,Storm,6,15,21,24,3,missing
+2025,Zyns,9,5,14,24,10,missing
+2025,Stiff Wifflers,7,11,18,24,6,missing
+2025,Underdawgs,12,11,23,24,1,missing
+2025,Twin Titans,19,5,24,24,0,complete
+2025,Ball Busters,12,6,18,24,6,missing
+2025,Goofy Goobers,6,9,15,24,9,missing
+2025,Dirty Dawgs,10,8,18,24,6,missing

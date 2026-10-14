@@ -171,11 +171,22 @@ export async function onRequestGet(context){
     }
 
     const series=(seriesRes.results||[]).map(s=>{
-      const games=gamesBySeries.get(s.series_id)||[];
+      let games=gamesBySeries.get(s.series_id)||[];
+      if(s.series_type==="mutual_agreement"){
+        let payload={};try{payload=JSON.parse(s.payload_json||"{}")}catch{}
+        games=(payload.mutual_agreement?.virtual_games||[]).map(g=>({
+          series_id:s.series_id,series_date:s.series_date,away_team_id:s.away_team_id,home_team_id:s.home_team_id,
+          game_number:n(g.game),away_score:n(g.away_score),home_score:n(g.home_score),
+          winning_pitcher_id:null,losing_pitcher_id:null,save_pitcher_id:null,
+          winning_pitcher:null,losing_pitcher:null,save_pitcher:null,
+          mutual_agreement:true
+        }));
+      }
       const away_wins=games.filter(g=>n(g.away_score)>n(g.home_score)).length;
       const home_wins=games.filter(g=>n(g.home_score)>n(g.away_score)).length;
+      const {payload_json,...safeSeries}=s;
       return {
-        ...s,away_wins,home_wins,
+        ...safeSeries,away_wins,home_wins,
         game_count:games.length,
         series_status:games.length>=3?"complete":"in_progress",
         games,

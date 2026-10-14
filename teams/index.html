@@ -48,7 +48,7 @@
   <div id="teamStatOverall" class="team-stat-panel active"><div class="tablewrap"><table><thead><tr><th>Team</th><th>W</th><th>L</th><th>Win%</th><th>PA</th><th>H</th><th>HR</th><th>BA</th><th>OPS</th><th>IP</th><th>Pitch K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody id="teamOverallBody"></tbody></table></div></div>
   <div id="teamStatBatting" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>PA</th><th>AB</th><th>H</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>BA</th><th>OBP</th><th>SLG</th><th>OPS</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamBattingBody"></tbody></table></div></div>
   <div id="teamStatPitching" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>Apps</th><th>Starts</th><th>W</th><th>L</th><th>S</th><th>IP</th><th>BF</th><th>H</th><th>BB</th><th>K</th><th>ER</th><th>ERA</th><th>WHIP</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamPitchingBody"></tbody></table></div></div>
-  <p class="muted team-stat-note">Season views aggregate only years with recorded player-season data. Historical W-L is reconstructed from recorded pitching decisions; 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
+  <p class="muted team-stat-note">Season views aggregate only years with recorded player-season data. Historical W-L is reconstructed from recorded pitching decisions and is incomplete where old decisions/forfeits are missing; 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
 </div></section>
 </main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script src="/assets/data.js?v=87"></script>
@@ -88,8 +88,8 @@ function rowsFor(mode){
    for(const [id,x] of Object.entries(rows)){x.w=TEAM_INFO[id].baseW;x.l=TEAM_INFO[id].baseL}
  }else if(Number(mode)<2026){
    const y=Number(mode);
-   for(const r of histBat){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;addBat(rows[id].bat,r);rows[id].has=true}
-   for(const r of histPit){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;addPit(rows[id].pit,r);rows[id].w+=n(r.W);rows[id].l+=n(r.L);rows[id].has=true}
+   for(const r of histBat){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;if(y===2021&&id==="underdawgs")continue;addBat(rows[id].bat,r);rows[id].has=true}
+   for(const r of histPit){if(Number(r.Season)!==y)continue;const id=alias(r.Team);if(!id)continue;if(y===2021&&id==="underdawgs")continue;addPit(rows[id].pit,r);rows[id].w+=n(r.W);rows[id].l+=n(r.L);rows[id].has=true}
  }
  if((mode==='career'||Number(mode)===2026)&&LIVE?.ok){
    for(const st of (LIVE.standings||[])){if(rows[st.team_id]){if(mode==='career'){rows[st.team_id].w+=n(st.W);rows[st.team_id].l+=n(st.L)}else{rows[st.team_id].w=n(st.W);rows[st.team_id].l=n(st.L)}rows[st.team_id].has=true}}
@@ -117,4 +117,4 @@ fetch('/api/public/league?season=2026',{cache:'no-store'}).then(r=>r.json()).the
 document.querySelectorAll('.team-stat-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.team-stat-tab').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.team-stat-panel').forEach(p=>p.classList.remove('active'));document.getElementById('teamStat'+btn.dataset.teamStat[0].toUpperCase()+btn.dataset.teamStat.slice(1)).classList.add('active')}));
 })();
 </script>
-<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=140"></script></body></html>
+<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=141"></script></body></html>

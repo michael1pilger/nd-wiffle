@@ -29,7 +29,7 @@ export async function onRequestGet(context){
 
   try{
     const [
-      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes,conditionalRes
+      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes,conditionalRes,mutualRes
     ]=await DB.batch([
       DB.prepare(`
         SELECT team_id, display_name
@@ -129,6 +129,15 @@ export async function onRequestGet(context){
         FROM series
         WHERE season=?
           AND json_extract(payload_json,'$.series_type')='conditional_forfeit'
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          series_id,away_team_id,home_team_id,
+          CAST(json_extract(payload_json,'$.mutual_agreement.away_wins') AS INTEGER) AS away_wins,
+          CAST(json_extract(payload_json,'$.mutual_agreement.home_wins') AS INTEGER) AS home_wins
+        FROM series
+        WHERE season=?
+          AND json_extract(payload_json,'$.series_type')='mutual_agreement'
       `).bind(season)
     ]);
 
@@ -163,6 +172,15 @@ export async function onRequestGet(context){
       beneficiary.conditional_wins+=3;
       forfeiter.L+=3;
       forfeiter.conditional_losses+=3;
+    }
+    const mutualAgreements=mutualRes.results||[];
+    for(const ma of mutualAgreements){
+      const away=standings.get(ma.away_team_id),home=standings.get(ma.home_team_id);
+      if(!away||!home)continue;
+      const aw=n(ma.away_wins),hw=n(ma.home_wins);
+      away.W+=aw;away.L+=hw;home.W+=hw;home.L+=aw;
+      away.RS+=aw*6;away.RA+=hw*6;
+      home.RS+=hw*6;home.RA+=aw*6;
     }
     let rows=[...standings.values()].map(r=>{
       const gp=r.W+r.L;
@@ -218,7 +236,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v131",season,
+      ok:true,build:"v141",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,
@@ -226,6 +244,7 @@ export async function onRequestGet(context){
       participants:participantsRes.results||[],
       rosters:rosterRes.results||[],
       conditional_forfeits:conditionalForfeits,
+      mutual_agreements:mutualAgreements,
       games
     });
   }catch(err){

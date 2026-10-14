@@ -101,6 +101,21 @@ function serverValidate(payload, teamIds, playerIds){
     return {errors,warnings};
   }
 
+  if(payload.series_type==="mutual_agreement"){
+    const ma=payload.mutual_agreement||{};
+    const aw=Number(ma.away_wins),hw=Number(ma.home_wins);
+    if(!Number.isInteger(aw)||!Number.isInteger(hw)||aw<0||hw<0||aw+hw!==3) errors.push("Mutual agreement must settle exactly three games.");
+    if(![[3,0],[2,1],[1,2],[0,3]].some(([a,h])=>a===aw&&h===hw)) errors.push("Mutual agreement result must be 3-0, 2-1, 1-2, or 0-3.");
+    const vg=ma.virtual_games||[];
+    if(vg.length!==3) errors.push("Mutual agreement must include three virtual 6-0 game results.");
+    for(const g of vg){
+      if(!((Number(g.away_score)===6&&Number(g.home_score)===0)||(Number(g.away_score)===0&&Number(g.home_score)===6))) errors.push("Every mutual-agreement game must be recorded 6-0.");
+    }
+    if((payload.games||[]).length) errors.push("Mutual agreements store virtual games in mutual_agreement.virtual_games, not the games table.");
+    if((payload.batting||[]).length||(payload.pitching||[]).length||(payload.participants||[]).length) errors.push("Mutual agreements cannot include player stats or participants.");
+    return {errors,warnings};
+  }
+
   const games=payload.games||[];
   if(games.length<1||games.length>3) errors.push("A played-series entry must contain 1, 2, or 3 games.");
   const participantByName=new Map((payload.participants||[]).map(p=>[norm(p.name),p]));
@@ -272,7 +287,7 @@ export async function onRequestPost(context) {
     return json({ok:false,code:"SERIES_EXISTS",error:"This series already exists.",existing,existing_game_count:existingGameCount,can_replace:true},409);
   }
   if(append&&!existing)return json({ok:false,error:"Cannot append because the original partial series was not found."},404);
-  if(append&&existingPayload?.series_type==="conditional_forfeit")return json({ok:false,error:"Conditional-forfeit entries cannot be appended. Replace the forfeit entry with played games instead."},422);
+  if(append&&["conditional_forfeit","mutual_agreement"].includes(existingPayload?.series_type))return json({ok:false,error:"Special settlement entries cannot be appended. Replace the entry with a played series instead."},422);
 
   let names=collectPlayerNames(payload);
   if(append&&existingPayload)names=[...new Set([...collectPlayerNames(existingPayload),...names])];
