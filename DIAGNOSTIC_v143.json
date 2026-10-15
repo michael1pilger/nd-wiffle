@@ -1,0 +1,15 @@
+{
+  "results": "Split/resumed regular-season entries for the same matchup are combined when their total is <=3 games. Games and batting/pitching stats are aggregated into one Results card.",
+  "simulation": "Remaining games are derived from the live Results API on each load. Completed games/series are not simulated again. Existing simulation-only predetermined results are applied only if still absent from D1.",
+  "conditional_forfeit": "Migration 0031 deletes the 2026 Goofy Goobers/Twin Titans conditional-forfeit series so the matchup can be played normally.",
+  "migration_required": true,
+  "checks": {
+    "midnight_stiffies_fragments_merge": true,
+    "combined_stats": true,
+    "simulation_live_game_counts": true,
+    "simulation_filters_completed": true,
+    "no_goobers_tt_hardcoded_override": true,
+    "conditional_forfeit_delete": true,
+    "syntax": "PASS"
+  }
+}

@@ -36,6 +36,7 @@ export async function onRequestGet(context){
         SELECT
           s.series_id,s.series_date,s.away_team_id,s.home_team_id,
           at.display_name AS away_team,ht.display_name AS home_team,
+          s.payload_json,
           json_extract(s.payload_json,'$.series_type') AS series_type,
           s.published_at,s.updated_at
         FROM series s
@@ -170,7 +171,7 @@ export async function onRequestGet(context){
       });
     }
 
-    const series=(seriesRes.results||[]).map(s=>{
+    const rawSeries=(seriesRes.results||[]).map(s=>{
       let games=gamesBySeries.get(s.series_id)||[];
       if(s.series_type==="mutual_agreement"){
         let payload={};try{payload=JSON.parse(s.payload_json||"{}")}catch{}
@@ -193,9 +194,91 @@ export async function onRequestGet(context){
         batting:batBySeries.get(s.series_id)||[],
         pitching:pitBySeries.get(s.series_id)||[]
       };
-    }).sort((a,b)=>String(b.series_date||"").localeCompare(String(a.series_date||"")) || seriesOrderRank(b.away_team_id,b.home_team_id)-seriesOrderRank(a.away_team_id,a.home_team_id) || String(b.series_id).localeCompare(String(a.series_id)));
+    });
 
-    return json({ok:true,build:"v137",season,series_count:series.length,series});
+    const pairKey=(a,b)=>[a,b].sort().join("__");
+    function mergeBatRows(rows){
+      const m=new Map();
+      for(const x of rows){
+        const k=x.player_id;
+        if(!m.has(k))m.set(k,{...x,GP:0,PA:0,AB:0,R:0,H:0,"1B":0,"2B":0,"3B":0,HR:0,RBI:0,BB:0,SO:0});
+        const y=m.get(k);
+        for(const f of ["GP","PA","AB","R","H","1B","2B","3B","HR","RBI","BB","SO"])y[f]+=n(x[f]);
+      }
+      return [...m.values()].map(x=>{
+        const tb=n(x["1B"])+2*n(x["2B"])+3*n(x["3B"])+4*n(x.HR);
+        const obpDen=n(x.PA)||(n(x.AB)+n(x.BB));
+        const ba=n(x.AB)?n(x.H)/n(x.AB):0,obp=obpDen?(n(x.H)+n(x.BB))/obpDen:0,slg=n(x.AB)?tb/n(x.AB):0;
+        return {...x,BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3)};
+      });
+    }
+    function mergePitRows(rows){
+      const m=new Map();
+      for(const x of rows){
+        const k=x.player_id;
+        if(!m.has(k))m.set(k,{...x,GP:0,Apps:0,Starts:0,Outs:0,BF:0,R:0,ER:0,K:0,H:0,BB:0,HR:0,WP:0,W:0,L:0,S:0});
+        const y=m.get(k);
+        for(const f of ["GP","Apps","Starts","Outs","BF","R","ER","K","H","BB","HR","WP","W","L","S"])y[f]+=n(x[f]);
+      }
+      return [...m.values()].map(x=>{
+        const innings=n(x.Outs)/3;
+        return {...x,IP:ipDisplay(x.Outs),ERA:n(x.Outs)>0?((n(x.ER)*3)/innings).toFixed(2):null,WHIP:n(x.Outs)>0?((n(x.BB)+n(x.H))/innings).toFixed(2):null};
+      });
+    }
+    function orientFragment(row,base){
+      if(row.away_team_id===base.away_team_id)return row;
+      return {
+        ...row,
+        away_team_id:base.away_team_id,home_team_id:base.home_team_id,
+        away_team:base.away_team,home_team:base.home_team,
+        games:(row.games||[]).map(g=>({...g,away_score:g.home_score,home_score:g.away_score})),
+        batting:(row.batting||[]).map(x=>({...x,side:x.side==="away"?"home":"away"})),
+        pitching:(row.pitching||[]).map(x=>({...x,side:x.side==="away"?"home":"away"}))
+      };
+    }
+    function mergeFragments(group){
+      const ordered=[...group].sort((a,b)=>String(a.series_date||"").localeCompare(String(b.series_date||""))||String(a.series_id).localeCompare(String(b.series_id)));
+      const base=ordered[0],oriented=ordered.map(x=>orientFragment(x,base));
+      let games=[],bat=[],pit=[];
+      for(const x of oriented){games.push(...(x.games||[]));bat.push(...(x.batting||[]));pit.push(...(x.pitching||[]))}
+      games=games.slice(0,3).map((g,i)=>({...g,game_number:i+1}));
+      const away_wins=games.filter(g=>n(g.away_score)>n(g.home_score)).length;
+      const home_wins=games.filter(g=>n(g.home_score)>n(g.away_score)).length;
+      return {
+        ...base,
+        series_id:oriented.map(x=>x.series_id).join("+"),
+        series_date:ordered.map(x=>x.series_date).filter(Boolean).sort()[0]||base.series_date,
+        updated_at:ordered.map(x=>x.updated_at).filter(Boolean).sort().slice(-1)[0]||base.updated_at,
+        away_wins,home_wins,game_count:games.length,
+        series_status:games.length>=3?"complete":"in_progress",
+        games,batting:mergeBatRows(bat),pitching:mergePitRows(pit),
+        combined_fragments:oriented.map(x=>x.series_id)
+      };
+    }
+
+    const groups=new Map();
+    for(const row of rawSeries){
+      const k=pairKey(row.away_team_id,row.home_team_id);
+      if(!groups.has(k))groups.set(k,[]);
+      groups.get(k).push(row);
+    }
+    const series=[];
+    for(const group of groups.values()){
+      const played=group.filter(x=>x.series_type!=="conditional_forfeit");
+      const totalGames=played.reduce((a,x)=>a+n(x.game_count),0);
+      // A split/resumed regular-season series may have been published under
+      // more than one series_id. Combine those fragments only when they form
+      // at most one normal three-game series.
+      if(played.length>1 && totalGames>0 && totalGames<=3){
+        series.push(mergeFragments(played));
+        for(const x of group.filter(y=>y.series_type==="conditional_forfeit"))series.push(x);
+      }else{
+        series.push(...group);
+      }
+    }
+    series.sort((a,b)=>String(b.series_date||"").localeCompare(String(a.series_date||"")) || seriesOrderRank(b.away_team_id,b.home_team_id)-seriesOrderRank(a.away_team_id,a.home_team_id) || String(b.series_id).localeCompare(String(a.series_id)));
+
+    return json({ok:true,build:"v143",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

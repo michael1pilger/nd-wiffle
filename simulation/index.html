@@ -346,67 +346,82 @@ function solveLocked2026Schedule(ids,lockedPairs,maxOpp=8,maxAdditionalSeries=nu
 
 function buildSchedulePlan(){
  const rows=(LEAGUE.standings||[]).map(x=>({...x,W:n(x.W),L:n(x.L),GP:n(x.GP),DIFF:n(x.DIFF)}));
- const byId=new Map(rows.map(r=>[r.team_id,r]));
  const results=RESULTS.series||[];
- const completedPair=k=>results.some(sr=>pairKey(sr.away_team_id,sr.home_team_id)===k&&n(sr.game_count??sr.games?.length)>=3);
-
- // 2026 simulation-only standings corrections / predetermined results.
- // These do not write to D1 or appear elsewhere on the public site.
- const tt=byId.get("twin-titans"),gg=byId.get("goofy-goobers");
- if(tt){tt.W=11;tt.L=7;tt.GP=18}
- if(gg){gg.W=6;gg.L=12;gg.GP=18}
-
- const bb=byId.get("ball-busters"),zyns=byId.get("zyns"),sb=byId.get("silverbacks");
- if(!completedPair(pairKey("ball-busters","zyns"))){
-   if(bb){bb.W+=3;bb.GP+=3}
-   if(zyns){zyns.L+=3;zyns.GP+=3}
- }
- if(!completedPair(pairKey("ball-busters","silverbacks"))){
-   if(sb){sb.W+=2;sb.L+=1;sb.GP+=3}
-   if(bb){bb.W+=1;bb.L+=2;bb.GP+=3}
+ const resultByPair=new Map();
+ for(const sr of results){
+   const k=pairKey(sr.away_team_id,sr.home_team_id),prior=resultByPair.get(k);
+   if(!prior||n(sr.game_count)>n(prior.game_count))resultByPair.set(k,sr);
  }
 
- const exactRemaining=[
-   ["stiff-wifflers","twin-titans",3,"scheduled"],
-   ["storm","zyns",3,"scheduled"],
-   ["midnight","dirty-dawgs",3,"scheduled"],
-   ["stiff-wifflers","midnight",1,"partial"],
-   ["goofy-goobers","stiff-wifflers",3,"scheduled"],
-   ["goofy-goobers","twin-titans",3,"scheduled"]
+ // Commissioner-approved 2026 finish. Games already published are detected
+ // from the live Results API and are never simulated again.
+ const approvedPairs=[
+   ["stiff-wifflers","twin-titans"],
+   ["storm","zyns"],
+   ["midnight","dirty-dawgs"],
+   ["stiff-wifflers","midnight"],
+   ["goofy-goobers","stiff-wifflers"],
+   ["goofy-goobers","twin-titans"]
  ];
 
- const remaining=exactRemaining.map(([a,b,gamesLeft,source])=>{
+ // Include any additional live commissioner-scheduled matchup as well, so the
+ // simulator stays current as the real schedule changes.
+ const pairMap=new Map(approvedPairs.map(([a,b])=>[pairKey(a,b),{a,b,source:"approved"}]));
+ for(const x of (SCHEDULE.scheduled||[])){
+   const a=x.team_a_id,b=x.team_b_id;if(!a||!b)continue;
    const k=pairKey(a,b);
-   const sr=results.find(x=>pairKey(x.away_team_id,x.home_team_id)===k&&n(x.game_count??x.games?.length)>0);
+   if(!pairMap.has(k))pairMap.set(k,{a,b,source:"scheduled"});
+ }
+
+ const remaining=[];
+ for(const {a,b,source} of pairMap.values()){
+   const k=pairKey(a,b),sr=resultByPair.get(k);
+   const played=Math.min(3,n(sr?.game_count??sr?.games?.length));
+   const gamesLeft=Math.max(0,3-played);
+   if(!gamesLeft)continue;
    let existingA=0,existingB=0;
    if(sr){
      existingA=sr.away_team_id===a?n(sr.away_wins):n(sr.home_wins);
      existingB=sr.away_team_id===b?n(sr.away_wins):n(sr.home_wins);
    }
-   return {a,b,k,gamesLeft,existingA,existingB,source,
-     activeA:new Set(roster(a).map(p=>p.id)),activeB:new Set(roster(b).map(p=>p.id))};
- });
+   remaining.push({
+     a,b,k,gamesLeft,existingA,existingB,
+     source:played>0?"partial":source,
+     activeA:new Set(roster(a).map(p=>p.id)),activeB:new Set(roster(b).map(p=>p.id))
+   });
+ }
 
  const finalProjectedGP=new Map(rows.map(r=>[r.team_id,n(r.GP)]));
  for(const x of remaining){
    finalProjectedGP.set(x.a,n(finalProjectedGP.get(x.a))+x.gamesLeft);
    finalProjectedGP.set(x.b,n(finalProjectedGP.get(x.b))+x.gamesLeft);
  }
- return {
-   rows,remaining,history:[],policy:"2026-commissioner-fixed-finish",
-   finalProjectedGP,
-   predetermined:[
-     {a:"ball-busters",b:"zyns",score:"3-0"},
-     {a:"silverbacks",b:"ball-busters",score:"2-1"}
-   ]
- };
+
+ const predetermined=[];
+ const completedPair=k=>n(resultByPair.get(k)?.game_count)>=3;
+ if(!completedPair(pairKey("ball-busters","zyns")))predetermined.push({a:"ball-busters",b:"zyns",score:"3-0"});
+ if(!completedPair(pairKey("silverbacks","ball-busters")))predetermined.push({a:"silverbacks",b:"ball-busters",score:"2-1"});
+
+ // Only apply simulation-only predetermined standings adjustments while those
+ // results are still absent from the live database.
+ const byId=new Map(rows.map(r=>[r.team_id,r]));
+ if(!completedPair(pairKey("ball-busters","zyns"))){
+   const bb=byId.get("ball-busters"),z=byId.get("zyns");
+   if(bb){bb.W+=3;bb.GP+=3}if(z){z.L+=3;z.GP+=3}
+ }
+ if(!completedPair(pairKey("silverbacks","ball-busters"))){
+   const sb=byId.get("silverbacks"),bb=byId.get("ball-busters");
+   if(sb){sb.W+=2;sb.L+=1;sb.GP+=3}if(bb){bb.W+=1;bb.L+=2;bb.GP+=3}
+ }
+
+ return {rows,remaining,history:[],policy:"2026-live-finish",finalProjectedGP,predetermined};
 }
 function resolutionHtml(sc){
- const pred=(sc.predetermined||[]).map(x=>`${esc(teamName(x.a))} ${x.score} ${esc(teamName(x.b))}`).join("<br>");
+ const pred=(sc.predetermined||[]).map(x=>`${esc(teamName(x.a))} ${x.score} ${esc(teamName(x.b))}`).join("<br>")||"All predetermined results are already present in the live results.";
  const projected=[...sc.finalProjectedGP.entries()].sort((a,b)=>teamName(a[0]).localeCompare(teamName(b[0]))).map(([id,gp])=>`${esc(teamName(id))}: ${gp} games`).join("<br>");
- return `<div class="schedule-resolution"><strong>2026 simulation starting state</strong>
- <div class="muted-sm">For this simulation only, Ball Busters–Zyns and Silverbacks–Ball Busters are treated as already completed, and the earlier Goobers–Twin Titans conditional forfeit is removed. The remaining regular-season slate is fixed to the six commissioner-approved series below.</div>
- <div class="resolution-grid"><div class="resolution-item"><b>Predetermined results</b><br>${pred}</div><div class="resolution-item"><b>Projected final games played</b><br>${projected}</div></div></div>`;
+ return `<div class="schedule-resolution"><strong>2026 live simulation state</strong>
+ <div class="muted-sm">The simulator now reads the current published results before building the remaining slate. Any game or series already completed is removed automatically, so newly played games are not simulated a second time.</div>
+ <div class="resolution-grid"><div class="resolution-item"><b>Predetermined results still not in D1</b><br>${pred}</div><div class="resolution-item"><b>Projected final games played</b><br>${projected}</div></div></div>`;
 }
 function rosterEditor(x,i){
  const box=(team,set,side)=>`<div class="series-roster"><h4>${esc(teamName(team))} active players</h4>${roster(team).map(p=>`<div class="roster-row"><label><input type="checkbox" data-active="${i}:${side}:${p.id}" ${set.has(p.id)?"checked":""}> ${esc(p.name)}</label><span class="roster-rate">${p.bat?`${p.bat.PAs} PA`:""}${p.pit?` · ${p.pit.IP} IP`:""}</span></div>`).join("")}</div>`;
@@ -498,10 +513,10 @@ function renderBracket(){
  bracket.querySelectorAll("[data-psim]").forEach(b=>b.onclick=async()=>{const gid=b.dataset.psim,all=[...games,...semis,final].filter(Boolean),g=all.find(x=>x.id===gid);if(!g)return;b.disabled=true;try{await simulatePlayoffMatch(g)}finally{b.disabled=false}});
 }
 function seedPredeterminedHistory(sc){
- sc.history=[
-   {label:"Predetermined Regular Season",a:"ball-busters",b:"zyns",seriesA:3,seriesB:0,predetermined:true},
-   {label:"Predetermined Regular Season",a:"silverbacks",b:"ball-busters",seriesA:2,seriesB:1,predetermined:true}
- ];
+ sc.history=(sc.predetermined||[]).map(x=>{
+   const [aW,bW]=x.score.split("-").map(Number);
+   return {label:"Predetermined Regular Season",a:x.a,b:x.b,seriesA:aW,seriesB:bW,predetermined:true};
+ });
 }
 function setupSeason(){
  scenario=buildSchedulePlan();seedPredeterminedHistory(scenario);playoffState={};renderRemaining();
@@ -513,4 +528,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=142"></script></body></html>
+</script><script src="/assets/hof.js?v=143"></script></body></html>
