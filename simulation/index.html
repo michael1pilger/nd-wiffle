@@ -38,13 +38,20 @@
 .series-progress{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:5px}.series-progress span{font-size:7px;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:3px 6px;color:var(--muted)}.series-progress span.done{color:#fff;border-color:rgba(215,173,72,.5)}
 .bracket-teamline{display:flex;align-items:center;gap:5px}.bracket-teamline img{width:22px;height:22px;object-fit:contain}.playoff-picker{display:none;margin-top:7px}.playoff-picker.open{display:grid;grid-template-columns:1fr 1fr;gap:8px}.playoff-picker .series-roster{max-height:180px}.bracket-actions{display:flex;gap:5px;flex-wrap:wrap}.bracket-actions button{flex:1}
 @media(max-width:760px){.player-pick-grid,.live-box-grid,.playoff-picker{grid-template-columns:1fr}.broadcast-matchup{grid-template-columns:1fr}.live-vs{text-align:center}.speed-control{width:100%;margin-left:0;justify-content:flex-start}}
+
+.scorebug-state{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:7px}
+.inning-bug{display:flex;align-items:center;gap:4px;font-weight:950;color:#fff}.inning-number{font-size:18px;line-height:1}.inning-arrow{font-size:13px;color:var(--gold);line-height:1}
+.outs-bug{display:flex;align-items:center;gap:4px}.out-dot{width:8px;height:8px;border-radius:50%;border:1px solid #6d7888;background:transparent}.out-dot.on{background:#f2c84b;border-color:#f2c84b;box-shadow:0 0 5px rgba(242,200,75,.45)}
+.bases-bug{position:relative;width:31px;height:25px}.base-diamond{position:absolute;width:10px;height:10px;transform:rotate(45deg);border:1px solid #6d7888;background:#101a29}.base-diamond.on{background:#f2c84b;border-color:#f2c84b;box-shadow:0 0 5px rgba(242,200,75,.45)}
+.base-1{right:2px;top:9px}.base-2{left:10px;top:1px}.base-3{left:2px;top:9px}
+.final-scoring-strip{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:3px}.final-scoring-play{font-size:8px;font-weight:950;padding:4px 7px;border-radius:999px;background:rgba(var(--score-rgb),.13);border:1px solid rgba(var(--score-rgb),.48);color:rgb(var(--score-rgb))}
 </style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a class="active" href="/simulation/">Simulation</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div><main><div class="container pagehead"><div class="eyebrow">2026 Scenario Lab</div><h1>Simulation</h1><p class="muted">Run hypothetical series without changing the real database. Watch every plate appearance unfold, control playback speed, choose active players, follow a live box score, and carry the scenario through the playoffs.</p></div><div class="container"><div class="sim-tabs"><button class="active" data-tab="sandbox">Sandbox</button><button data-tab="season">Remaining Season</button></div><section id="sandbox" class="sim-panel active"><div class="sim-card"><h2>Sandbox Series</h2><p class="muted-sm">Choose two teams and the active players, then watch the series unfold plate appearance by plate appearance. Headshots, team logos, a live scoreboard, recent plays, and a running box score update throughout the simulation.</p><div class="sim-grid"><div class="sim-field"><label>Team A</label><select id="sandA"></select><div id="rosterA" class="roster-box"></div></div><div class="sim-field"><label>Team B</label><select id="sandB"></select><div id="rosterB" class="roster-box"></div></div></div><div class="sim-actions"><button id="simSandbox">Simulate 3-game series</button><button id="resetSandbox" class="secondary">Reset players</button><div class="speed-control"><label for="sandboxSpeed">Playback</label><select id="sandboxSpeed"><option value="0">Instant</option><option value="55">Fast</option><option value="180" selected>Normal</option><option value="450">Slow</option><option value="850">Cinematic</option></select></div></div><div id="sandboxProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div></div><div id="sandboxBroadcast" class="broadcast"></div><div id="sandboxOutput"></div></section><section id="season" class="sim-panel">
 <div id="scheduleIntegrity"></div>
 <div class="sim-actions" style="margin:0 0 8px"><div class="speed-control" style="margin-left:0"><label for="seasonSpeed">Playback speed</label><select id="seasonSpeed"><option value="0">Instant</option><option value="55">Fast</option><option value="180" selected>Normal</option><option value="450">Slow</option><option value="850">Cinematic</option></select></div></div><div id="seasonProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div><div id="seasonBroadcast" class="broadcast"></div>
 <div class="sim-card"><h2>Remaining Regular Season</h2><p class="muted-sm">For 2026, completed, partial, and already-scheduled series are all locked. The simulator fills as many additional matchups as possible up to eight opponents per team. If the current schedule makes eight series impossible for everyone, some teams may finish with seven; seeding then uses winning percentage. Use Players to set who is active for each series.</p><div id="remainingSeries"></div></div>
 <div class="sim-card"><h2>Scenario Standings</h2><div id="scenarioStandings" class="scenario-standings"></div></div>
 <div class="sim-card"><h2>Simulation Log & Stats</h2><p class="muted-sm">Every simulated regular-season and playoff series is retained here with game-by-game batting and pitching totals.</p><div id="scenarioLog" class="sim-log"></div></div>
-<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine. First Round is first to 2 wins (max 3 games, 6 IP/pitcher), Semifinals are first to 3 (max 5 games, 8 IP/pitcher), and the World Series is first to 4 (max 7 games, 9 IP/pitcher; Game 7 unlimited).</p><div id="bracket"></div></div>
+<div class="sim-card"><h2>Playoff Bracket</h2><p class="muted-sm">The bracket activates after every series in the locked 2026 completion plan is finished. Playoff simulations use the same plate-appearance engine. First Round is first to 2 wins (max 3 games, 5 IP/pitcher), Semifinals are first to 3 (max 5 games, 8 IP/pitcher), and the World Series is first to 4 (max 7 games, 9 IP/pitcher; Game 7 unlimited).</p><div id="bracket"></div></div>
 <div class="sim-actions"><button id="resetSeason" class="secondary">Reset season scenario</button></div></section></div></main><footer><div class="container">ND Wiffle · Simulation sandbox. Hypothetical results never alter official data.</div></footer><script>
 const LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
 const TEAM_RGB={
@@ -99,27 +106,66 @@ function renderRoster(id,box,selected=null){
 function logit(p){p=clamp(p,.01,.99);return Math.log(p/(1-p))}
 function logistic(x){return 1/(1+Math.exp(-x))}
 function leagueRates(){
- const bats=LEAGUE.batting||[],pa=bats.reduce((a,r)=>a+n(r.PAs),0),ab=bats.reduce((a,r)=>a+n(r.ABs),0);
+ const bats=LEAGUE.batting||[],pa=Math.max(1,bats.reduce((a,r)=>a+n(r.PAs),0));
+ const totals={
+  BB:bats.reduce((a,r)=>a+n(r.BB),0),
+  K:bats.reduce((a,r)=>a+n(r.Ks),0),
+  HR:bats.reduce((a,r)=>a+n(r.HRs),0),
+  "3B":bats.reduce((a,r)=>a+n(r.Triples),0),
+  "2B":bats.reduce((a,r)=>a+n(r.Doubles),0),
+  "1B":bats.reduce((a,r)=>a+n(r.Singles),0),
+  H:bats.reduce((a,r)=>a+n(r.Hits),0)
+ };
+ const nonHr=Math.max(1,totals.H-totals.HR);
  return {
-  BB:pa?bats.reduce((a,r)=>a+n(r.BB),0)/pa:.16,
-  K:pa?bats.reduce((a,r)=>a+n(r.Ks),0)/pa:.24,
-  HR:pa?bats.reduce((a,r)=>a+n(r.HRs),0)/pa:.08,
-  H:pa?bats.reduce((a,r)=>a+n(r.Hits),0)/pa:.29,
-  BA:ab?bats.reduce((a,r)=>a+n(r.Hits),0)/ab:.30
+  BB:totals.BB/pa,K:totals.K/pa,HR:totals.HR/pa,
+  "3B":totals["3B"]/pa,"2B":totals["2B"]/pa,"1B":totals["1B"]/pa,H:totals.H/pa,
+  hitShares:{
+    "1B":totals["1B"]/nonHr,
+    "2B":totals["2B"]/nonHr,
+    "3B":totals["3B"]/nonHr
+  }
  };
 }
 function batterRates(p,lg){
- const b=p?.bat||{},pa=Math.max(1,n(b.PAs)),ab=Math.max(1,n(b.ABs));
- return {BB:n(b.BB)/pa||lg.BB,K:n(b.Ks)/pa||lg.K,HR:n(b.HRs)/pa||lg.HR,H:n(b.Hits)/pa||lg.H,BA:n(b.Hits)/ab||lg.BA};
+ const b=p?.bat||{},pa=Math.max(1,n(b.PAs));
+ const observed=n(b.PAs)>0;
+ return {
+  BB:observed?n(b.BB)/pa:lg.BB,
+  K:observed?n(b.Ks)/pa:lg.K,
+  HR:observed?n(b.HRs)/pa:lg.HR,
+  "3B":observed?n(b.Triples)/pa:lg["3B"],
+  "2B":observed?n(b.Doubles)/pa:lg["2B"],
+  "1B":observed?n(b.Singles)/pa:lg["1B"]
+ };
 }
 function pitcherRates(p,lg){
- const q=p?.pit||{},bf=Math.max(1,n(q.BF));
- return {BB:n(q.Walks)/bf||lg.BB,K:n(q.Ks)/bf||lg.K,HR:n(q.HRs)/bf||lg.HR,H:n(q.Hits)/bf||lg.H};
+ const q=p?.pit||{},bf=Math.max(1,n(q.BF)),observed=p?.pit&&n(q.BF)>0;
+ if(!observed)return {BB:lg.BB,K:lg.K,HR:lg.HR,"1B":lg["1B"],"2B":lg["2B"],"3B":lg["3B"]};
+ const bb=n(q.Walks)/bf,k=n(q.Ks)/bf,hr=n(q.HRs)/bf,h=n(q.Hits)/bf;
+ const nonHrHit=Math.max(0,h-hr);
+ return {
+  BB:bb,K:k,HR:hr,
+  "1B":nonHrHit*lg.hitShares["1B"],
+  "2B":nonHrHit*lg.hitShares["2B"],
+  "3B":nonHrHit*lg.hitShares["3B"]
+ };
 }
-function matchupRate(b,p,lg,key,noise=0){
- const br=batterRates(b,lg)[key],pr=p?.pit?pitcherRates(p,lg)[key]:lg[key];
- const base=logistic(logit(br)+logit(pr)-logit(lg[key]));
- return clamp(logistic(logit(base)+noise),.01,key==="K"?.70:key==="BB"?.55:key==="HR"?.35:.75);
+function blendedOutcomeRates(b,p,lg,noise=0){
+ const br=batterRates(b,lg),pr=p?.soft?lg:pitcherRates(p,lg);
+ const keys=["BB","K","HR","3B","2B","1B"],rates={};
+ // User-requested weighting: 66% pitcher, 33% batter.
+ for(const key of keys){
+   const base=.66*n(pr[key])+.33*n(br[key]);
+   // Small game-form variance changes the matchup without replacing the
+   // underlying 66/33 expectation.
+   const direction=["K"].includes(key)?-noise:noise;
+   rates[key]=clamp(base*(1+direction*.12),.001,key==="K"?.72:key==="BB"?.55:.40);
+ }
+ const total=keys.reduce((a,k)=>a+rates[k],0);
+ if(total>.94){const scale=.94/total;for(const k of keys)rates[k]*=scale}
+ rates.OUT=Math.max(.06,1-keys.reduce((a,k)=>a+rates[k],0));
+ return rates;
 }
 function weightedPick(items,weight){
  const ws=items.map(x=>Math.max(.001,weight(x))),sum=ws.reduce((a,b)=>a+b,0),r=Math.random()*sum;let acc=0;
@@ -145,21 +191,45 @@ function liveTableRows(map,type){
  return rows.filter(x=>n(x.BF)>0).sort((a,b)=>n(b.IPouts)-n(a.IPouts)).slice(0,5).map(x=>`<tr><td>${esc(x.name)}</td><td>${fmtIP(n(x.IPouts))}</td><td>${n(x.H)}</td><td>${n(x.ER)}</td><td>${n(x.BB)}</td><td>${n(x.K)}</td></tr>`).join("");
 }
 function gameProgressHtml(done,total,current){let out="";for(let i=0;i<total;i++)out+=`<span class="${i<done?"done":""}">${i===current?"LIVE ":i<done?"✓ ":""}G${i+1}</span>`;return out}
+function scorebugHtml(play,bases){
+ const top=String(play?.half||"").toLowerCase().startsWith("top"),bottom=String(play?.half||"").toLowerCase().startsWith("bottom");
+ const arrow=top?"▲":bottom?"▼":"◆",outs=clamp(n(play?.outs),0,3),b=bases||[];
+ return `<div class="scorebug-state"><div class="inning-bug"><span class="inning-number">${play?.inning||3}</span><span class="inning-arrow">${arrow}</span></div><div class="outs-bug" title="${outs} outs">${[0,1,2].map(i=>`<span class="out-dot ${i<outs?"on":""}"></span>`).join("")}</div><div class="bases-bug" title="Bases occupied"><span class="base-diamond base-1 ${b[0]?"on":""}"></span><span class="base-diamond base-2 ${b[1]?"on":""}"></span><span class="base-diamond base-3 ${b[2]?"on":""}"></span></div></div>`;
+}
+function scoringPlayText(p){
+ if(!p?.runs)return "";
+ const result=p.event==="HR"?(p.runs===1?"solo home run":`${p.runs}-run home run`):`${p.runs}-run ${eventLabel(p.event)}`;
+ return `${p.batter} ${result}`;
+}
+function finalScoringPlays(games){
+ const plays=[];
+ for(let gi=0;gi<(games||[]).length;gi++){
+   for(const p of games[gi].playByPlay||[]){
+     if(p.runs)plays.push({...p,game:gi+1});
+   }
+ }
+ return plays;
+}
+function finalScoringStrip(games){
+ const plays=finalScoringPlays(games);
+ if(!plays.length)return `<div class="final-scoring-strip"><span class="muted-sm">No run-scoring plays</span></div>`;
+ return `<div class="final-scoring-strip">${plays.map(p=>`<span class="final-scoring-play" style="--score-rgb:${TEAM_RGB[p.battingTeam]||"255,255,255"}">G${p.game} · ${esc(scoringPlayText(p))}</span>`).join("")}</div>`;
+}
 function renderBroadcast(el,state){
  if(!el)return;
  const {a,b,play,bat,pit,score,bases,gameIndex=0,gameTotal=1,seriesA=0,seriesB=0,label=""}=state;
  const batter=findPlayer(play?.battingTeam,play?.batterId,play?.batter),fielding=play?.battingTeam===a?b:a,pitcher=findPlayer(fielding,play?.pitcherId,play?.pitcher);
- const rgb=TEAM_RGB[play?.battingTeam]||"255,255,255",feed=(state.feed||[]).slice(-6).reverse().map(x=>`<div class="live-feed-row ${x.runs?"scoring":""}">${esc(x.half)} ${x.inning} · ${esc(x.batter)} ${esc(eventLabel(x.event))}${x.runs?` · ${x.runs} run${x.runs===1?"":"s"}`:""}</div>`).join("");
+ const rgb=TEAM_RGB[play?.battingTeam]||"255,255,255",feed=(state.feed||[]).slice(-6).reverse().map(x=>`<div class="live-feed-row ${x.runs?"scoring":""}">${esc(x.half)} ${x.inning} · ${x.runs?esc(scoringPlayText(x)):`${esc(x.batter)} ${esc(eventLabel(x.event))}`}</div>`).join("");
  const baseTxt=bases?.map((x,i)=>x?["1B","2B","3B"][i]:"").filter(Boolean).join(" · ")||"Bases empty";
  el.classList.add("active");el.classList.remove("compact");
- el.innerHTML=`<div class="broadcast-head"><div class="broadcast-team">${logo(a)}<span>${esc(teamName(a))}</span></div><div class="broadcast-score"><strong>${n(score?.[a])}–${n(score?.[b])}</strong><small>${esc(label)} · Series ${seriesA}-${seriesB}</small><div class="series-progress">${gameProgressHtml(gameIndex,gameTotal,gameIndex)}</div></div><div class="broadcast-team"><span>${esc(teamName(b))}</span>${logo(b)}</div><button type="button" class="broadcast-toggle">Hide live view</button></div><div class="broadcast-body"><div class="broadcast-status"><span>${esc(play?.half||"")} ${play?.inning||""} · ${n(play?.outs)} out${n(play?.outs)===1?"":"s"}</span><span>${esc(baseTxt)}</span></div><div class="broadcast-matchup"><div class="live-player">${avatarHtml(batter.id,batter.name)}<div><small>At bat</small><strong>${esc(batter.name)}</strong><span class="muted-sm">${esc(playerMeta(batter))}</span></div></div><div class="live-vs">VS</div><div class="live-player pitcher">${avatarHtml(pitcher.id,pitcher.name)}<div><small>Pitching</small><strong>${esc(pitcher.name)}</strong><span class="muted-sm">${esc(playerMeta(pitcher))}</span></div></div></div><div class="live-event ${play?.runs?"scoring":""}" style="--score-rgb:${rgb}">${play?`${esc(play.batter)}: ${esc(eventLabel(play.event))}${play.runs?` · ${play.runs} RUN${play.runs===1?"":"S"} SCORE`:""}`:"Preparing…"}</div><div class="live-feed">${feed}</div><div class="live-box-grid"><div class="live-box"><h4>${esc(teamName(a))} batting</h4><table><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th></tr>${liveTableRows(bat?.[a],"bat")}</table><h4 style="margin-top:8px">${esc(teamName(a))} pitching</h4><table><tr><th>Pitcher</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th></tr>${liveTableRows(pit?.[a],"pit")}</table></div><div class="live-box"><h4>${esc(teamName(b))} batting</h4><table><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th></tr>${liveTableRows(bat?.[b],"bat")}</table><h4 style="margin-top:8px">${esc(teamName(b))} pitching</h4><table><tr><th>Pitcher</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th></tr>${liveTableRows(pit?.[b],"pit")}</table></div></div></div>`;
+ el.innerHTML=`<div class="broadcast-head"><div class="broadcast-team">${logo(a)}<span>${esc(teamName(a))}</span></div><div class="broadcast-score"><strong>${n(score?.[a])}–${n(score?.[b])}</strong><small>${esc(label)} · Series ${seriesA}-${seriesB}</small><div class="series-progress">${gameProgressHtml(gameIndex,gameTotal,gameIndex)}</div></div><div class="broadcast-team"><span>${esc(teamName(b))}</span>${logo(b)}</div><button type="button" class="broadcast-toggle">Hide live view</button></div><div class="broadcast-body">${scorebugHtml(play,bases)}<div class="broadcast-status"><span>${esc(play?.half||"")} ${play?.inning||""}</span><span>${esc(baseTxt)}</span></div><div class="broadcast-matchup"><div class="live-player">${avatarHtml(batter.id,batter.name)}<div><small>At bat</small><strong>${esc(batter.name)}</strong><span class="muted-sm">${esc(playerMeta(batter))}</span></div></div><div class="live-vs">VS</div><div class="live-player pitcher">${avatarHtml(pitcher.id,pitcher.name)}<div><small>Pitching</small><strong>${esc(pitcher.name)}</strong><span class="muted-sm">${esc(playerMeta(pitcher))}</span></div></div></div><div class="live-event ${play?.runs?"scoring":""}" style="--score-rgb:${rgb}">${play?(play.runs?esc(scoringPlayText(play)):`${esc(play.batter)}: ${esc(eventLabel(play.event))}`):"Preparing…"}</div><div class="live-feed">${feed}</div><div class="live-box-grid"><div class="live-box"><h4>${esc(teamName(a))} batting</h4><table><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th></tr>${liveTableRows(bat?.[a],"bat")}</table><h4 style="margin-top:8px">${esc(teamName(a))} pitching</h4><table><tr><th>Pitcher</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th></tr>${liveTableRows(pit?.[a],"pit")}</table></div><div class="live-box"><h4>${esc(teamName(b))} batting</h4><table><tr><th>Player</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th></tr>${liveTableRows(bat?.[b],"bat")}</table><h4 style="margin-top:8px">${esc(teamName(b))} pitching</h4><table><tr><th>Pitcher</th><th>IP</th><th>H</th><th>ER</th><th>BB</th><th>K</th></tr>${liveTableRows(pit?.[b],"pit")}</table></div></div></div>`;
  el.querySelector(".broadcast-toggle")?.addEventListener("click",()=>{el.classList.toggle("compact");const btn=el.querySelector(".broadcast-toggle");if(btn)btn.textContent=el.classList.contains("compact")?"Expand live view":"Hide live view"});
 }
 function finishBroadcast(el,a,b,games,label,existingA=0,existingB=0){
  if(!el||!games?.length)return;
  const wa=existingA+games.filter(g=>g.winner===a).length,wb=existingB+games.filter(g=>g.winner===b).length;
  el.classList.add("active","compact");
- el.innerHTML=`<div class="broadcast-head"><div class="broadcast-team">${logo(a)}<span>${esc(teamName(a))}</span></div><div class="broadcast-score"><strong>${wa}–${wb}</strong><small>${esc(label)} complete · Final series score</small><div class="series-progress">${games.map((g,i)=>`<span class="done">G${i+1} ${g.aScore}-${g.bScore}</span>`).join("")}</div></div><div class="broadcast-team"><span>${esc(teamName(b))}</span>${logo(b)}</div><button type="button" class="broadcast-toggle">Expand final screen</button></div><div class="broadcast-body">${resultOutput(a,b,games,label,existingA,existingB)}</div>`;
+ el.innerHTML=`<div class="broadcast-head"><div class="broadcast-team">${logo(a)}<span>${esc(teamName(a))}</span></div><div class="broadcast-score"><strong>${wa}–${wb}</strong><small>${esc(label)} complete · Final series score</small><div class="series-progress">${games.map((g,i)=>`<span class="done">G${i+1} ${g.aScore}-${g.bScore}</span>`).join("")}</div></div><div class="broadcast-team"><span>${esc(teamName(b))}</span>${logo(b)}</div>${finalScoringStrip(games)}<button type="button" class="broadcast-toggle">Expand final screen</button></div><div class="broadcast-body">${resultOutput(a,b,games,label,existingA,existingB)}</div>`;
  el.querySelector(".broadcast-toggle")?.addEventListener("click",()=>{el.classList.toggle("compact");const btn=el.querySelector(".broadcast-toggle");if(btn)btn.textContent=el.classList.contains("compact")?"Expand final screen":"Shrink final screen"});
 }
 function lineupFor(team,sel){
@@ -253,19 +323,12 @@ async function simulateGamePA(a,b,selA,selB,context){
        const br=ensureBat(bat[battingTeam],hitter),pr=ensurePit(pit[fieldingTeam],pitcher);
        br.PA++;pr.BF++;paCounter++;
        const noise=gameNoise.get(hitter.id)||0;
-       const pBB=matchupRate(hitter,pitcher,lg,"BB",noise*.30);
-       const pK=matchupRate(hitter,pitcher,lg,"K",-noise*.18);
-       const pHR=matchupRate(hitter,pitcher,lg,"HR",noise*.42);
-       const pH=matchupRate(hitter,pitcher,lg,"H",noise*.28);
+       const rates=blendedOutcomeRates(hitter,pitcher,lg,noise);
        const u=Math.random();
-       let event;
-       if(u<pBB)event="BB";
-       else if(u<pBB+(1-pBB)*pK)event="K";
-       else{
-         const v=Math.random(),adjHR=clamp(pHR/(1-pBB),.01,.45),adjH=clamp(pH/(1-pBB),adjHR+.02,.80);
-         if(v<adjHR)event="HR";
-         else if(v<adjH)event=hitType(hitter);
-         else event="OUT";
+       let event="OUT",acc=0;
+       for(const key of ["BB","K","HR","3B","2B","1B"]){
+         acc+=rates[key];
+         if(u<acc){event=key;break}
        }
        if(event==="BB"){br.BB++;pr.BB++}
        else{br.AB++;if(event==="K"){br.K++;pr.K++;outs++;pr.IPouts++;if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1)}
@@ -355,7 +418,7 @@ function mvpTextBat(x){return x?`${x.name} · ${x.H}/${x.AB}, ${x.HR} HR, ${x.RB
 function mvpTextPit(x){return x?`${x.name} · ${fmtIP(x.IPouts)} IP, ${x.K} K, ${x.ER} ER`:"—"}
 function resultOutput(a,b,games,title="Simulated Series",existingA=0,existingB=0){
  const {wa,wb}=seriesSummaryData(a,b,games,existingA,existingB);
- return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wa}–${wb}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div><div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(aggregateSeries(games,a,"bat"))}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(aggregateSeries(games,a,"pit"))}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(aggregateSeries(games,b,"bat"))}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(aggregateSeries(games,b,"pit"))}</div></div></div></div>`;
+ return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wa}–${wb}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div><div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(aggregateSeries(games,a,"bat"))}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(aggregateSeries(games,a,"pit"))}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(aggregateSeries(games,b,"bat"))}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(aggregateSeries(games,b,"pit"))}</div></div></div><div class="sim-subhead">Run-scoring plays</div>${finalScoringStrip(games)}</div></div>`;
 }
 function setupSandbox(){
  const teams=LEAGUE.standings||[],opts=teams.map(t=>`<option value="${t.team_id}">${esc(t.team)}</option>`).join("");
@@ -584,7 +647,7 @@ function playoffPickerHtml(g){
  return `<div id="poPick_${g.id}" class="playoff-picker">${sideBox(g.a.team_id,sel.a,"a")}${sideBox(g.b.team_id,sel.b,"b")}</div>`;
 }
 function playoffSeriesSpec(id){
- if(id.startsWith("q"))return {label:"First Round",limit:6,winsNeeded:2,maxGames:3,game7Unlimited:false};
+ if(id.startsWith("q"))return {label:"First Round",limit:5,winsNeeded:2,maxGames:3,game7Unlimited:false};
  if(id.startsWith("s"))return {label:"Semifinal",limit:8,winsNeeded:3,maxGames:5,game7Unlimited:false};
  return {label:"World Series",limit:9,winsNeeded:4,maxGames:7,game7Unlimited:true};
 }
@@ -628,4 +691,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=144"></script></body></html>
+</script><script src="/assets/hof.js?v=145"></script></body></html>

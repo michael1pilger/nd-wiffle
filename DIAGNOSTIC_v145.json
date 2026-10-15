@@ -1,0 +1,35 @@
+{
+  "scorebug": "MLB-style inning arrow, three out dots, and illuminated base diamond added to live simulation.",
+  "scoring_plays": "Run-scoring events use team colors live and persist on the compact final screen and series result summary with descriptions such as '2-run single'.",
+  "pitching_limits": {
+    "first_round": 5,
+    "semifinals": 8,
+    "world_series": 9,
+    "world_series_game_7": "unlimited"
+  },
+  "matchup_model": {
+    "weighting": "66% pitcher, 33% batter",
+    "direct_outcomes": [
+      "BB",
+      "K",
+      "1B",
+      "2B",
+      "3B",
+      "HR",
+      "OUT"
+    ],
+    "pitcher_1B_2B_3B_note": "Pitching data tracks hits and HR allowed but not 1B/2B/3B allowed; non-HR hit allowance is split using league hit-type shares before applying the 66/33 blend."
+  },
+  "migration_required": false,
+  "checks": {
+    "mlb_scorebug": true,
+    "final_scoring_plays": true,
+    "first_round_5ip": true,
+    "semis_8ip": true,
+    "ws_9ip": true,
+    "pitcher_66_batter_33": true,
+    "outcome_types": true,
+    "pitcher_hit_type_inference": true,
+    "syntax": "PASS"
+  }
+}
