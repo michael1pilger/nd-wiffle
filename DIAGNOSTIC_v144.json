@@ -1,0 +1,27 @@
+{
+  "simulation_ux": {
+    "broadcast": "live plate-appearance-by-plate-appearance screen with team logos, batter/pitcher headshots where available, inning, outs, occupied bases, score, recent plays, and running batting/pitching box scores",
+    "speed": [
+      "Instant",
+      "Fast",
+      "Normal",
+      "Slow",
+      "Cinematic"
+    ],
+    "post_sim": "broadcast auto-collapses to a compact final-series scoreboard and can be expanded",
+    "player_selection": "headshot card picker with season stat context and All/Clear controls",
+    "playoffs": "active-player selection added to every live playoff matchup; playoff series use the same broadcast experience"
+  },
+  "migration_required": false,
+  "checks": {
+    "headshots": true,
+    "speed_controls": true,
+    "live_broadcast": true,
+    "live_box_score": true,
+    "compact_after_finish": true,
+    "friendly_player_picker": true,
+    "playoff_player_picker": true,
+    "playoff_watch_simulation": true,
+    "syntax": "PASS"
+  }
+}
