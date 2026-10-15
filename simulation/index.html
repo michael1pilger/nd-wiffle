@@ -45,6 +45,10 @@
 .bases-bug{position:relative;width:31px;height:25px}.base-diamond{position:absolute;width:10px;height:10px;transform:rotate(45deg);border:1px solid #6d7888;background:#101a29}.base-diamond.on{background:#f2c84b;border-color:#f2c84b;box-shadow:0 0 5px rgba(242,200,75,.45)}
 .base-1{right:2px;top:9px}.base-2{left:10px;top:1px}.base-3{left:2px;top:9px}
 .final-scoring-strip{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:3px}.final-scoring-play{font-size:8px;font-weight:950;padding:4px 7px;border-radius:999px;background:rgba(var(--score-rgb),.13);border:1px solid rgba(var(--score-rgb),.48);color:rgb(var(--score-rgb))}
+
+.mvp-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}.mvp-card{border:1px solid rgba(215,173,72,.35);background:rgba(215,173,72,.07);border-radius:9px;padding:8px}.mvp-card b{display:block;color:var(--gold);font-size:8px;text-transform:uppercase;margin-bottom:3px}.mvp-card span{font-size:10px;font-weight:950}
+.sim-table tr.mvp-row td{background:rgba(215,173,72,.12);font-weight:900}.mvp-badge{display:inline-block;margin-left:5px;padding:2px 4px;border-radius:999px;background:var(--gold);color:#101010;font-size:6px;font-weight:950;vertical-align:middle}
+@media(max-width:760px){.mvp-strip{grid-template-columns:1fr}}
 </style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a class="active" href="/simulation/">Simulation</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div><main><div class="container pagehead"><div class="eyebrow">2026 Scenario Lab</div><h1>Simulation</h1><p class="muted">Run hypothetical series without changing the real database. Watch every plate appearance unfold, control playback speed, choose active players, follow a live box score, and carry the scenario through the playoffs.</p></div><div class="container"><div class="sim-tabs"><button class="active" data-tab="sandbox">Sandbox</button><button data-tab="season">Remaining Season</button></div><section id="sandbox" class="sim-panel active"><div class="sim-card"><h2>Sandbox Series</h2><p class="muted-sm">Choose two teams and the active players, then watch the series unfold plate appearance by plate appearance. Headshots, team logos, a live scoreboard, recent plays, and a running box score update throughout the simulation.</p><div class="sim-grid"><div class="sim-field"><label>Team A</label><select id="sandA"></select><div id="rosterA" class="roster-box"></div></div><div class="sim-field"><label>Team B</label><select id="sandB"></select><div id="rosterB" class="roster-box"></div></div></div><div class="sim-actions"><button id="simSandbox">Simulate 3-game series</button><button id="resetSandbox" class="secondary">Reset players</button><div class="speed-control"><label for="sandboxSpeed">Playback</label><select id="sandboxSpeed"><option value="0">Instant</option><option value="55">Fast</option><option value="180" selected>Normal</option><option value="450">Slow</option><option value="850">Cinematic</option></select></div></div><div id="sandboxProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div></div><div id="sandboxBroadcast" class="broadcast"></div><div id="sandboxOutput"></div></section><section id="season" class="sim-panel">
 <div id="scheduleIntegrity"></div>
 <div class="sim-actions" style="margin:0 0 8px"><div class="speed-control" style="margin-left:0"><label for="seasonSpeed">Playback speed</label><select id="seasonSpeed"><option value="0">Instant</option><option value="55">Fast</option><option value="180" selected>Normal</option><option value="450">Slow</option><option value="850">Cinematic</option></select></div></div><div id="seasonProgress" class="sim-progress"><div class="sim-progress-text">Preparing simulation…</div><div class="sim-progress-track"><div class="sim-progress-fill"></div></div></div><div id="seasonBroadcast" class="broadcast"></div>
@@ -199,7 +203,7 @@ function scorebugHtml(play,bases){
 function scoringPlayText(p){
  if(!p?.runs)return "";
  const result=p.event==="HR"?(p.runs===1?"solo home run":`${p.runs}-run home run`):`${p.runs}-run ${eventLabel(p.event)}`;
- return `${p.batter} ${result}`;
+ return `${p.batter} ${p.walkoff?"walk-off ":""}${result}`;
 }
 function finalScoringPlays(games){
  const plays=[];
@@ -249,16 +253,11 @@ function pitchersFor(team,sel){
 }
 function seriesPitchPlan(team,sel,{mode="regular",limitIP=5}={}){
  const ranked=pitchersFor(team,sel),plan=new Map();
- if(mode==="regular"){
-   // Three-game regular season: 5 IP maximum per pitcher across the series.
-   // Pitchers are ordered best-first, so the ace is used through 5 IP and
-   // the No. 2 pitcher handles the remaining innings of a normal 9-IP series.
-   if(ranked[0])plan.set(ranked[0].id,15);
-   if(ranked[1])plan.set(ranked[1].id,15);
- }else{
-   // Playoffs: best pitchers are used first, each bounded by the round cap.
-   for(const p of ranked)plan.set(p.id,limitIP*3);
- }
+ // All selected pitchers receive the applicable series cap. choosePitcher()
+ // walks the ranking best-first, so extra innings burn the ace's remaining
+ // outs, then the No. 2, then No. 3, etc. Soft toss is used only after every
+ // selected pitcher has exhausted his legal series innings.
+ for(const p of ranked)plan.set(p.id,limitIP*3);
  return {ranked,plan};
 }
 function choosePitcher(pool,usage,plan,{game7Unlimited=false,gameIndex=0}={}){
@@ -303,63 +302,96 @@ async function simulateGamePA(a,b,selA,selB,context){
  const lg=leagueRates(),lineups={[a]:lineupFor(a,selA),[b]:lineupFor(b,selB)};
  if(!lineups[a].length||!lineups[b].length)throw new Error("Each team needs at least one active hitter.");
  const pitchPools={[a]:pitchersFor(a,selA),[b]:pitchersFor(b,selB)};
- const usage=context.pitchUsage,limitOuts=context.pitchLimitOuts,bat={[a]:new Map(),[b]:new Map()},pit={[a]:new Map(),[b]:new Map()};
+ const usage=context.pitchUsage,bat={[a]:new Map(),[b]:new Map()},pit={[a]:new Map(),[b]:new Map()};
  const score={[a]:0,[b]:0},order={[a]:context.lineupIndex[a]||0,[b]:context.lineupIndex[b]||0};
- const playByPlay=[];
- const gameNoise=new Map();
+ const playByPlay=[],gameNoise=new Map();
  for(const t of [a,b])for(const h of lineups[t])gameNoise.set(h.id,(Math.random()+Math.random()-1)*.45);
- let paCounter=0;
- for(let inn=1;inn<=3;inn++){
-   for(const battingTeam of [a,b]){
-     const fieldingTeam=battingTeam===a?b:a;
-     let outs=0,bases=[null,null,null];
-     let pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
-     while(outs<3){
-       if(!pitcher.soft){
-         const cap=context.game7Unlimited&&context.gameIndex===6?Infinity:(context.pitchPlan[fieldingTeam].get(pitcher.id)??0);
-         if((usage[fieldingTeam].get(pitcher.id)||0)>=cap)pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
-       }
-       const hitter=lineups[battingTeam][order[battingTeam]%lineups[battingTeam].length];order[battingTeam]++;
-       const br=ensureBat(bat[battingTeam],hitter),pr=ensurePit(pit[fieldingTeam],pitcher);
-       br.PA++;pr.BF++;paCounter++;
-       const noise=gameNoise.get(hitter.id)||0;
-       const rates=blendedOutcomeRates(hitter,pitcher,lg,noise);
-       const u=Math.random();
-       let event="OUT",acc=0;
-       for(const key of ["BB","K","HR","3B","2B","1B"]){
-         acc+=rates[key];
-         if(u<acc){event=key;break}
-       }
-       if(event==="BB"){br.BB++;pr.BB++}
-       else{br.AB++;if(event==="K"){br.K++;pr.K++;outs++;pr.IPouts++;if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1)}
-       else if(event==="OUT"){outs++;pr.IPouts++;if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1)}
-       else{br.H++;br[event]++;pr.H++;if(event==="HR")pr.HR++}}
-       let runsOnPlay=0;
-       if(["BB","1B","2B","3B","HR"].includes(event)){
-         const adv=advanceRunners(bases,event,hitter.id);bases=adv.bases;br.RBI+=adv.rbi;runsOnPlay=adv.runs.length;
-         for(const rid of adv.runs){score[battingTeam]++;const rr=lineups[battingTeam].find(x=>x.id===rid);if(rr)ensureBat(bat[battingTeam],rr).R++;pr.R++;pr.ER++}
-       }
-       const play={inning:inn,half:battingTeam===a?"Top":"Bottom",battingTeam,batter:hitter.name,batterId:hitter.id,pitcher:pitcher.name,pitcherId:pitcher.id,event,runs:runsOnPlay,outs,scoreA:score[a],scoreB:score[b],bases:[...bases]};
-       playByPlay.push(play);
-       if(context.onPA && paCounter%2===0){context.donePA++;context.onPA(context.donePA)}
-       if(context.onPlay)await context.onPlay({a,b,play,bat,pit,score:{[a]:score[a],[b]:score[b]},bases:[...bases],feed:playByPlay,gameIndex:context.gameIndex,gameTotal:context.gameTotal,seriesA:context.seriesScore?.a||0,seriesB:context.seriesScore?.b||0,label:context.label||"Simulation"});
-       if(paCounter%12===0)await sleep(0);
+ let paCounter=0,gameOver=false,inn=1;
+
+ async function playHalf(battingTeam,inning){
+   const fieldingTeam=battingTeam===a?b:a;
+   let outs=0,bases=[null,null,null];
+   let pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
+   while(outs<3&&!gameOver){
+     if(!pitcher.soft){
+       const cap=context.game7Unlimited&&context.gameIndex===6?Infinity:(context.pitchPlan[fieldingTeam].get(pitcher.id)??0);
+       if((usage[fieldingTeam].get(pitcher.id)||0)>=cap)pitcher=choosePitcher(pitchPools[fieldingTeam],usage[fieldingTeam],context.pitchPlan[fieldingTeam],{game7Unlimited:context.game7Unlimited,gameIndex:context.gameIndex});
      }
+
+     const hitter=lineups[battingTeam][order[battingTeam]%lineups[battingTeam].length];order[battingTeam]++;
+     const br=ensureBat(bat[battingTeam],hitter),pr=ensurePit(pit[fieldingTeam],pitcher);
+     br.PA++;pr.BF++;paCounter++;
+
+     const noise=gameNoise.get(hitter.id)||0,rates=blendedOutcomeRates(hitter,pitcher,lg,noise),u=Math.random();
+     let event="OUT",acc=0;
+     for(const key of ["BB","K","HR","3B","2B","1B"]){acc+=rates[key];if(u<acc){event=key;break}}
+
+     if(event==="BB"){br.BB++;pr.BB++}
+     else{
+       br.AB++;
+       if(event==="K"){
+         br.K++;pr.K++;outs++;pr.IPouts++;
+         if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1);
+       }else if(event==="OUT"){
+         outs++;pr.IPouts++;
+         if(!pitcher.soft)usage[fieldingTeam].set(pitcher.id,(usage[fieldingTeam].get(pitcher.id)||0)+1);
+       }else{
+         br.H++;br[event]++;pr.H++;if(event==="HR")pr.HR++;
+       }
+     }
+
+     let runsOnPlay=0;
+     if(["BB","1B","2B","3B","HR"].includes(event)){
+       const adv=advanceRunners(bases,event,hitter.id);bases=adv.bases;br.RBI+=adv.rbi;runsOnPlay=adv.runs.length;
+       for(const rid of adv.runs){
+         score[battingTeam]++;
+         const rr=lineups[battingTeam].find(x=>x.id===rid);if(rr)ensureBat(bat[battingTeam],rr).R++;
+         pr.R++;pr.ER++;
+       }
+     }
+
+     // A home-team go-ahead run in the bottom of the 3rd or later is a walk-off.
+     const walkoff=battingTeam===b&&inning>=3&&score[b]>score[a];
+     const play={inning,half:battingTeam===a?"Top":"Bottom",battingTeam,batter:hitter.name,batterId:hitter.id,pitcher:pitcher.name,pitcherId:pitcher.id,event,runs:runsOnPlay,outs,scoreA:score[a],scoreB:score[b],bases:[...bases],walkoff};
+     playByPlay.push(play);
+
+     if(context.onPA&&paCounter%2===0){context.donePA++;context.onPA(context.donePA)}
+     if(context.onPlay)await context.onPlay({a,b,play,bat,pit,score:{[a]:score[a],[b]:score[b]},bases:[...bases],feed:playByPlay,gameIndex:context.gameIndex,gameTotal:context.gameTotal,seriesA:context.seriesScore?.a||0,seriesB:context.seriesScore?.b||0,label:context.label||"Simulation"});
+     if(paCounter%12===0)await sleep(0);
+     if(walkoff){gameOver=true;break}
    }
  }
- // Tie breaker: one extra run awarded through a final PA-level tiebreak result.
- if(score[a]===score[b]){
-   const win=Math.random()<.5?a:b;score[win]++;const h=lineups[win][order[win]%lineups[win].length];const row=ensureBat(bat[win],h);row.R++;row.RBI++;
-   const tb={inning:3,half:"Tiebreak",battingTeam:win,batter:h.name,batterId:h.id,pitcher:"Tiebreak",pitcherId:"",event:"TB",runs:1,outs:3,scoreA:score[a],scoreB:score[b],bases:[null,null,null]};
-   playByPlay.push(tb);
-   if(context.onPlay)await context.onPlay({a,b,play:tb,bat,pit,score:{[a]:score[a],[b]:score[b]},bases:[null,null,null],feed:playByPlay,gameIndex:context.gameIndex,gameTotal:context.gameTotal,seriesA:context.seriesScore?.a||0,seriesB:context.seriesScore?.b||0,label:context.label||"Simulation"});
+
+ // Regulation is three innings. If tied, continue complete extra innings
+ // until one team wins. A leading home team never takes an unnecessary
+ // bottom half, which also preserves the away team's remaining pitching IP.
+ while(!gameOver){
+   await playHalf(a,inn);
+
+   // After the top of the 3rd or any extra inning, a home lead ends the game
+   // immediately, so the bottom half is not played.
+   if(inn>=3&&score[b]>score[a]){gameOver=true;break}
+
+   await playHalf(b,inn);
+   if(gameOver)break;
+
+   if(inn>=3&&score[a]!==score[b]){gameOver=true;break}
+   inn++;
+
+   // Defensive safety only; normal simulations should resolve long before this.
+   if(inn>30)throw new Error("Simulation exceeded 30 innings without a winner.");
  }
+
  context.lineupIndex[a]=order[a];context.lineupIndex[b]=order[b];
  const winner=score[a]>score[b]?a:b,loser=winner===a?b:a;
- // Pitcher decisions: first pitcher with recorded outs for each side.
- const wp=[...pit[winner].values()].find(x=>x.IPouts>0);if(wp)wp.W++;
- const lp=[...pit[loser].values()].find(x=>x.IPouts>0);if(lp)lp.L++;
- return {a,b,aScore:score[a],bScore:score[b],winner,bat,pit,playByPlay};
+
+ // Pitching decisions are assigned after the game ends. This is intentionally
+ // simple, but all actual innings used (including extras and skipped halves)
+ // are preserved in the series pitching totals and cap accounting.
+ const wp=[...pit[winner].values()].filter(x=>x.IPouts>0).slice(-1)[0];if(wp)wp.W++;
+ const lp=[...pit[loser].values()].filter(x=>x.IPouts>0).slice(-1)[0];if(lp)lp.L++;
+
+ return {a,b,aScore:score[a],bScore:score[b],winner,bat,pit,playByPlay,innings:inn};
 }
 function forceSatisfied(games,forced,existingA,existingB,a,b){
  if(!forced)return true;
@@ -395,11 +427,11 @@ function aggregateSeries(games,team,type){
  }
  return [...map.values()];
 }
-function battingTable(rows){
- return `<div class="tablewrap"><table class="sim-table"><thead><tr><th>Player</th><th>PA</th><th>AB</th><th>R</th><th>H</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OBP</th><th>SLG</th></tr></thead><tbody>${rows.map(r=>{const avg=r.AB?r.H/r.AB:0,obp=r.PA?(r.H+r.BB)/r.PA:0,tb=r["1B"]+2*r["2B"]+3*r["3B"]+4*r.HR,slg=r.AB?tb/r.AB:0;return `<tr><td>${esc(r.name)}</td><td>${r.PA}</td><td>${r.AB}</td><td>${r.R}</td><td>${r.H}</td><td>${r["1B"]}</td><td>${r["2B"]}</td><td>${r["3B"]}</td><td>${r.HR}</td><td>${r.RBI}</td><td>${r.BB}</td><td>${r.K}</td><td>${avg.toFixed(3)}</td><td>${obp.toFixed(3)}</td><td>${slg.toFixed(3)}</td></tr>`}).join("")}</tbody></table></div>`;
+function battingTable(rows,mvpName=null){
+ return `<div class="tablewrap"><table class="sim-table"><thead><tr><th>Player</th><th>PA</th><th>AB</th><th>R</th><th>H</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>AVG</th><th>OBP</th><th>SLG</th></tr></thead><tbody>${rows.map(r=>{const avg=r.AB?r.H/r.AB:0,obp=r.PA?(r.H+r.BB)/r.PA:0,tb=r["1B"]+2*r["2B"]+3*r["3B"]+4*r.HR,slg=r.AB?tb/r.AB:0,isMvp=r.name===mvpName;return `<tr class="${isMvp?"mvp-row":""}"><td>${esc(r.name)}${isMvp?'<span class="mvp-badge">BAT MVP</span>':""}</td><td>${r.PA}</td><td>${r.AB}</td><td>${r.R}</td><td>${r.H}</td><td>${r["1B"]}</td><td>${r["2B"]}</td><td>${r["3B"]}</td><td>${r.HR}</td><td>${r.RBI}</td><td>${r.BB}</td><td>${r.K}</td><td>${avg.toFixed(3)}</td><td>${obp.toFixed(3)}</td><td>${slg.toFixed(3)}</td></tr>`}).join("")}</tbody></table></div>`;
 }
-function pitchingTable(rows){
- return `<div class="tablewrap"><table class="sim-table"><thead><tr><th>Pitcher</th><th>IP</th><th>BF</th><th>W</th><th>L</th><th>R</th><th>ER</th><th>H</th><th>HR</th><th>BB</th><th>K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody>${rows.map(r=>{const ip=r.IPouts/3,era=r.IPouts?r.ER*3/ip:0,whip=r.IPouts?(r.H+r.BB)/ip:0;return `<tr><td>${esc(r.name)}</td><td>${fmtIP(r.IPouts)}</td><td>${r.BF}</td><td>${r.W}</td><td>${r.L}</td><td>${r.R}</td><td>${r.ER}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.BB}</td><td>${r.K}</td><td>${r.IPouts?era.toFixed(2):"—"}</td><td>${r.IPouts?whip.toFixed(2):"—"}</td></tr>`}).join("")}</tbody></table></div>`;
+function pitchingTable(rows,mvpName=null){
+ return `<div class="tablewrap"><table class="sim-table"><thead><tr><th>Pitcher</th><th>IP</th><th>BF</th><th>W</th><th>L</th><th>R</th><th>ER</th><th>H</th><th>HR</th><th>BB</th><th>K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody>${rows.map(r=>{const ip=r.IPouts/3,era=r.IPouts?r.ER*3/ip:0,whip=r.IPouts?(r.H+r.BB)/ip:0,isMvp=r.name===mvpName;return `<tr class="${isMvp?"mvp-row":""}"><td>${esc(r.name)}${isMvp?'<span class="mvp-badge">PIT MVP</span>':""}</td><td>${fmtIP(r.IPouts)}</td><td>${r.BF}</td><td>${r.W}</td><td>${r.L}</td><td>${r.R}</td><td>${r.ER}</td><td>${r.H}</td><td>${r.HR}</td><td>${r.BB}</td><td>${r.K}</td><td>${r.IPouts?era.toFixed(2):"—"}</td><td>${r.IPouts?whip.toFixed(2):"—"}</td></tr>`}).join("")}</tbody></table></div>`;
 }
 function battingMVP(games,a,b){
  const all=[...aggregateSeries(games,a,"bat").map(x=>({...x,team:a})),...aggregateSeries(games,b,"bat").map(x=>({...x,team:b}))];
@@ -417,8 +449,9 @@ function seriesSummaryData(a,b,games,existingA=0,existingB=0){
 function mvpTextBat(x){return x?`${x.name} · ${x.H}/${x.AB}, ${x.HR} HR, ${x.RBI} RBI`:"—"}
 function mvpTextPit(x){return x?`${x.name} · ${fmtIP(x.IPouts)} IP, ${x.K} K, ${x.ER} ER`:"—"}
 function resultOutput(a,b,games,title="Simulated Series",existingA=0,existingB=0){
- const {wa,wb}=seriesSummaryData(a,b,games,existingA,existingB);
- return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wa}–${wb}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div><div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(aggregateSeries(games,a,"bat"))}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(aggregateSeries(games,a,"pit"))}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(aggregateSeries(games,b,"bat"))}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(aggregateSeries(games,b,"pit"))}</div></div></div><div class="sim-subhead">Run-scoring plays</div>${finalScoringStrip(games)}</div></div>`;
+ const {wa,wb,bm,pm}=seriesSummaryData(a,b,games,existingA,existingB);
+ const batA=aggregateSeries(games,a,"bat"),batB=aggregateSeries(games,b,"bat"),pitA=aggregateSeries(games,a,"pit"),pitB=aggregateSeries(games,b,"pit");
+ return `<div class="sim-card"><div class="eyebrow">${esc(title)}</div><div class="scoreline"><div class="score-team">${logo(a)}${esc(teamName(a))}</div><div class="score-num">${wa}–${wb}</div><div class="score-team">${esc(teamName(b))}${logo(b)}</div></div><div class="mvp-strip"><div class="mvp-card"><b>Batting MVP</b><span>${esc(mvpTextBat(bm))}</span></div><div class="mvp-card"><b>Pitching MVP</b><span>${esc(mvpTextPit(pm))}</span></div></div><div class="stat-pair"><div><div class="sim-subhead">${esc(teamName(a))} batting</div>${battingTable(batA,bm?.team===a?bm.name:null)}<div class="sim-subhead">${esc(teamName(a))} pitching</div>${pitchingTable(pitA,pm?.team===a?pm.name:null)}</div><div><div class="sim-subhead">${esc(teamName(b))} batting</div>${battingTable(batB,bm?.team===b?bm.name:null)}<div class="sim-subhead">${esc(teamName(b))} pitching</div>${pitchingTable(pitB,pm?.team===b?pm.name:null)}</div></div></div><div class="sim-subhead">Run-scoring plays</div>${finalScoringStrip(games)}</div></div>`;
 }
 function setupSandbox(){
  const teams=LEAGUE.standings||[],opts=teams.map(t=>`<option value="${t.team_id}">${esc(t.team)}</option>`).join("");
@@ -691,4 +724,4 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json())
 ]).then(([l,r,s])=>{LEAGUE=l;RESULTS=r;SCHEDULE=s;setupSandbox();setupSeason()}).catch(e=>{document.querySelector("main").innerHTML=`<div class="container"><div class="warning">Simulation data could not load: ${esc(e.message||e)}</div></div>`});
-</script><script src="/assets/hof.js?v=145"></script></body></html>
+</script><script src="/assets/hof.js?v=146"></script></body></html>

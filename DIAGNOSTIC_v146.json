@@ -1,0 +1,21 @@
+{
+  "post_series": "Batting and pitching MVPs are called out above the box score and their rows are highlighted with MVP badges.",
+  "game_flow": {
+    "ties": "true extra innings; no synthetic tiebreak run",
+    "home_lead_after_top_3": "bottom half is skipped",
+    "walkoff": "bottom 3rd or later ends immediately when home takes the lead",
+    "pitching": "every actual out consumes the current pitcher's series innings; skipped/walk-off halves consume no extra innings"
+  },
+  "pitcher_depth": "Selected pitchers are ranked best-first and each receives the round's legal series cap, so the simulator moves to the next-best pitcher as caps are exhausted.",
+  "migration_required": false,
+  "checks": {
+    "mvp_rows": true,
+    "extra_innings": true,
+    "no_tiebreak_run": true,
+    "skip_bottom_if_home_ahead": true,
+    "walkoff": true,
+    "all_pitchers_receive_cap": true,
+    "pitch_usage_tracks_outs": true,
+    "syntax": "PASS"
+  }
+}
