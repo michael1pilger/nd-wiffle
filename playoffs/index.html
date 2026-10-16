@@ -36,325 +36,37 @@
 .crucial-row:last-child{border-bottom:0}.crucial-date{color:var(--gold);font-weight:900;font-size:10px}.crucial-why{color:var(--muted);font-size:9px;margin-top:2px}
 @media(max-width:700px){.seed-list,.path-grid{grid-template-columns:1fr}.crucial-row{grid-template-columns:75px minmax(0,1fr)}.crucial-row>:last-child{display:none}}
 
+
+/* v147 final playoff bracket */
+.bracket-wrap{overflow-x:auto;padding:18px 4px 30px}.bracket{display:grid;grid-template-columns:360px 90px 360px 90px 360px;gap:0;min-width:1260px;align-items:stretch}.round{display:flex;flex-direction:column;justify-content:space-around;gap:26px;position:relative}.round-title{font-size:15px;text-align:center;margin-bottom:12px}.match,.bye-card{border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.2)}.match-label{padding:10px 14px;font-size:11px}.seed-team{grid-template-columns:38px 50px minmax(0,1fr) auto;padding:15px 14px;gap:10px}.seed{font-size:22px}.seed-team img{width:46px;height:46px}.seed-name{font-size:15px}.seed-record{font-size:11px;display:flex;align-items:flex-end;gap:8px}.reg-record{color:var(--muted)}.team-game-scores{display:flex;gap:4px}.team-game-score{min-width:20px;text-align:center;padding:3px 5px;border-radius:5px;background:#0a1422;border:1px solid rgba(255,255,255,.1);color:#fff;font-weight:950}.bye-card{padding:16px}.bye-copy{font-size:11px}.series-games{display:flex;gap:5px;flex-wrap:wrap;padding:9px 12px;background:#0a1422;border-top:1px solid rgba(255,255,255,.06)}.series-game{font-size:9px;border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:4px 7px;color:#cbd5e3}.series-game strong{color:#fff}.series-final{padding:8px 12px;font-size:10px;font-weight:950;color:var(--gold);background:rgba(215,173,72,.06)}.connector{position:relative}.connector:before,.connector:after{content:"";position:absolute;background:rgba(215,173,72,.45)}.connector:before{height:2px;width:100%;left:0;top:50%}.connector:after{width:2px;height:46%;left:50%;top:27%}.final-round{justify-content:center;padding:0}.semifinal-round{padding:70px 0}.picture-meta{justify-content:center}.picture-chip{font-size:12px;padding:7px 11px}.bracket-champ{border-color:rgba(215,173,72,.7)!important;box-shadow:0 0 0 1px rgba(215,173,72,.25),0 10px 34px rgba(0,0,0,.3)}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a class="active" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div>
-<main><div class="container pagehead"><div class="eyebrow">2026 Season</div><h1>Playoff Picture</h1><p class="muted">If the regular season ended today.</p></div>
-<div class="container">
-<p class="playoff-note">The top 7 teams qualify for the ND Wiffle playoffs and the No. 1 seed receives a first-round bye. This page is a live projection only: seeds are pulled directly from the current standings and will change automatically whenever a new series is published.</p>
-<div id="pictureMeta" class="picture-meta"></div>
-<div id="pictureRoot"><div class="picture-empty">Loading current playoff picture…</div></div>
-<div class="playoff-intel">
-  <section class="intel-card"><h2>Remaining Opponents & Paths</h2><div class="intel-sub">The league is treated as a full round robin while the schedule is still being filled: every unplayed opponent is assumed to remain until eight distinct opponent series are completed or scheduled, at which point the omitted matchup can be inferred. Scheduled series show dates; assumed series show TBD. Magic numbers now use the top-seven clinch condition: a team only needs to guarantee finishing ahead of three opponents. Head-to-head wins have extra leverage because they add one win while also adding one loss to that opponent.</div><div id="pathGrid" class="path-grid"><div class="picture-empty">Loading paths…</div></div></section>
-  <section class="intel-card"><h2>Most Crucial Upcoming Series</h2><div class="intel-sub">Ranked across all assumed remaining round-robin matchups, including unscheduled TBD series, using playoff-cutoff implications, direct bubble matchups, and standings proximity.</div><div id="crucialSeries"><div class="picture-empty">Loading upcoming series…</div></div></section>
-</div>
-</div></main><footer><div class="container">ND Wiffle · Live 2026 playoff picture.</div></footer>
+<main><div class="container pagehead"><div class="eyebrow">2026 Postseason</div><h1>Playoff Bracket</h1><p class="muted">The regular season is complete. Series results populate here as playoff games are published.</p></div>
+<div class="container"><div id="pictureMeta" class="picture-meta"></div><div id="pictureRoot"><div class="picture-empty">Loading playoff bracket…</div></div></div></main><footer><div class="container">ND Wiffle · 2026 Playoffs.</div></footer>
 <script>
 const LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
+const FINAL_SEEDS=[
+ {rank:1,team_id:"storm",team:"Storm",W:20,L:4},{rank:2,team_id:"ball-busters",team:"Ball Busters",W:17,L:7},{rank:3,team_id:"underdawgs",team:"Underdawgs",W:16,L:8},{rank:4,team_id:"twin-titans",team:"Twin Titans",W:13,L:11},{rank:5,team_id:"silverbacks",team:"Silverbacks",W:13,L:11},{rank:6,team_id:"midnight",team:"Midnight",W:11,L:13},{rank:7,team_id:"goofy-goobers",team:"Goofy Goobers",W:10,L:14}
+];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-function teamLine(t){
- const record=`${t.W}-${t.L}`;
- return `<div class="seed-team"><div class="seed">${t.rank}</div>${LOGOS[t.team_id]?`<img src="${LOGOS[t.team_id]}" alt="">`:"<span></span>"}<div class="seed-name">${esc(t.team)}</div><div class="seed-record">${record}</div></div>`;
+const seedById=id=>FINAL_SEEDS.find(x=>x.team_id===id),pairKey=(a,b)=>[a,b].sort().join("__");
+function teamLine(t,sr=null){if(!t)return `<div class="seed-team"><div class="seed">—</div><span></span><div class="seed-name">TBD</div><div></div></div>`;const scores=sr?.games?.length?`<span class="team-game-scores">${sr.games.map(g=>{const val=t.team_id===sr.away_team_id?g.away_score:g.home_score;return `<span class="team-game-score">${val}</span>`}).join("")}</span>`:"";return `<div class="seed-team"><div class="seed">${t.rank}</div>${LOGOS[t.team_id]?`<img src="${LOGOS[t.team_id]}" alt="">`:"<span></span>"}<div class="seed-name">${esc(t.team)}</div><div class="seed-record"><span class="reg-record">${t.W}-${t.L}</span>${scores}</div></div>`}
+function seriesFor(series,round,a,b){return (series||[]).find(x=>x.series_type==="playoff"&&x.playoff_round===round&&pairKey(x.away_team_id,x.home_team_id)===pairKey(a,b))}
+function seriesWinner(sr){if(!sr||sr.series_status!=="complete")return null;return Number(sr.away_wins)>Number(sr.home_wins)?sr.away_team_id:sr.home_team_id}
+function gameChips(sr){if(!sr?.games?.length)return "";return `<div class="series-games">${sr.games.map((g,i)=>`<span class="series-game">G${i+1} <strong>${g.away_score}-${g.home_score}</strong></span>`).join("")}</div>`}
+function matchCard(a,b,label,sr=null){const aw=Number(sr?.away_wins||0),hw=Number(sr?.home_wins||0),winner=seriesWinner(sr);return `<div class="match ${winner?"bracket-champ":""}"><div class="match-label">${label}</div>${teamLine(a,sr)}${teamLine(b,sr)}${sr?gameChips(sr)+`<div class="series-final">Series: ${esc(sr.away_team)} ${aw}-${hw} ${esc(sr.home_team)}${winner?` · ${esc(seedById(winner)?.team||winner)} advances`:""}</div>`:""}</div>`}
+function render(results){
+ const po=(results?.series||[]).filter(x=>x.series_type==="playoff");
+ const [s1,s2,s3,s4,s5,s6,s7]=FINAL_SEEDS;
+ const q45=seriesFor(po,"First Round",s4.team_id,s5.team_id),q36=seriesFor(po,"First Round",s3.team_id,s6.team_id),q27=seriesFor(po,"First Round",s2.team_id,s7.team_id);
+ const firstW=[seriesWinner(q45),seriesWinner(q36),seriesWinner(q27)].filter(Boolean).map(seedById).filter(Boolean).sort((a,b)=>a.rank-b.rank);
+ let semi1A=s1,semi1B=null,semi2A=null,semi2B=null;
+ if(firstW.length===3){semi1B=[...firstW].sort((a,b)=>b.rank-a.rank)[0];const rest=firstW.filter(x=>x.team_id!==semi1B.team_id).sort((a,b)=>a.rank-b.rank);semi2A=rest[0];semi2B=rest[1]}
+ const sf1=semi1B?seriesFor(po,"Semifinal",semi1A.team_id,semi1B.team_id):null,sf2=semi2A&&semi2B?seriesFor(po,"Semifinal",semi2A.team_id,semi2B.team_id):null;
+ const fw=[seriesWinner(sf1),seriesWinner(sf2)].filter(Boolean).map(seedById).filter(Boolean).sort((a,b)=>a.rank-b.rank),fA=fw[0]||null,fB=fw[1]||null,ws=fA&&fB?seriesFor(po,"World Series",fA.team_id,fB.team_id):null;
+ const root=document.getElementById("pictureRoot");
+ root.innerHTML=`<div class="bracket-wrap"><div class="bracket"><div class="round"><div class="round-title">First Round · Best of 3</div><div class="bye-card">${teamLine(s1)}<div class="bye-copy">First-round bye</div></div>${matchCard(s4,s5,"4 vs 5",q45)}${matchCard(s3,s6,"3 vs 6",q36)}${matchCard(s2,s7,"2 vs 7",q27)}</div><div class="connector"></div><div class="round semifinal-round"><div class="round-title">Semifinals · Best of 5</div>${matchCard(semi1A,semi1B,"Semifinal 1",sf1)}${matchCard(semi2A,semi2B,"Semifinal 2",sf2)}</div><div class="connector"></div><div class="round final-round"><div class="round-title">World Series · Best of 7</div>${matchCard(fA,fB,"World Series",ws)}</div></div></div>`;
+ const complete=po.filter(x=>x.series_status==="complete").length;document.getElementById("pictureMeta").innerHTML=`<span class="picture-chip"><strong>7</strong> playoff teams</span><span class="picture-chip"><strong>${complete}</strong> completed playoff series</span><span class="picture-chip">#1 Storm receives a bye</span>`;
 }
-function matchup(a,b,label){return `<a class="match" style="display:block;color:inherit;text-decoration:none" href="/matchup/?away=${encodeURIComponent(a.team_id)}&home=${encodeURIComponent(b.team_id)}"><div class="match-label">${label} · Matchup Preview</div>${teamLine(a)}${teamLine(b)}</a>`}
-function placeholder(label,text){return `<div class="match"><div class="match-label">${label}</div><div class="placeholder">${text}</div></div>`}
-function render(rows,count){
- const root=document.getElementById("pictureRoot"),meta=document.getElementById("pictureMeta");
- const totalGames=rows.reduce((s,r)=>s+Number(r.GP||0),0);
- meta.innerHTML=`<span class="picture-chip"><strong>${count}</strong> published ${count===1?"series":"series"}</span><span class="picture-chip"><strong>${totalGames}</strong> team-games in standings</span><span class="picture-chip">Top <strong>7</strong> qualify</span>`;
- if(!rows.length){root.innerHTML='<div class="picture-empty">No standings are available yet.</div>';return}
- const seeds=rows.slice(0,7);
- if(seeds.length<7){root.innerHTML='<div class="picture-empty">The playoff picture will populate once all active teams are present in the standings.</div>';return}
- const s1=seeds[0],s2=seeds[1],s3=seeds[2],s4=seeds[3],s5=seeds[4],s6=seeds[5],s7=seeds[6];
- root.innerHTML=`<div class="bracket-wrap"><div class="bracket">
-  <div class="round"><div class="round-title">First Round</div>
-    <div class="bye-card">${teamLine(s1)}<div class="bye-copy">First-round bye</div></div>
-    ${matchup(s4,s5,"4 vs 5")}
-    ${matchup(s3,s6,"3 vs 6")}
-    ${matchup(s2,s7,"2 vs 7")}
-  </div>
-  <div class="connector">›</div>
-  <div class="round semifinal-round"><div class="round-title">Semifinals</div>
-    ${placeholder("Semifinal 1",`No. 1 ${esc(s1.team)} awaits a first-round winner.`)}
-    ${placeholder("Semifinal 2","The remaining first-round winners advance here.")}
-  </div>
-  <div class="connector">›</div>
-  <div class="round final-round"><div class="round-title">World Series</div>
-    ${placeholder("Championship","Semifinal winners advance to the World Series.")}
-  </div>
- </div></div>
- <div class="projection-card"><h2>Current Seeds</h2><div class="seed-list">${rows.map((r,i)=>`<div class="seed-list-row ${i>=7?"out":""}"><div class="seed">${r.rank}</div><div>${esc(r.team)}</div><div class="cut">${i<7?`${r.W}-${r.L}`:"Outside playoff field"}</div></div>`).join("")}</div></div>`;
-}
-
-const n=v=>Number(v||0);
-function pairKey(a,b){return [a,b].sort().join("__")}
-function scheduledRemaining(schedule,results){
- const completed=new Set((results?.series||[]).filter(x=>Number(x.game_count??x.games?.length??0)>=3).map(x=>pairKey(x.away_team_id,x.home_team_id)));
- return (schedule?.scheduled||[]).filter(x=>!completed.has(pairKey(x.team_a_id,x.team_b_id)));
-}
-function logoFor(id){return LOGOS[id]||""}
-function teamNameById(rows,id){return rows.find(r=>r.team_id===id)?.team||id}
-function roundRobinRemaining(rows,results,schedule){
- const ids=rows.map(r=>r.team_id);
- const seriesRows=results?.series||[];
- const scheduled=scheduledRemaining(schedule,results);
- const scheduledByPair=new Map(scheduled.map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));
-
- // Any matchup with at least one game played counts as an accounted opponent.
- // A partial series still has remaining games, but it is not a new opponent.
- const actualOpp=new Map(ids.map(id=>[id,new Set()]));
- const completedPairs=new Set();
- const partialByPair=new Map();
-
- for(const sr of seriesRows){
-   const games=Number(sr.game_count??sr.games?.length??0);
-   if(games<=0)continue;
-   if(actualOpp.has(sr.away_team_id))actualOpp.get(sr.away_team_id).add(sr.home_team_id);
-   if(actualOpp.has(sr.home_team_id))actualOpp.get(sr.home_team_id).add(sr.away_team_id);
-   const k=pairKey(sr.away_team_id,sr.home_team_id);
-   if(games>=3)completedPairs.add(k);
-   else partialByPair.set(k,3-games);
- }
- for(const x of scheduled){
-   if(actualOpp.has(x.team_a_id))actualOpp.get(x.team_a_id).add(x.team_b_id);
-   if(actualOpp.has(x.team_b_id))actualOpp.get(x.team_b_id).add(x.team_a_id);
- }
-
- // Each team plays 8 of the other 9 teams, so each omitted matchup is mutual.
- // Once either side has eight distinct opponents accounted for, its lone
- // non-opponent is known. Propagate that omission to the other team too.
- const omittedPairs=new Set();
- const omittedByTeam=new Map(ids.map(id=>[id,new Set()]));
- let changed=true,safety=0;
- while(changed&&safety++<20){
-   changed=false;
-   for(const id of ids){
-     const current=actualOpp.get(id)||new Set();
-     const alreadyOmitted=omittedByTeam.get(id)||new Set();
-     if(alreadyOmitted.size)continue;
-     if(current.size>=8){
-       const omitted=ids.filter(opp=>opp!==id&&!current.has(opp));
-       if(omitted.length===1){
-         const opp=omitted[0],k=pairKey(id,opp);
-         if(!omittedPairs.has(k)){omittedPairs.add(k);changed=true}
-         omittedByTeam.get(id).add(opp);
-         omittedByTeam.get(opp)?.add(id);
-       }
-     }
-   }
- }
-
- const info=new Map();
- for(const id of ids){
-   const completedOpp=new Set();
-   const partialOpp=new Set();
-   for(const sr of seriesRows){
-     const games=Number(sr.game_count??sr.games?.length??0);
-     if(games<=0)continue;
-     const opp=sr.away_team_id===id?sr.home_team_id:sr.home_team_id===id?sr.away_team_id:null;
-     if(!opp)continue;
-     if(games>=3)completedOpp.add(opp); else partialOpp.add(opp);
-   }
-   const scheduledOpp=new Set();
-   for(const x of scheduled){
-     if(x.team_a_id===id)scheduledOpp.add(x.team_b_id);
-     else if(x.team_b_id===id)scheduledOpp.add(x.team_a_id);
-   }
-
-   const omitted=ids.filter(opp=>opp!==id&&omittedPairs.has(pairKey(id,opp)));
-   const remaining=ids.filter(opp=>
-     opp!==id &&
-     !completedOpp.has(opp) &&
-     !omittedPairs.has(pairKey(id,opp))
-   );
-
-   const rowsForTeam=remaining.map(opp=>{
-     const pair=pairKey(id,opp),sch=scheduledByPair.get(pair);
-     return {
-       opp_id:opp,
-       opp:teamNameById(rows,opp),
-       scheduled:!!sch,
-       date:sch?.series_date||"",
-       time:sch?.series_time||"",
-       games_remaining:partialByPair.get(pair)||3,
-       partial:partialOpp.has(opp)
-     };
-   }).sort((a,b)=>
-     Number(b.partial)-Number(a.partial) ||
-     Number(b.scheduled)-Number(a.scheduled) ||
-     String(a.date||"9999").localeCompare(String(b.date||"9999")) ||
-     a.opp.localeCompare(b.opp)
-   );
-
-   info.set(id,{
-     playedOpp:completedOpp,
-     partialOpp,
-     scheduledOpp,
-     accounted:new Set([...(actualOpp.get(id)||[])]),
-     remaining:rowsForTeam,
-     omitted
-   });
- }
- return {info,scheduled,scheduledByPair,omittedPairs};
-}
-function formatDate(d){
- if(!d)return "TBD";
- const [y,m,day]=String(d).split("-").map(Number);
- return m&&day?`${m}/${day}`:d;
-}
-function opponentChips(items){
- return items.map(x=>`<span class="opp-chip ${x.scheduled?"scheduled":""}">${logoFor(x.opp_id)?`<img class="team-icon" src="${logoFor(x.opp_id)}" alt="">`:""}<span>${esc(x.opp)}</span><span class="date">${x.partial?`${x.games_remaining} game${x.games_remaining===1?"":"s"} left`:x.scheduled?formatDate(x.date):"TBD"}</span></span>`).join("");
-}
-function opponentMagic(team,opp){
- // Traditional elimination number against one opponent in a 24-game season:
- // team wins + opponent losses needed to guarantee finishing ahead on wins.
- return Math.max(0,25-n(team.W)-n(opp.L));
-}
-function clinchProfile(team,rows,rr){
- const others=rows.filter(o=>o.team_id!==team.team_id);
- // To guarantee a top-7 finish, the team only needs to guarantee finishing
- // ahead of any three opponents. The three easiest opponents to eliminate
- // are those already carrying the most losses.
- const byEase=others.slice().sort((a,b)=>
-   opponentMagic(team,a)-opponentMagic(team,b) ||
-   n(b.L)-n(a.L) ||
-   n(a.W)-n(b.W)
- );
- const three=byEase.slice(0,3);
- const limiting=three[2]||null;
- const magic=limiting?opponentMagic(team,limiting):0;
- const remainingGames=(rr.info.get(team.team_id)?.remaining||[]).reduce((a,x)=>a+Number(x.games_remaining||3),0);
- const ownWinsNeeded=Math.min(magic,remainingGames);
- const helpNeeded=Math.max(0,magic-remainingGames);
- return {three,limiting,magic,remainingGames,ownWinsNeeded,helpNeeded};
-}
-function leverageForSeries(team,opp){
- const before=opponentMagic(team,opp);
- // Each head-to-head win simultaneously adds one team win and one opponent loss.
- const afterOne=Math.max(0,before-2);
- return Math.max(0,before-afterOne);
-}
-function renderPaths(rows,results,schedule){
- const root=document.getElementById("pathGrid");
- if(!rows.length){root.innerHTML='<div class="picture-empty">No standings available.</div>';return}
- const rr=roundRobinRemaining(rows,results,schedule);
-
- root.innerHTML=rows.map(r=>{
-   const x=rr.info.get(r.team_id)||{remaining:[],omitted:[]};
-   const prof=clinchProfile(r,rows,rr);
-   const direct=x.remaining
-     .map(o=>({ ...o, oppRow:rows.find(t=>t.team_id===o.opp_id) }))
-     .filter(o=>o.oppRow)
-     .map(o=>({...o,magic:opponentMagic(r,o.oppRow),leverage:leverageForSeries(r,o.oppRow)}))
-     .sort((a,b)=>a.magic-b.magic||b.leverage-a.leverage);
-
-   let tag,path;
-   if(prof.magic===0){
-     tag="Clinched";
-     path="This team is already guaranteed to finish ahead of at least three opponents on wins.";
-   }else if(prof.helpNeeded===0){
-     tag=`Magic number: ${prof.magic}`;
-     path=`At worst, ${prof.magic} more wins guarantee a top-seven finish even if every bubble rival wins all of its other games. The current three easiest teams to mathematically finish ahead of are ${prof.three.map(t=>t.team).join(", ")}.`;
-   }else{
-     tag="Needs help";
-     path=`Winning every remaining game is not enough to clinch without help. A combination of ${prof.magic} team wins and losses by the three easiest elimination targets is needed; at least ${prof.helpNeeded} of those reductions must come from opponent losses.`;
-   }
-
-   const leverage=direct.filter(o=>o.leverage>0&&o.magic>0).slice(0,3);
-   const leverageCopy=leverage.length
-     ? `<div class="path-copy"><strong>Direct leverage:</strong> ${leverage.map(o=>`${esc(o.opp)} (${o.magic} vs opponent now; each head-to-head win cuts that opponent's number by 2)`).join(" · ")}</div>`
-     : "";
-
-   const omitted=x.omitted.length
-     ? `<div class="path-copy opp"><strong>Omitted matchup:</strong> ${x.omitted.map(id=>esc(teamNameById(rows,id))).join(", ")}</div>`
-     : "";
-
-   return `<div class="path-row">
-     <div class="path-head"><span class="path-team">#${r.rank} ${esc(r.team)} · ${r.W}-${r.L}</span><span class="path-tag">${esc(tag)}</span></div>
-     <div class="path-copy">${path}</div>
-     ${leverageCopy}
-     <div class="opp-list">${opponentChips(x.remaining)}</div>
-     ${omitted}
-   </div>`;
- }).join("");
-}
-function renderCrucial(rows,results,schedule){
- const root=document.getElementById("crucialSeries"),rank=new Map(rows.map(r=>[r.team_id,n(r.rank)]));
- const rr=roundRobinRemaining(rows,results,schedule),seen=new Set(),matchups=[];
-
- for(const [teamId,x] of rr.info){
-   for(const rem of x.remaining){
-     const k=pairKey(teamId,rem.opp_id);
-     if(seen.has(k))continue;
-     seen.add(k);
-
-     const sch=rr.scheduledByPair.get(k);
-     const a=teamId,b=rem.opp_id,ra=rank.get(a)||99,rb=rank.get(b)||99;
-     const teamA=rows.find(t=>t.team_id===a),teamB=rows.find(t=>t.team_id===b);
-     const bubbleA=Math.max(0,5-Math.abs(ra-7.5)),bubbleB=Math.max(0,5-Math.abs(rb-7.5));
-     const crosses=(ra<=7&&rb>=8)||(rb<=7&&ra>=8);
-     const bothBubble=ra>=5&&ra<=10&&rb>=5&&rb<=10;
-     const closeness=Math.max(0,4-Math.abs(ra-rb));
-     const scheduledBonus=sch?1.5:0;
-
-     // Head-to-head wins count twice against an opponent-specific magic number:
-     // one team win + one opponent loss.
-     const leverageA=teamA&&teamB?leverageForSeries(teamA,teamB):0;
-     const leverageB=teamA&&teamB?leverageForSeries(teamB,teamA):0;
-     const directMagic=Math.max(leverageA,leverageB);
-     const score=bubbleA+bubbleB+(crosses?8:0)+(bothBubble?4:0)+closeness+scheduledBonus+directMagic*2;
-
-     let why=crosses
-       ?"Direct inside-vs-outside bubble matchup"
-       :bothBubble
-         ?"Both teams are clustered around the playoff cutoff"
-         :ra<=4&&rb<=4
-           ?"Seeding implications near the top of the bracket"
-           :"Standings and seeding implications";
-     if(directMagic>0)why+=` · each head-to-head win can create a 2-step clinch swing`;
-
-     matchups.push({
-       a,b,ra,rb,score,why,
-       date:sch?.series_date||"",
-       time:sch?.series_time||"",
-       scheduled:!!sch
-     });
-   }
- }
-
- matchups.sort((a,b)=>
-   b.score-a.score ||
-   Number(b.scheduled)-Number(a.scheduled) ||
-   String(a.date||"9999").localeCompare(String(b.date||"9999"))
- );
- const upcoming=matchups.slice(0,7);
- root.innerHTML=upcoming.length?upcoming.map(x=>`
-   <div class="crucial-row">
-     <div class="crucial-date">${x.scheduled?`${formatDate(x.date)}${x.time?` · ${esc(x.time)}`:""}`:"TBD"}</div>
-     <div>
-       <div class="crucial-match">
-         ${logoFor(x.a)?`<img class="team-icon" src="${logoFor(x.a)}" alt="">`:""}<strong>#${x.ra} ${esc(teamNameById(rows,x.a))}</strong>
-         <span class="vs">vs</span>
-         ${logoFor(x.b)?`<img class="team-icon" src="${logoFor(x.b)}" alt="">`:""}<strong>#${x.rb} ${esc(teamNameById(rows,x.b))}</strong>
-       </div>
-       <div class="crucial-why">${esc(x.why)}${x.scheduled?" · Scheduled":" · Assumed remaining matchup"}</div>
-     </div>
-     <div class="seed-record">Impact ${x.score.toFixed(1)}</div>
-   </div>`).join(""):'<div class="picture-empty">No remaining round-robin matchups.</div>';
-}
-Promise.all([
- fetch("/api/public/league?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})),
- fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})),
- fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()}))
-]).then(([leagueRes,resultsRes,scheduleRes])=>{
- if(!leagueRes.ok||!leagueRes.j.ok)throw new Error(leagueRes.j.error||"Playoff picture unavailable");
- const rows=leagueRes.j.standings||[];
- render(rows,leagueRes.j.series_count||0);
- renderPaths(rows,resultsRes.ok&&resultsRes.j.ok?resultsRes.j:{series:[]},scheduleRes.ok&&scheduleRes.j.ok?scheduleRes.j:{scheduled:[]});
- renderCrucial(rows,resultsRes.ok&&resultsRes.j.ok?resultsRes.j:{series:[]},scheduleRes.ok&&scheduleRes.j.ok?scheduleRes.j:{scheduled:[]});
-}).catch(err=>{
- console.error(err);
- document.getElementById("pictureRoot").innerHTML='<div class="picture-empty">The playoff picture is temporarily unavailable.</div>';
- document.getElementById("pathGrid").innerHTML='<div class="picture-empty">Playoff paths are temporarily unavailable.</div>';
- document.getElementById("crucialSeries").innerHTML='<div class="picture-empty">Upcoming-series analysis is temporarily unavailable.</div>';
-});
-</script><script src="/assets/hof.js?v=146"></script></body></html>
+fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json()).then(j=>{if(!j.ok)throw new Error(j.error);render(j)}).catch(e=>{console.error(e);render({series:[]})});
+</script><script src="/assets/hof.js?v=147"></script></body></html>

@@ -1,0 +1,451 @@
+function json(body, status=200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }
+  });
+}
+const norm = v => String(v || "").trim().toLowerCase();
+const int = v => Number.isInteger(v) ? v : null;
+function nonnegInt(v){ return Number.isInteger(v) && v >= 0; }
+function sum(rows, key){ return rows.reduce((a,r)=>a+Number(r[key]||0),0); }
+
+async function registry(DB) {
+  const [playersRes, playerAliasesRes, teamsRes, teamAliasesRes] = await DB.batch([
+    DB.prepare("SELECT player_id,name,class_year,retired FROM players"),
+    DB.prepare("SELECT alias,player_id FROM player_aliases"),
+    DB.prepare("SELECT team_id,display_name FROM teams"),
+    DB.prepare("SELECT alias,team_id FROM team_aliases")
+  ]);
+  const players=playersRes.results||[];
+  const playersByName=new Map(players.map(r=>[norm(r.name),r]));
+  const playersById=new Map(players.map(r=>[r.player_id,r]));
+  const playerAliasesByName=new Map();
+  for(const a of playerAliasesRes.results||[]){
+    const player=playersById.get(a.player_id);
+    if(player)playerAliasesByName.set(norm(a.alias),player);
+  }
+  const teamsByName=new Map((teamsRes.results||[]).map(r=>[norm(r.display_name),r.team_id]));
+  for(const r of teamAliasesRes.results||[])teamsByName.set(norm(r.alias),r.team_id);
+  return {playersByName,playersById,playerAliasesByName,teamsByName};
+}
+function collectPlayerNames(payload){
+  const names=new Set();
+  for(const p of payload.participants||[]) names.add(p.name);
+  for(const p of payload.batting||[]) names.add(p.player);
+  for(const p of payload.pitching||[]) names.add(p.player);
+  for(const g of payload.games||[]){
+    names.add(g.winning_pitcher); names.add(g.losing_pitcher);
+    if(g.save_pitcher) names.add(g.save_pitcher);
+  }
+  for(const c of payload.manual_corrections||[]) if(c.player) names.add(c.player);
+  const byNorm=new Map();
+  for(const name of names)if(name && !byNorm.has(norm(name)))byNorm.set(norm(name),name);
+  return [...byNorm.values()];
+}
+
+function playerIdBase(name){
+  const base=String(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+  return base||"player";
+}
+function resolvePlayerIds(payload,reg,names){
+  const errors=[],newPlayers=[],playerIds=new Map();
+  const resolutions=new Map((payload.player_resolutions||[]).map(r=>[norm(r.uploaded_name),r]));
+  const reserved=new Set(reg.playersById.keys());
+  for(const name of names){
+    const k=norm(name);
+    const exact=reg.playersByName.get(k)||reg.playerAliasesByName.get(k);
+    if(exact){playerIds.set(k,exact.player_id);continue}
+    const r=resolutions.get(k);
+    if(!r){errors.push(`Unrecognized player requires commissioner review: ${name}`);continue}
+    if(r.action==="existing"){
+      const existing=reg.playersById.get(r.player_id);
+      if(!existing)errors.push(`${name}: selected existing player no longer exists.`);
+      else playerIds.set(k,existing.player_id);
+      continue;
+    }
+    if(r.action==="new"){
+      if(r.confirmed!==true){errors.push(`${name}: new player was not explicitly confirmed.`);continue}
+      if(!Number.isInteger(r.class_year)||r.class_year<2021||r.class_year>2100){
+        errors.push(`${name}: class year is required for a new player.`);continue
+      }
+      let id=playerIdBase(name),suffix=2;
+      while(reserved.has(id)){id=`${playerIdBase(name)}_${suffix++}`}
+      reserved.add(id);
+      playerIds.set(k,id);
+      newPlayers.push({player_id:id,name,class_year:r.class_year,retired:0});
+      continue;
+    }
+    errors.push(`${name}: player identity resolution is incomplete.`);
+  }
+  return {errors,newPlayers,playerIds};
+}
+function seriesMaxGames(payload){return payload?.series_type==="playoff"?Number(payload.playoff?.series_length||3):3;}
+function seriesWinsNeeded(payload){return Math.floor(seriesMaxGames(payload)/2)+1;}
+function seriesIsComplete(payload,games=payload?.games||[]){const need=seriesWinsNeeded(payload),aw=games.filter(g=>Number(g.away_score)>Number(g.home_score)).length,hw=games.length-aw;return Math.max(aw,hw)>=need;}
+function serverValidate(payload, teamIds, playerIds){
+  const errors=[], warnings=[];
+  if(payload.schema_version!==3) errors.push("Unsupported schema_version; expected 3.");
+  if(!payload.series_id) errors.push("series_id is required.");
+  const s=payload.series||{};
+  if(!Number.isInteger(s.season) || s.season<2021 || s.season>2100) errors.push("Invalid season.");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(s.date||""))) errors.push("Invalid series date.");
+  if(!teamIds.away || !teamIds.home) errors.push("Unknown home or away team.");
+  if(teamIds.away && teamIds.home && teamIds.away===teamIds.home) errors.push("Home and away team cannot match.");
+
+  if(payload.series_type==="conditional_forfeit"){
+    const cf=payload.conditional_forfeit||{};
+    if(!["away","home"].includes(cf.forfeiting_side)) errors.push("Conditional forfeit requires a valid forfeiting_side.");
+    if(!["away","home"].includes(cf.beneficiary_side)) errors.push("Conditional forfeit requires a valid beneficiary_side.");
+    if(cf.forfeiting_side && cf.beneficiary_side && cf.forfeiting_side===cf.beneficiary_side) errors.push("Forfeiting and beneficiary sides cannot match.");
+    if(Number(cf.conditional_wins)!==3 || Number(cf.conditional_losses)!==3) errors.push("Conditional forfeit must assign exactly 3 wins and 3 losses.");
+    if((payload.games||[]).length) errors.push("Conditional forfeits cannot include game rows.");
+    if((payload.batting||[]).length || (payload.pitching||[]).length || (payload.participants||[]).length) errors.push("Conditional forfeits cannot include player stats or participants.");
+    return {errors,warnings};
+  }
+
+  if(payload.series_type==="mutual_agreement"){
+    const ma=payload.mutual_agreement||{};
+    const aw=Number(ma.away_wins),hw=Number(ma.home_wins);
+    if(!Number.isInteger(aw)||!Number.isInteger(hw)||aw<0||hw<0||aw+hw!==3) errors.push("Mutual agreement must settle exactly three games.");
+    if(![[3,0],[2,1],[1,2],[0,3]].some(([a,h])=>a===aw&&h===hw)) errors.push("Mutual agreement result must be 3-0, 2-1, 1-2, or 0-3.");
+    const vg=ma.virtual_games||[];
+    if(vg.length!==3) errors.push("Mutual agreement must include three virtual 6-0 game results.");
+    for(const g of vg){
+      if(!((Number(g.away_score)===6&&Number(g.home_score)===0)||(Number(g.away_score)===0&&Number(g.home_score)===6))) errors.push("Every mutual-agreement game must be recorded 6-0.");
+    }
+    if((payload.games||[]).length) errors.push("Mutual agreements store virtual games in mutual_agreement.virtual_games, not the games table.");
+    if((payload.batting||[]).length||(payload.pitching||[]).length||(payload.participants||[]).length) errors.push("Mutual agreements cannot include player stats or participants.");
+    return {errors,warnings};
+  }
+
+  const games=payload.games||[],maxGames=seriesMaxGames(payload);
+  if(payload.series_type==="playoff"){
+    if(!["First Round","Semifinal","World Series"].includes(payload.playoff?.round))errors.push("Playoff series requires a valid round.");
+    if(![3,5,7].includes(maxGames))errors.push("Playoff series length must be 3, 5, or 7 games.");
+  }
+  if(games.length<1||games.length>maxGames) errors.push(`A ${payload.series_type==="playoff"?"playoff":"played"} series entry must contain 1 to ${maxGames} games.`);
+  const participantByName=new Map((payload.participants||[]).map(p=>[norm(p.name),p]));
+  const pitcherByName=new Map((payload.pitching||[]).map(p=>[norm(p.player),p]));
+  const participantNames=new Set();
+  for(const p of payload.participants||[]){
+    if(participantNames.has(norm(p.name))) errors.push(`Duplicate participant: ${p.name}`);
+    participantNames.add(norm(p.name));
+    if(!playerIds.get(norm(p.name))) errors.push(`Unknown participant: ${p.name}`);
+    if(!["away","home"].includes(p.side)) errors.push(`Invalid participant side: ${p.name}`);
+    if(!Number.isInteger(p.games_played)||p.games_played<1||p.games_played>games.length) errors.push(`Invalid GP for ${p.name}; this entry contains ${games.length} game(s).`);
+  }
+
+  let awayRS=0, homeRS=0;
+  for(const g of games){
+    if(!Number.isInteger(g.game)||g.game<1||g.game>maxGames) errors.push("Invalid game number.");
+    if(!nonnegInt(g.away_score)||!nonnegInt(g.home_score)) errors.push(`Game ${g.game}: invalid score.`);
+    if(g.away_score===g.home_score) errors.push(`Game ${g.game}: tie score is not allowed.`);
+    awayRS+=Number(g.away_score||0); homeRS+=Number(g.home_score||0);
+    const wp=participantByName.get(norm(g.winning_pitcher));
+    const lp=participantByName.get(norm(g.losing_pitcher));
+    const wpPitch= pitcherByName.get(norm(g.winning_pitcher));
+    const lpPitch= pitcherByName.get(norm(g.losing_pitcher));
+    if(!wp||!lp) errors.push(`Game ${g.game}: pitcher decision references a non-participant.`);
+    if(!wpPitch) errors.push(`Game ${g.game}: winning pitcher ${g.winning_pitcher||"(blank)"} does not appear in the uploaded pitching stats.`);
+    if(!lpPitch) errors.push(`Game ${g.game}: losing pitcher ${g.losing_pitcher||"(blank)"} does not appear in the uploaded pitching stats.`);
+    if(wp&&lp&&wpPitch&&lpPitch){
+      const winnerSide=g.away_score>g.home_score?"away":"home";
+      const loserSide=winnerSide==="away"?"home":"away";
+      if(wp.side!==winnerSide) warnings.push(`Game ${g.game}: winning pitcher team does not match game winner.`);
+      if(lp.side!==loserSide) warnings.push(`Game ${g.game}: losing pitcher team does not match game loser.`);
+    }
+    if(g.save_pitcher){
+      const sv=participantByName.get(norm(g.save_pitcher));
+      const svPitch=pitcherByName.get(norm(g.save_pitcher));
+      const winnerSide=g.away_score>g.home_score?"away":"home";
+      if(!sv) errors.push(`Game ${g.game}: save pitcher is not a participant.`);
+      if(!svPitch) errors.push(`Game ${g.game}: save pitcher ${g.save_pitcher} does not appear in the uploaded pitching stats.`);
+      if(sv&&svPitch&&sv.side!==winnerSide) warnings.push(`Game ${g.game}: save pitcher team does not match game winner.`);
+      if(norm(g.save_pitcher)===norm(g.winning_pitcher)) warnings.push(`Game ${g.game}: winning pitcher is also save pitcher.`);
+    }
+  }
+
+  for(const b of payload.batting||[]){
+    if(!playerIds.get(norm(b.player))) errors.push(`Unknown batting player: ${b.player}`);
+    if(!["away","home"].includes(b.side)) errors.push(`Invalid batting side: ${b.player}`);
+    for(const k of ["games_played","PA","AB","R","H","1B","2B","3B","HR","RBI","BB","SO"]){
+      if(!nonnegInt(b[k])) errors.push(`${b.player}: batting ${k} must be a non-negative integer.`);
+    }
+  }
+  const awayBatR=sum((payload.batting||[]).filter(r=>r.side==="away"),"R");
+  const homeBatR=sum((payload.batting||[]).filter(r=>r.side==="home"),"R");
+  if(awayBatR!==awayRS) warnings.push(`Away batting R (${awayBatR}) != away scoreboard runs (${awayRS}).`);
+  if(homeBatR!==homeRS) warnings.push(`Home batting R (${homeBatR}) != home scoreboard runs (${homeRS}).`);
+
+  const starts={away:0,home:0};
+  for(const p of payload.pitching||[]){
+    if(!playerIds.get(norm(p.player))) errors.push(`Unknown pitching player: ${p.player}`);
+    if(!["away","home"].includes(p.side)) errors.push(`Invalid pitching side: ${p.player}`);
+    if(!Number.isInteger(p.appearances)||p.appearances<1||p.appearances>games.length) errors.push(`${p.player}: Apps must be 1-${games.length}.`);
+    if(!Number.isInteger(p.starts)||p.starts<0||p.starts>games.length||p.starts>p.appearances) errors.push(`${p.player}: invalid Starts.`);
+    starts[p.side]=(starts[p.side]||0)+Number(p.starts||0);
+    for(const k of ["games_played","outs_recorded","BF","R","ER","K","H","BB","HR","WP"]){
+      if(!nonnegInt(p[k])) errors.push(`${p.player}: pitching ${k} must be a non-negative integer.`);
+    }
+  }
+  if(starts.away!==games.length) warnings.push(`Away team has ${starts.away} pitching starts, expected ${games.length}.`);
+  if(starts.home!==games.length) warnings.push(`Home team has ${starts.home} pitching starts, expected ${games.length}.`);
+  const awayPitR=sum((payload.pitching||[]).filter(r=>r.side==="away"),"R");
+  const homePitR=sum((payload.pitching||[]).filter(r=>r.side==="home"),"R");
+  if(awayPitR!==homeRS) warnings.push(`Away pitching R (${awayPitR}) != home scoreboard runs (${homeRS}).`);
+  if(homePitR!==awayRS) warnings.push(`Home pitching R (${homePitR}) != away scoreboard runs (${awayRS}).`);
+
+  for(const c of payload.manual_corrections||[]){
+    if(!c.reason || !String(c.reason).trim()) errors.push(`${c.id||"Correction"}: correction reason is required.`);
+    if(c.corrected_value===null || c.corrected_value===undefined || Number(c.corrected_value)<0) errors.push(`${c.id||"Correction"}: corrected value is invalid.`);
+  }
+  const clientWarnings=Number(payload.validation?.warning_count||0);
+  const approvals=payload.validation?.warnings_approved||[];
+  if(clientWarnings>0){
+    if(!payload.validation?.all_warnings_approved) errors.push("Client validation still has unapproved warnings.");
+    if(approvals.length<clientWarnings) errors.push("Not all client warnings include approval records.");
+    if(approvals.some(a=>!String(a.reason||"").trim())) errors.push("Every approved warning requires an explanation.");
+  }
+  if(warnings.length>0 && !payload.validation?.all_warnings_approved){
+    errors.push("Server revalidation found warnings that are not approved.");
+  }
+  return {errors,warnings};
+}
+
+
+function mergeRowsByPlayer(existingRows,incomingRows,playerIds,kind){
+  const map=new Map();
+  const add=row=>{
+    const id=playerIds.get(norm(row.player));
+    const key=`${id||norm(row.player)}|${row.side}`;
+    if(!map.has(key))map.set(key,{...row});
+    else{
+      const x=map.get(key);
+      x.games_played=Number(x.games_played||0)+Number(row.games_played||0);
+      const fields=kind==="batting"?["PA","AB","R","H","1B","2B","3B","HR","RBI","BB","SO"]:["appearances","starts","outs_recorded","BF","R","ER","K","H","BB","HR","WP"];
+      for(const f of fields)x[f]=Number(x[f]||0)+Number(row[f]||0);
+    }
+  };
+  for(const r of existingRows||[])add(r);
+  for(const r of incomingRows||[])add(r);
+  return [...map.values()];
+}
+function mergePartialPayload(existingPayload,incomingPayload,playerIds){
+  const oldGames=existingPayload.games||[],newGames=incomingPayload.games||[],maxGames=seriesMaxGames(incomingPayload||existingPayload);
+  if(seriesIsComplete(existingPayload,oldGames))throw new Error("Existing series is already complete.");
+  if(oldGames.length+newGames.length>maxGames)throw new Error(`Appending ${newGames.length} game(s) would create ${oldGames.length+newGames.length} games, above the ${maxGames}-game maximum.`);
+  const games=[...oldGames.map((g,i)=>({...g,game:i+1})),...newGames.map((g,i)=>({...g,game:oldGames.length+i+1}))];
+  const partMap=new Map();
+  for(const part of [...(existingPayload.participants||[]),...(incomingPayload.participants||[])]){
+    const id=playerIds.get(norm(part.name)),key=`${id||norm(part.name)}|${part.side}`,prior=partMap.get(key);
+    if(!prior)partMap.set(key,{...part}); else prior.games_played=Math.min(maxGames,Number(prior.games_played||0)+Number(part.games_played||0));
+  }
+  const merged={...incomingPayload,series_type:incomingPayload.series_type||existingPayload.series_type||"played",series_status:seriesIsComplete(incomingPayload,games)?"complete":"in_progress",games_in_entry:newGames.length,total_games_published:games.length,games,
+    participants:[...partMap.values()],
+    batting:mergeRowsByPlayer(existingPayload.batting||[],incomingPayload.batting||[],playerIds,"batting"),
+    pitching:mergeRowsByPlayer(existingPayload.pitching||[],incomingPayload.pitching||[],playerIds,"pitching"),
+    gp_overrides:[],pitching_usage:[],source_totals:null,
+    manual_corrections:[...(existingPayload.manual_corrections||[]),...(incomingPayload.manual_corrections||[]).map((c,i)=>({...c,id:`append_${oldGames.length+1}_${i+1}_${c.id||"correction"}`}))],
+    commissioner_notes:[existingPayload.commissioner_notes,incomingPayload.commissioner_notes].filter(Boolean).join(" | ")||null,
+    validation:{...(incomingPayload.validation||{})}
+  };
+  const d=new Map(),get=name=>{if(!name)return null;const k=norm(name);if(!d.has(k))d.set(k,{player:name,team:null,W:0,L:0,SV:0});return d.get(k)};
+  for(const g of games){const w=get(g.winning_pitcher);if(w)w.W++;const l=get(g.losing_pitcher);if(l)l.L++;const sv=get(g.save_pitcher);if(sv)sv.SV++;}
+  merged.pitching_decisions=[...d.values()];
+  return merged;
+}
+
+export async function onRequestPost(context) {
+  const DB=context.env.DB;
+  if(!DB) return json({ok:false,error:"D1 binding DB is missing."},500);
+
+  let payload;
+  try { payload=await context.request.json(); }
+  catch { return json({ok:false,error:"Request body must be valid JSON."},400); }
+
+  const url=new URL(context.request.url);
+  const replace=url.searchParams.get("replace")==="1";
+  const append=url.searchParams.get("append")==="1";
+  const actor=context.data.actorEmail || "unknown-access-user";
+  const reg=await registry(DB);
+  let existing=await DB.prepare("SELECT series_id,published_at,commissioner_email,payload_json FROM series WHERE series_id=?").bind(payload.series_id).first();
+  const forceMatchup=url.searchParams.get("force_matchup")==="1";
+  const candidateAway=reg.teamsByName.get(norm(payload.series?.away_team));
+  const candidateHome=reg.teamsByName.get(norm(payload.series?.home_team));
+  let matchupExisting=null;
+  if(!existing && candidateAway && candidateHome){
+    matchupExisting=await DB.prepare(`
+      SELECT s.series_id,s.series_date,s.payload_json,
+             (SELECT COUNT(*) FROM games g WHERE g.series_id=s.series_id) AS game_count
+      FROM series s
+      WHERE s.season=? AND ((s.away_team_id=? AND s.home_team_id=?) OR (s.away_team_id=? AND s.home_team_id=?))
+      ORDER BY s.series_date,s.series_id LIMIT 1
+    `).bind(Number(payload.series?.season||0),candidateAway,candidateHome,candidateHome,candidateAway).first();
+  }
+  if(matchupExisting && payload.series_type!=="playoff" && !forceMatchup){
+    return json({ok:false,code:"MATCHUP_ALREADY_PUBLISHED",error:"These teams already have a published series this season.",existing_series_id:matchupExisting.series_id,existing_series_date:matchupExisting.series_date,existing_game_count:Number(matchupExisting.game_count||0),can_force:true},409);
+  }
+  let existingPayload=null;
+  if(existing?.payload_json){try{existingPayload=JSON.parse(existing.payload_json)}catch{}}
+  const existingGameCount=Array.isArray(existingPayload?.games)?existingPayload.games.length:0;
+  if(existing&&!replace&&!append){
+    if(existingPayload?.series_type!=="conditional_forfeit"&&!seriesIsComplete(existingPayload,existingPayload?.games||[]))return json({ok:false,code:"PARTIAL_SERIES_EXISTS",error:"This partial series already exists.",existing,existing_game_count:existingGameCount,can_append:true},409);
+    return json({ok:false,code:"SERIES_EXISTS",error:"This series already exists.",existing,existing_game_count:existingGameCount,can_replace:true},409);
+  }
+  if(append&&!existing)return json({ok:false,error:"Cannot append because the original partial series was not found."},404);
+  if(append&&["conditional_forfeit","mutual_agreement"].includes(existingPayload?.series_type))return json({ok:false,error:"Special settlement entries cannot be appended. Replace the entry with a played series instead."},422);
+
+  let names=collectPlayerNames(payload);
+  if(append&&existingPayload)names=[...new Set([...collectPlayerNames(existingPayload),...names])];
+  const resolved=resolvePlayerIds(payload,reg,names);
+  if(resolved.errors.length)return json({ok:false,error:"Player identity validation failed.",errors:resolved.errors},422);
+  const playerIds=resolved.playerIds;
+  if(append&&existingPayload){try{payload=mergePartialPayload(existingPayload,payload,playerIds)}catch(err){return json({ok:false,error:"Partial-series append failed.",detail:String(err?.message||err)},422)}}
+  const awayTeamId=reg.teamsByName.get(norm(payload.series?.away_team));
+  const homeTeamId=reg.teamsByName.get(norm(payload.series?.home_team));
+  const validation=serverValidate(payload,{away:awayTeamId,home:homeTeamId},playerIds);
+  if(validation.errors.length)return json({ok:false,error:"Server validation failed.",errors:validation.errors,warnings:validation.warnings},422);
+  // Different source files can use different spellings for the same player
+  // (e.g. "joe melv" in one export and "Joe O'Melveny" in another).
+  // That is safe across batting vs pitching, but duplicate rows inside the
+  // same stat table would double-count and must still be blocked.
+  function duplicateResolvedIds(rows,nameGetter,label){
+    const seen=new Map(),errors=[];
+    for(const row of rows||[]){
+      const raw=nameGetter(row);
+      const id=playerIds.get(norm(raw));
+      if(!id)continue;
+      if(seen.has(id) && seen.get(id)!==norm(raw)){
+        errors.push(`${label}: ${seen.get(id)} and ${raw} both resolve to ${id}. These are two rows in the same ${label.toLowerCase()} table and could double-count stats.`);
+      }else{
+        seen.set(id,norm(raw));
+      }
+    }
+    return errors;
+  }
+
+  const duplicateStatErrors=[
+    ...duplicateResolvedIds(payload.batting,r=>r.player,"Batting"),
+    ...duplicateResolvedIds(payload.pitching,r=>r.player,"Pitching")
+  ];
+  if(duplicateStatErrors.length){
+    return json({ok:false,error:"Duplicate stat rows resolve to the same player.",errors:duplicateStatErrors},422);
+  }
+
+  // Collapse participant aliases to one database participant row per player.
+  // Use the largest GP reported across aliases; side must agree.
+  const canonicalParticipants=new Map();
+  for(const part of payload.participants||[]){
+    const id=playerIds.get(norm(part.name));
+    if(!id)continue;
+    const existingPart=canonicalParticipants.get(id);
+    if(existingPart && existingPart.side!==part.side){
+      return json({
+        ok:false,
+        error:"Player alias resolves to conflicting teams/sides.",
+        errors:[`${existingPart.name} and ${part.name} both resolve to ${id}, but one is listed as ${existingPart.side} and the other as ${part.side}.`]
+      },422);
+    }
+    if(!existingPart){
+      canonicalParticipants.set(id,{...part,player_id:id});
+    }else{
+      existingPart.games_played=Math.max(Number(existingPart.games_played||0),Number(part.games_played||0));
+    }
+  }
+
+
+  const pId=name=>playerIds.get(norm(name));
+  const statements=[];
+  for(const np of resolved.newPlayers){
+    statements.push(DB.prepare(`
+      INSERT INTO players(player_id,name,class_year,retired) VALUES(?,?,?,0)
+    `).bind(np.player_id,np.name,np.class_year));
+  }
+  if(existing){
+    statements.push(DB.prepare("DELETE FROM series WHERE series_id=?").bind(payload.series_id));
+  }
+  statements.push(DB.prepare(`
+    INSERT INTO series(
+      series_id,season,series_date,away_team_id,home_team_id,schema_version,source,
+      commissioner_email,commissioner_notes,warning_count,payload_json,published_at,updated_at
+    ) VALUES(?,?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+  `).bind(
+    payload.series_id,payload.series.season,payload.series.date,awayTeamId,homeTeamId,
+    payload.schema_version,payload.source||"ndwiffle_admin_v128",actor,payload.commissioner_notes||null,
+    Number(payload.validation?.warning_count||0),JSON.stringify(payload)
+  ));
+
+  for(const g of payload.games||[]){
+    statements.push(DB.prepare(`
+      INSERT INTO games(series_id,game_number,away_score,home_score,winning_pitcher_id,losing_pitcher_id,save_pitcher_id)
+      VALUES(?,?,?,?,?,?,?)
+    `).bind(payload.series_id,g.game,g.away_score,g.home_score,pId(g.winning_pitcher),pId(g.losing_pitcher),g.save_pitcher?pId(g.save_pitcher):null));
+  }
+  for(const p of canonicalParticipants.values()){
+    statements.push(DB.prepare(`
+      INSERT INTO series_participants(series_id,player_id,team_id,side,games_played) VALUES(?,?,?,?,?)
+    `).bind(payload.series_id,p.player_id,p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played));
+  }
+  for(const b of payload.batting||[]){
+    statements.push(DB.prepare(`
+      INSERT INTO batting_series_stats(
+        series_id,player_id,team_id,side,games_played,pa,ab,runs,hits,singles,doubles,triples,hr,rbi,bb,so
+      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `).bind(
+      payload.series_id,pId(b.player),b.side==="away"?awayTeamId:homeTeamId,b.side,b.games_played,
+      b.PA,b.AB,b.R,b.H,b["1B"],b["2B"],b["3B"],b.HR,b.RBI,b.BB,b.SO
+    ));
+  }
+  for(const p of payload.pitching||[]){
+    statements.push(DB.prepare(`
+      INSERT INTO pitching_series_stats(
+        series_id,player_id,team_id,side,games_played,appearances,starts,outs_recorded,bf,runs,er,strikeouts,hits,bb,hr,wp
+      ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `).bind(
+      payload.series_id,pId(p.player),p.side==="away"?awayTeamId:homeTeamId,p.side,p.games_played,
+      p.appearances,p.starts,p.outs_recorded,p.BF,p.R,p.ER,p.K,p.H,p.BB,p.HR,p.WP
+    ));
+  }
+  for(const c of payload.manual_corrections||[]){
+    statements.push(DB.prepare(`
+      INSERT INTO manual_corrections(
+        series_id,correction_id,scope,player_id,team_id,field,original_value,corrected_value,reason
+      ) VALUES(?,?,?,?,?,?,?,?,?)
+    `).bind(
+      payload.series_id,c.id,c.scope||"pitching_player",c.player?pId(c.player):null,
+      c.team?reg.teamsByName.get(norm(c.team)):null,c.field,c.original_value,c.corrected_value,c.reason
+    ));
+  }
+  for(const w of payload.validation?.warnings_approved||[]){
+    statements.push(DB.prepare(`
+      INSERT INTO warning_approvals(series_id,warning_id,title,detail,reason) VALUES(?,?,?,?,?)
+    `).bind(payload.series_id,w.id,w.title,w.detail||null,w.reason));
+  }
+  statements.push(DB.prepare(`
+    INSERT INTO import_history(series_id,action,actor_email,payload_json) VALUES(?,?,?,?)
+  `).bind(payload.series_id,append?"replace":existing?"replace":"publish",actor,JSON.stringify({...payload,_audit_operation:append?"append":existing?"replace":"publish"})));
+
+  try{
+    await DB.batch(statements);
+    return json({
+      ok:true,
+      action:append?"appended":existing?"replaced":"published",
+      series_id:payload.series_id,
+      series_status:payload.series_status||((payload.games||[]).length===3?"complete":"in_progress"),
+      total_games:(payload.games||[]).length,
+      actor_email:actor,
+      server_warnings:validation.warnings,
+      new_players:resolved.newPlayers,
+      rows:{
+        games:(payload.games||[]).length,
+        participants:canonicalParticipants.size,
+        batting:(payload.batting||[]).length,
+        pitching:(payload.pitching||[]).length,
+        corrections:(payload.manual_corrections||[]).length
+      }
+    });
+  }catch(err){
+    return json({ok:false,error:"Database publish failed.",detail:String(err?.message||err)},500);
+  }
+}

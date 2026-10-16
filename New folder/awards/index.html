@@ -1,0 +1,220 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Awards | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.hof-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hof-card{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:11px;text-decoration:none;color:inherit}
+.hof-card:hover{border-color:rgba(215,173,72,.55)}
+.hof-card img{width:42px;height:42px;object-fit:contain;border-radius:50%;background:#07111e;border:1px solid rgba(215,173,72,.32);padding:3px}
+.hof-card strong{display:block;font-size:13px}.hof-card small{display:block;color:var(--gold);font-size:8px;font-weight:900;text-transform:uppercase;margin-top:3px}
+
+.feat-calendar{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px;margin-bottom:14px}
+.feat-calendar h3{margin:0 0 4px;font-size:18px}.feat-calendar-sub{color:var(--muted);font-size:9px;margin-bottom:12px}
+.feat-years{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:8px;overflow-x:auto;padding-bottom:3px}
+.feat-year{border:1px solid rgba(255,255,255,.07);border-radius:11px;background:#081321;padding:9px;min-height:165px}
+.feat-year-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}.feat-year-head strong{font-size:15px}.feat-year-head span{font-size:8px;color:var(--gold);font-weight:900}
+.feat-event-card{border-left:3px solid var(--gold);background:#0b1728;border-radius:7px;padding:6px 7px;margin:6px 0;font-size:8px;line-height:1.35}
+.feat-event-card.nh{border-left-color:#7da8ff}.feat-event-card .feat-kind{font-size:7px;font-weight:950;text-transform:uppercase;letter-spacing:.05em;color:var(--gold)}.feat-event-card.nh .feat-kind{color:#8eb3ff}
+.feat-event-card strong{display:block;font-size:9px;margin-top:2px}.feat-event-card small{display:block;color:var(--muted);font-size:7px;margin-top:2px}
+.feat-leaders{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.feat-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px}.feat-card h3{margin:0;font-size:18px}
+.feat-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.feat-sort{background:#07111e;color:#fff;border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:8px;font-weight:800}
+.feat-rank-list{display:grid;gap:4px}.feat-rank-row{display:grid;grid-template-columns:26px minmax(0,1fr) 45px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}.feat-rank-row:last-child{border-bottom:0}
+.feat-rank{color:var(--muted);font-size:9px;font-weight:900}.feat-player{font-size:10px;font-weight:900}.feat-total{text-align:right;color:var(--gold);font-size:16px;font-weight:950}.feat-total small{display:block;color:var(--muted);font-size:6px;text-transform:uppercase}
+.current-season-note{border:1px dashed var(--border);border-radius:12px;padding:16px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:800px){.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feat-leaders{grid-template-columns:1fr}.feat-years{grid-template-columns:repeat(6,150px)}}.feat-grid{grid-template-columns:1fr}}@media(max-width:520px){.hof-grid{grid-template-columns:1fr}}
+</style>
+</head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<main>
+<div class="container pagehead awards-pagehead">
+  <div class="eyebrow">League History</div>
+  <div class="awards-title-row">
+    <div>
+      <h1>Awards & Champions</h1>
+      <p class="muted">League standings, playoff history, honors, Hall of Fame, and pitching feats from 2021–2026.</p>
+    </div>
+    <div class="season-master-control">
+      <label for="seasonSelect">Season</label>
+      <select id="seasonSelect" onchange="renderSeason()">
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<section class="historical-standings-section awards-history-top">
+  <div class="container">
+    <div class="history-section-head"><div><div class="eyebrow">League History</div><h2>Historical Standings</h2><p class="muted">Regular-season standings and postseason finish.</p></div></div>
+    <div id="historicalStandings"></div>
+  </div>
+</section>
+
+<section class="playoff-bracket-section">
+  <div class="container">
+    <div class="history-section-head"><div><div class="eyebrow">Postseason</div><h2>Playoff Bracket</h2><p class="muted">Series scores are shown as games won.</p></div></div>
+    <div id="playoffBracket"></div>
+  </div>
+</section>
+
+<section class="awards-by-year-section">
+  <div class="container">
+    <div class="history-section-head"><div><div class="eyebrow">Honors</div><h2>Awards & Champions</h2><p class="muted">Repeat winners are marked cumulatively in the season the additional win occurred.</p></div></div>
+    <div id="awardYearTable" class="awards-compact"></div>
+  </div>
+</section>
+
+<section class="awards-by-year-section" id="hallOfFameSection">
+  <div class="container">
+    <div class="history-section-head"><div><div class="eyebrow">League Immortals</div><h2>Hall of Fame</h2><p class="muted">Hall of Famers are also marked with a gold HOF badge throughout the website.</p></div></div>
+    <div id="hofGrid" class="hof-grid"></div>
+  </div>
+</section>
+
+<section class="awards-by-year-section" id="pitchingFeatsSection">
+  <div class="container">
+    <div class="history-section-head"><div><div class="eyebrow">Pitching Feats</div><h2>Perfect Games & No-Hitters</h2><p class="muted">The timeline shows when each feat occurred. Player totals are ranked separately so counts are never tied to an unrelated game row.</p></div></div>
+
+    <div class="feat-calendar">
+      <h3>League Timeline</h3>
+      <div class="feat-calendar-sub">Events are grouped by season and ordered by match number within each year. Postseason performances appear after regular-season matches.</div>
+      <div id="featTimeline" class="feat-years"></div>
+    </div>
+
+    <div class="feat-leaders">
+      <div class="feat-card">
+        <div class="feat-card-head"><h3>Perfect Game Leaders</h3><select id="pgSort" class="feat-sort"><option value="desc">Most → Least</option><option value="asc">Least → Most</option></select></div>
+        <div id="perfectGameLeaders" class="feat-rank-list"></div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-card-head"><h3>No-Hitter Leaders</h3><select id="nhSort" class="feat-sort"><option value="desc">Most → Least</option><option value="asc">Least → Most</option></select></div>
+        <div id="noHitterLeaders" class="feat-rank-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer><div class="container">ND Wiffle · League honors and history, 2021–2026.</div></footer>
+<script src="/assets/data.js?v=81"></script>
+<script>
+const HISTORICAL_STANDINGS={"2025":[{"season":2025,"rank":1,"team":"Twin Titans","w":19,"l":5,"pct":"79.17%","diff":81,"postseason":"Semifinals","finalRank":3},{"season":2025,"rank":2,"team":"Ball Busters","w":18,"l":6,"pct":"75.00%","diff":37,"postseason":"Semifinals","finalRank":4},{"season":2025,"rank":3,"team":"Silverbacks","w":14,"l":10,"pct":"58.33%","diff":22,"postseason":"Runner-up","finalRank":2},{"season":2025,"rank":4,"team":"Dirty Dawgs","w":13,"l":11,"pct":"54.17%","diff":6,"postseason":"Quarterfinals","finalRank":5},{"season":2025,"rank":5,"team":"Underdawgs","w":12,"l":12,"pct":"50.00%","diff":11,"postseason":"Champions","finalRank":1},{"season":2025,"rank":6,"team":"Zyns","w":11,"l":13,"pct":"45.83%","diff":1,"postseason":"Quarterfinals","finalRank":7},{"season":2025,"rank":7,"team":"Goobers","w":11,"l":13,"pct":"45.83%","diff":-9,"postseason":"Quarterfinals","finalRank":6},{"season":2025,"rank":8,"team":"Stiff Wifflers","w":10,"l":14,"pct":"41.67%","diff":-13,"postseason":"No","finalRank":8},{"season":2025,"rank":9,"team":"Midnight","w":6,"l":18,"pct":"25.00%","diff":-66,"postseason":"No","finalRank":9},{"season":2025,"rank":10,"team":"Storm","w":6,"l":18,"pct":"25.00%","diff":-67,"postseason":"No","finalRank":10}],"2024":[{"season":2024,"rank":1,"team":"Silverbacks","w":20,"l":4,"pct":"83.33%","diff":56,"postseason":"Runner-up","finalRank":2},{"season":2024,"rank":2,"team":"Storm","w":18,"l":6,"pct":"75.00%","diff":51,"postseason":"Champions","finalRank":1},{"season":2024,"rank":3,"team":"Ball Busters","w":15,"l":9,"pct":"62.50%","diff":24,"postseason":"Semifinals","finalRank":4},{"season":2024,"rank":4,"team":"Goobers","w":13,"l":11,"pct":"54.17%","diff":8,"postseason":"Quarterfinals","finalRank":6},{"season":2024,"rank":5,"team":"Zyns","w":11,"l":13,"pct":"45.83%","diff":2,"postseason":"Quarterfinals","finalRank":7},{"season":2024,"rank":6,"team":"Stiff Wifflers","w":11,"l":13,"pct":"45.83%","diff":-22,"postseason":"Quarterfinals","finalRank":5},{"season":2024,"rank":7,"team":"Dirty Dawgs","w":10,"l":14,"pct":"41.67%","diff":20,"postseason":"Semifinals","finalRank":3},{"season":2024,"rank":8,"team":"Underdawgs","w":10,"l":14,"pct":"41.67%","diff":-37,"postseason":"No","finalRank":8},{"season":2024,"rank":9,"team":"Midnight","w":9,"l":15,"pct":"37.50%","diff":-31,"postseason":"No","finalRank":9},{"season":2024,"rank":10,"team":"Drunken Sluggers","w":3,"l":21,"pct":"12.50%","diff":-71,"postseason":"No","finalRank":10}],"2023":[{"season":2023,"rank":1,"team":"Zyns","w":20,"l":4,"pct":"83.33%","diff":45,"postseason":"Champions","finalRank":1},{"season":2023,"rank":2,"team":"Silverbacks","w":18,"l":6,"pct":"75.00%","diff":44,"postseason":"Runner-up","finalRank":2},{"season":2023,"rank":3,"team":"Storm","w":15,"l":9,"pct":"62.50%","diff":20,"postseason":"Semifinals","finalRank":4},{"season":2023,"rank":4,"team":"Underdawgs","w":14,"l":10,"pct":"58.33%","diff":8,"postseason":"Semifinals","finalRank":3},{"season":2023,"rank":5,"team":"Stiff Wifflers","w":13,"l":11,"pct":"54.17%","diff":2,"postseason":"Quarterfinals","finalRank":7},{"season":2023,"rank":6,"team":"Goobers","w":10,"l":14,"pct":"41.67%","diff":-16,"postseason":"Quarterfinals","finalRank":5},{"season":2023,"rank":7,"team":"Midnight","w":9,"l":15,"pct":"37.50%","diff":-10,"postseason":"Quarterfinals","finalRank":6},{"season":2023,"rank":8,"team":"Ball Busters","w":9,"l":15,"pct":"37.50%","diff":-20,"postseason":"No","finalRank":8},{"season":2023,"rank":9,"team":"Yard Goats","w":1,"l":23,"pct":"4.17%","diff":-81,"postseason":"No","finalRank":9}],"2022":[{"season":2022,"rank":1,"team":"Silverbacks","w":18,"l":6,"pct":"75.00%","diff":78,"postseason":"Runner-up","finalRank":2},{"season":2022,"rank":2,"team":"Storm","w":16,"l":8,"pct":"66.67%","diff":33,"postseason":"Semifinals","finalRank":3},{"season":2022,"rank":3,"team":"Zyns","w":16,"l":8,"pct":"66.67%","diff":15,"postseason":"Champions","finalRank":1},{"season":2022,"rank":4,"team":"Underdawgs","w":14,"l":10,"pct":"58.33%","diff":2,"postseason":"Semifinals","finalRank":4},{"season":2022,"rank":5,"team":"Midnight","w":10,"l":14,"pct":"41.67%","diff":-9,"postseason":"Quarterfinals","finalRank":6},{"season":2022,"rank":6,"team":"Stiff Wifflers","w":7,"l":17,"pct":"29.17%","diff":-68,"postseason":"Quarterfinals","finalRank":5},{"season":2022,"rank":7,"team":"Yard Goats","w":3,"l":21,"pct":"12.50%","diff":-60,"postseason":"No","finalRank":7}],"2021":[{"season":2021,"rank":1,"team":"Zyns","w":20,"l":7,"pct":"74.07%","diff":35,"postseason":"Semifinals","finalRank":4},{"season":2021,"rank":2,"team":"Silverbacks","w":16,"l":11,"pct":"59.26%","diff":-11,"postseason":"Champions","finalRank":1},{"season":2021,"rank":3,"team":"Storm","w":14,"l":13,"pct":"51.85%","diff":6,"postseason":"Semifinals","finalRank":3},{"season":2021,"rank":4,"team":"Midnight","w":4,"l":23,"pct":"14.81%","diff":-30,"postseason":"Runner-up","finalRank":2}]};
+const PLAYOFF_SERIES=[{"season":2025,"round":"WS","higher_seed":3,"higher_team":"Silverbacks","lower_seed":5,"lower_team":"Underdawgs","higher_wins":0,"lower_wins":4,"winner":"Underdawgs"},{"season":2025,"round":"Semis","higher_seed":1,"higher_team":"Twin Titans","lower_seed":5,"lower_team":"Underdawgs","higher_wins":2,"lower_wins":3,"winner":"Underdawgs"},{"season":2025,"round":"Semis","higher_seed":2,"higher_team":"Ball Busters","lower_seed":3,"lower_team":"Silverbacks","higher_wins":1,"lower_wins":3,"winner":"Silverbacks"},{"season":2025,"round":"Quarters","higher_seed":2,"higher_team":"Ball Busters","lower_seed":7,"lower_team":"Zyns","higher_wins":2,"lower_wins":0,"winner":"Ball Busters"},{"season":2025,"round":"Quarters","higher_seed":3,"higher_team":"Silverbacks","lower_seed":6,"lower_team":"Goobers","higher_wins":2,"lower_wins":0,"winner":"Silverbacks"},{"season":2025,"round":"Quarters","higher_seed":4,"higher_team":"Dirty Dawgs","lower_seed":5,"lower_team":"Underdawgs","higher_wins":0,"lower_wins":2,"winner":"Underdawgs"},{"season":2024,"round":"WS","higher_seed":1,"higher_team":"Silverbacks","lower_seed":3,"lower_team":"Storm","higher_wins":3,"lower_wins":4,"winner":"Storm"},{"season":2024,"round":"Semis","higher_seed":3,"higher_team":"Storm","lower_seed":7,"lower_team":"Dirty Dawgs","higher_wins":3,"lower_wins":2,"winner":"Storm"},{"season":2024,"round":"Semis","higher_seed":1,"higher_team":"Silverbacks","lower_seed":4,"lower_team":"Ball Busters","higher_wins":3,"lower_wins":2,"winner":"Silverbacks"},{"season":2024,"round":"Quarters","higher_seed":3,"higher_team":"Storm","lower_seed":6,"lower_team":"Stiff Wifflers","higher_wins":2,"lower_wins":0,"winner":"Storm"},{"season":2024,"round":"Quarters","higher_seed":4,"higher_team":"Ball Busters","lower_seed":5,"lower_team":"Zyns","higher_wins":2,"lower_wins":1,"winner":"Ball Busters"},{"season":2024,"round":"Quarters","higher_seed":2,"higher_team":"Goobers","lower_seed":7,"lower_team":"Dirty Dawgs","higher_wins":0,"lower_wins":2,"winner":"Dirty Dawgs"},{"season":2023,"round":"WS","higher_seed":1,"higher_team":"Zyns","lower_seed":2,"lower_team":"Silverbacks","higher_wins":4,"lower_wins":2,"winner":"Zyns"},{"season":2023,"round":"Semis","higher_seed":1,"higher_team":"Zyns","lower_seed":4,"lower_team":"Underdawgs","higher_wins":3,"lower_wins":1,"winner":"Zyns"},{"season":2023,"round":"Semis","higher_seed":2,"higher_team":"Silverbacks","lower_seed":3,"lower_team":"Storm","higher_wins":3,"lower_wins":2,"winner":"Silverbacks"},{"season":2023,"round":"Quarters","higher_seed":3,"higher_team":"Storm","lower_seed":7,"lower_team":"Ball Busters","higher_wins":3,"lower_wins":1,"winner":"Storm"},{"season":2023,"round":"Quarters","higher_seed":4,"higher_team":"Underdawgs","lower_seed":8,"lower_team":"Midnight","higher_wins":3,"lower_wins":0,"winner":"Underdawgs"},{"season":2023,"round":"Play-in","higher_seed":7,"higher_team":"Ball Busters","lower_seed":6,"lower_team":"Goobers","higher_wins":3,"lower_wins":1,"winner":"Ball Busters"},{"season":2023,"round":"Play-in","higher_seed":8,"higher_team":"Midnight","lower_seed":5,"lower_team":"Stiff Wifflers","higher_wins":3,"lower_wins":1,"winner":"Midnight"},{"season":2022,"round":"WS","higher_seed":1,"higher_team":"Silverbacks","lower_seed":2,"lower_team":"Zyns","higher_wins":3,"lower_wins":4,"winner":"Zyns"},{"season":2022,"round":"Semis","higher_seed":2,"higher_team":"Zyns","lower_seed":3,"lower_team":"Storm","higher_wins":3,"lower_wins":0,"winner":"Zyns"},{"season":2022,"round":"Semis","higher_seed":1,"higher_team":"Silverbacks","lower_seed":4,"lower_team":"Underdawgs","higher_wins":3,"lower_wins":1,"winner":"Silverbacks"},{"season":2022,"round":"Quarters","higher_seed":3,"higher_team":"Storm","lower_seed":6,"lower_team":"Stiff Wifflers","higher_wins":2,"lower_wins":0,"winner":"Storm"},{"season":2022,"round":"Quarters","higher_seed":4,"higher_team":"Underdawgs","lower_seed":5,"lower_team":"Midnight","higher_wins":2,"lower_wins":1,"winner":"Underdawgs"},{"season":2021,"round":"WS","higher_seed":2,"higher_team":"Silverbacks","lower_seed":4,"lower_team":"Midnight","higher_wins":4,"lower_wins":1,"winner":"Silverbacks"},{"season":2021,"round":"Semis","higher_seed":2,"higher_team":"Silverbacks","lower_seed":3,"lower_team":"Storm","higher_wins":3,"lower_wins":2,"winner":"Silverbacks"},{"season":2021,"round":"Semis","higher_seed":1,"higher_team":"Zyns","lower_seed":4,"lower_team":"Midnight","higher_wins":0,"lower_wins":3,"winner":"Midnight"}];
+const CURRENT_2026_AWARDS=[{Season:"2026",Player_ID:"luke_gormsen",Player_Name:"Luke Gormsen",Award:"Silver Slugger",Detail:""},{Season:"2026",Player_ID:"gerard_sharkey",Player_Name:"Gerard Sharkey",Award:"Silver Slugger",Detail:""},{Season:"2026",Player_ID:"joey_thomalla",Player_Name:"Joey Thomalla",Award:"Cy Young",Detail:""},{Season:"2026",Player_ID:"michael_pilger",Player_Name:"Michael Pilger",Award:"Cy Young",Detail:""},{Season:"2026",Player_ID:"diego_alonso",Player_Name:"Diego Alonso",Award:"Gold Glove",Detail:"SS"},{Season:"2026",Player_ID:"landon_edwards",Player_Name:"Landon Edwards",Award:"Gold Glove",Detail:"OF"},{Season:"2026",Player_ID:"michael_pilger",Player_Name:"Michael Pilger",Award:"Gold Glove",Detail:"FLEX"},{Season:"2026",Player_ID:"matt_schuenemann",Player_Name:"Matt Schuenemann",Award:"Fourth Man of the Year",Detail:""},{Season:"2026",Player_ID:"luke_gormsen",Player_Name:"Luke Gormsen",Award:"MVP",Detail:""},{Season:"2026",Player_ID:"ian_phelps",Player_Name:"Ian Phelps",Award:"Rookie of the Year",Detail:""},{Season:"2026",Player_ID:"jerry_vielhauer",Player_Name:"Jerry Vielhauer",Award:"All-Star Game MVP",Detail:""},{Season:"2026",Player_ID:"joey_thomalla",Player_Name:"Joey Thomalla",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"michael_pilger",Player_Name:"Michael Pilger",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"jerry_vielhauer",Player_Name:"Jerry Vielhauer",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"ben_meyer",Player_Name:"Ben Meyer",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"evan_reid",Player_Name:"Evan Reid",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"eddie_mcgettigan",Player_Name:"Eddie McGettigan",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"gerard_sharkey",Player_Name:"Gerard Sharkey",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"luke_gormsen",Player_Name:"Luke Gormsen",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"jt_kaiser",Player_Name:"JT Kaiser",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"will_stevens",Player_Name:"Will Stevens",Award:"All-Star",Detail:""},{Season:"2026",Player_ID:"eddie_mcgettigan",Player_Name:"Eddie McGettigan",Award:"Home Run Derby Winner",Detail:""}];
+const awards=[...(ND_DATA.awards||[]),...CURRENT_2026_AWARDS];
+
+const awardOrder=["All-Star","All-Star Game MVP","Gold Glove","Fourth Man","HRD Winner","Silver Slugger","Cy Young","ROTY","MVP","WS Champion","WS MVP"];
+const aliases={"All Star":"All-Star","Gold Gloves":"Gold Glove","4th Man":"Fourth Man","HRD winner":"HRD Winner","Home Run Derby Winner":"HRD Winner","All-Star Game MVP":"All-Star Game MVP","ASG MVP":"All-Star Game MVP","Silver Sluggers":"Silver Slugger","Cy Youngs":"Cy Young","Rookie of the Year":"ROTY","World Series Champion":"WS Champion","World Series Winner":"WS Champion","WSMVP":"WS MVP","World Series MVP":"WS MVP"};
+const canon=a=>aliases[a]||a;
+const idx=a=>{const i=awardOrder.indexOf(canon(a));return i<0?999:i};
+const badgeClass=n=>n>=6?"repeat-6":`repeat-${n}`;
+const chron=[...awards].sort((a,b)=>Number(a.Season)-Number(b.Season)||idx(a.Award)-idx(b.Award));
+const running={},at=new Map();
+for(const a of chron){
+  const c=canon(a.Award),k=`${a.Player_ID}|${c}`;
+  running[k]=(running[k]||0)+1;
+  at.set(`${a.Season}|${a.Player_ID}|${c}`,running[k]);
+}
+
+const HOF_MEMBERS=[{"id":"michael_pilger","name":"Michael Pilger"},{"id":"matthew_doty","name":"Matthew Doty"},{"id":"casey_cavlovich","name":"Casey Cavlovich"},{"id":"matt_baldwin","name":"Matt Baldwin"},{"id":"jack_penney","name":"Jack Penney"},{"id":"patrick_thompson","name":"Patrick Thompson"},{"id":"jack_glavy","name":"Jack Glavy"},{"id":"patrick_sullivan","name":"Patrick Sullivan"},{"id":"xavier_hirsch","name":"Xavier Hirsch"}];
+const PITCHING_FEATS=[{"kind":"PG","pitcher":"Pilger","opponent":"Underdawgs","year":2022,"label":"Match 19","order":19},{"kind":"PG","pitcher":"Doty","opponent":"Stiffies","year":2022,"label":"Match 22","order":22},{"kind":"PG","pitcher":"Doty","opponent":"Ball Busters","year":2024,"label":"Match 12","order":12},{"kind":"PG","pitcher":"Pilger","opponent":"Silverbacks","year":2024,"label":"World Series","order":999},{"kind":"PG","pitcher":"Thomalla","opponent":"Twin Titans","year":2026,"label":"Match 6","order":6},{"kind":"NH","pitcher":"Pires","opponent":"Midnight","year":2021,"label":"Match 8","order":8},{"kind":"NH","pitcher":"Doty","opponent":"Midnight","year":2021,"label":"Match 12","order":12},{"kind":"NH","pitcher":"Fitzgerald","opponent":"Silverbacks","year":2022,"label":"Match 1","order":1},{"kind":"NH","pitcher":"Donegan","opponent":"Yard Goats","year":2022,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Doty","opponent":"Yard Goats","year":2022,"label":"Match 7","order":7},{"kind":"NH","pitcher":"Hirsch","opponent":"Silverbacks","year":2022,"label":"Match 12","order":12},{"kind":"NH","pitcher":"Doty","opponent":"Zyns","year":2022,"label":"Match 15","order":15},{"kind":"NH","pitcher":"Doty","opponent":"Yard Goats","year":2022,"label":"Match 17","order":17},{"kind":"NH","pitcher":"Sullivan","opponent":"Goobers","year":2023,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Cavlovich","opponent":"Ball Busters","year":2023,"label":"Match 14","order":14},{"kind":"NH","pitcher":"Baldwin","opponent":"Stiffies","year":2023,"label":"Match 17","order":17},{"kind":"NH","pitcher":"Rotatori","opponent":"Silverbacks","year":2024,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Dove","opponent":"Silverbacks","year":2024,"label":"Match 2","order":2.1},{"kind":"NH","pitcher":"Dwyer","opponent":"Storm","year":2024,"label":"Match 21","order":21},{"kind":"NH","pitcher":"Pilger","opponent":"Dirty Dawgs","year":2024,"label":"Semifinals","order":998},{"kind":"NH","pitcher":"Passo","opponent":"Silverbacks","year":2025,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Bates","opponent":"Dirty Dawgs","year":2025,"label":"Match 28","order":28},{"kind":"NH","pitcher":"Baldwin","opponent":"Zyns","year":2025,"label":"Wildcard","order":997},{"kind":"NH","pitcher":"Blanco","opponent":"Zyns","year":2026,"label":"Match 2","order":2},{"kind":"NH","pitcher":"Mato","opponent":"Silverbacks","year":2026,"label":"Match 5","order":5},{"kind":"NH","pitcher":"Vielhauer","opponent":"Zyns","year":2026,"label":"Match 9","order":9},{"kind":"NH","pitcher":"Bates","opponent":"Goobers","year":2026,"label":"Match 20","order":20},{"kind":"NH","pitcher":"Vielhauer","opponent":"Twin Titans","year":2026,"label":"Match 21","order":21},{"kind":"NH","pitcher":"Oswald","opponent":"Silverbacks","year":2026,"label":"Match 25","order":25},{"kind":"NH","pitcher":"Vielhauer","opponent":"Midnight","year":2026,"label":"Match 31","order":31}];
+
+function featCounts(kind){
+  const counts=new Map();
+  for(const e of PITCHING_FEATS){
+    if(e.kind!==kind)continue;
+    counts.set(e.pitcher,(counts.get(e.pitcher)||0)+1);
+  }
+  return [...counts.entries()].map(([player,count])=>({player,count}));
+}
+
+function renderFeatTimeline(){
+  const years=[2021,2022,2023,2024,2025,2026];
+  document.getElementById("featTimeline").innerHTML=years.map(year=>{
+    const rows=PITCHING_FEATS.filter(x=>x.year===year).sort((a,b)=>a.order-b.order||a.pitcher.localeCompare(b.pitcher));
+    return `<div class="feat-year">
+      <div class="feat-year-head"><strong>${year}</strong><span>${rows.length} feat${rows.length===1?"":"s"}</span></div>
+      ${rows.length?rows.map(e=>`<div class="feat-event-card ${e.kind==="NH"?"nh":""}"><div class="feat-kind">${e.kind==="PG"?"Perfect Game":"No-Hitter"}</div><strong>${e.pitcher} vs. ${e.opponent}</strong><small>${e.label}</small></div>`).join(""):'<div class="muted" style="font-size:8px">No recorded feats</div>'}
+    </div>`;
+  }).join("");
+}
+
+function renderFeatLeaders(kind,sortDir,target){
+  const rows=featCounts(kind).sort((a,b)=>sortDir==="asc"?(a.count-b.count||a.player.localeCompare(b.player)):(b.count-a.count||a.player.localeCompare(b.player)));
+  document.getElementById(target).innerHTML=rows.map((x,i)=>`<div class="feat-rank-row"><div class="feat-rank">${i+1}</div><div class="feat-player">${x.player}</div><div class="feat-total">${x.count}<small>${kind==="PG"?"PG":"NH"}</small></div></div>`).join("");
+}
+
+function renderPitchingFeats(){
+  renderFeatTimeline();
+  renderFeatLeaders("PG",document.getElementById("pgSort").value,"perfectGameLeaders");
+  renderFeatLeaders("NH",document.getElementById("nhSort").value,"noHitterLeaders");
+}
+document.getElementById("pgSort").addEventListener("change",()=>renderFeatLeaders("PG",document.getElementById("pgSort").value,"perfectGameLeaders"));
+document.getElementById("nhSort").addEventListener("change",()=>renderFeatLeaders("NH",document.getElementById("nhSort").value,"noHitterLeaders"));
+renderPitchingFeats();
+
+function postseasonClass(v){
+  if(v==="Champions")return "history-champion";
+  if(v==="Runner-up")return "history-runnerup";
+  return "";
+}
+
+const TEAM_RGB={
+  "Midnight":"90,98,110","Storm":"96,0,160","Stiff Wifflers":"24,49,83",
+  "Ball Busters":"144,32,32","Dirty Dawgs":"96,0,24","Twin Titans":"64,80,112",
+  "Drunken Sluggers":"64,80,112","Yard Goats":"64,80,112","Goobers":"208,80,32",
+  "Silverbacks":"192,160,80","Underdawgs":"64,48,96","Zyns":"144,224,224"
+};
+const teamRgb=t=>TEAM_RGB[t]||"120,130,145";
+
+function renderStandings(y){
+  if(String(y)==="2026"){
+    document.getElementById("historicalStandings").innerHTML='<div class="current-season-note">The 2026 regular season is complete. Final standings are maintained on the <a href="/standings/">2026 Standings</a> page.</div>';
+    return;
+  }
+  const rows=HISTORICAL_STANDINGS[y]||[];
+  document.getElementById("historicalStandings").innerHTML=`<div class="tablewrap historical-table-wrap"><table class="historical-table">
+  <thead><tr><th>RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>DIFF</th><th>Postseason</th><th>Final</th></tr></thead>
+  <tbody>${rows.map(r=>`<tr class="${postseasonClass(r.postseason)} history-team-row" style="--team:${teamRgb(r.team)}"><td>${r.rank}</td><td>${r.team}</td><td>${r.w}</td><td>${r.l}</td><td>${r.pct}</td><td>${r.diff>0?"+":""}${r.diff}</td><td>${r.postseason==="No"?"—":r.postseason}</td><td>${r.finalRank}</td></tr>`).join("")}</tbody>
+  </table></div>`;
+}
+
+const roundOrder=["Play-in","Quarters","Semis","WS"];
+const roundLabel={"Play-in":"Play-in","Quarters":"Quarterfinals","Semis":"Semifinals","WS":"World Series"};
+function renderBracket(y){
+  if(String(y)==="2026"){
+    document.getElementById("playoffBracket").innerHTML='<div class="current-season-note">The 2026 regular season is complete. Live playoff results are maintained on the <a href="/playoffs/">Playoffs</a> page.</div>';
+    return;
+  }
+  const yr=PLAYOFF_SERIES.filter(s=>String(s.season)===String(y));
+  const rounds=roundOrder.filter(r=>yr.some(s=>s.round===r));
+  document.getElementById("playoffBracket").innerHTML=`<div class="bracket-grid bracket-${rounds.length}">${rounds.map(r=>`
+    <div class="bracket-round"><div class="bracket-round-title">${roundLabel[r]}</div>
+    ${yr.filter(s=>s.round===r).map(s=>`
+      <div class="bracket-series">
+        <div class="bracket-team ${s.winner===s.higher_team?"bracket-winner":""}" style="--team:${teamRgb(s.higher_team)}"><span><b>#${s.higher_seed}</b> ${s.higher_team}</span><strong>${s.higher_wins}</strong></div>
+        <div class="bracket-team ${s.winner===s.lower_team?"bracket-winner":""}" style="--team:${teamRgb(s.lower_team)}"><span><b>#${s.lower_seed}</b> ${s.lower_team}</span><strong>${s.lower_wins}</strong></div>
+      </div>`).join("")}
+    </div>`).join("")}</div>`;
+}
+function renderAwards(y){
+  const yr=awards.filter(a=>String(a.Season)===String(y)).sort((a,b)=>idx(a.Award)-idx(b.Award)||(a.Player_Name||"").localeCompare(b.Player_Name||""));
+  const rows=yr.map(a=>{
+    const c=canon(a.Award),n=at.get(`${a.Season}|${a.Player_ID}|${c}`)||1,rep=n>=2;
+    const cls=rep?`award-repeat-row repeat-row-${Math.min(n,6)}`:"";
+    const badge=rep?`<span class="repeat-badge ${badgeClass(n)}">${n}×</span>`:"";
+    const detail=(a.Detail||"").trim();
+    const label=detail?`${c} - ${detail}`:c;
+    return `<tr class="${cls}"><td>${label}${badge}</td><td>${a.Player_Name}</td></tr>`;
+  }).join("");
+  document.getElementById("awardYearTable").innerHTML=`<div class="tablewrap"><table><thead><tr><th>Award</th><th>Player</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function renderSeason(){
+  const y=document.getElementById("seasonSelect").value;
+  renderStandings(y); renderBracket(y); renderAwards(y);
+}
+renderSeason();
+</script>
+<script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=147"></script></body></html>

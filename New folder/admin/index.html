@@ -1,0 +1,81 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.admin-home{padding:38px 0 60px}
+.admin-home-head{display:flex;justify-content:space-between;gap:22px;align-items:end;margin-bottom:22px}
+.admin-home-head h1{margin:5px 0 0}
+.admin-home-status{font-size:11px;color:var(--muted);text-align:right}
+.admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.admin-card{display:flex;flex-direction:column;min-height:190px;border:1px solid var(--border);border-radius:15px;background:var(--panel);padding:18px;text-decoration:none;color:#fff;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+.admin-card:hover{transform:translateY(-2px);border-color:rgba(215,173,72,.65);background:#13223a}
+.admin-card-tag{font-size:9px;font-weight:950;color:var(--gold);text-transform:uppercase;letter-spacing:.07em}
+.admin-card h2{margin:8px 0 7px;font-size:20px}
+.admin-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.6;flex:1}
+.admin-card-link{margin-top:18px;font-size:11px;font-weight:950;color:var(--gold)}
+.admin-card.primary{border-color:rgba(215,173,72,.38);background:linear-gradient(135deg,rgba(215,173,72,.08),var(--panel) 50%)}
+.admin-note{margin-top:18px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.015);padding:13px 15px;color:var(--muted);font-size:11px;line-height:1.55}
+.admin-health{display:inline-flex;align-items:center;gap:7px}.health-dot{width:8px;height:8px;border-radius:50%;background:#657080}.health-dot.ok{background:#62c98c}.health-dot.err{background:#e56d78}
+@media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-home-head{display:block}.admin-home-status{text-align:left;margin-top:12px}}
+</style></head><body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="active" href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
+
+<main class="admin-home"><div class="container">
+<div class="admin-home-head">
+ <div><div class="eyebrow">Commissioner Tools · BUILD v105</div><h1>Admin Dashboard</h1><p class="muted">Manage the 2026 season from one place.</p></div>
+ <div class="admin-home-status"><span class="admin-health"><span id="healthDot" class="health-dot"></span><span id="healthText">Checking database…</span></span></div>
+</div>
+
+<div class="admin-grid">
+ <a class="admin-card primary" href="/admin/series/">
+  <div class="admin-card-tag">Game Operations</div><div style="font-size:31px;line-height:1;margin-top:12px" aria-hidden="true">⚾</div><h2>Series Hub</h2>
+  <p>Schedule matchups, review captain availability, assign umpires, enter and validate stats, and access the completed-series archive from one workflow.</p>
+  <div class="admin-card-link">Open Series Hub →</div>
+ </a>
+
+ 
+
+ <a class="admin-card primary" href="/admin/social-graphics/">
+  <div class="admin-card-tag">Content Studio</div><div style="font-size:31px;line-height:1;margin-top:12px" aria-hidden="true">▧</div><h2>Graphics Studio</h2>
+  <p>Generate a fixed 1080×1080 player stat card with team color presets, editable name and number, four selectable baseball icons, four stat lines, and one-click PNG export.</p>
+  <div class="admin-card-link">Open Graphics Studio →</div>
+ </a>
+
+ <a class="admin-card" href="/admin/fantasy/">
+  <div class="admin-card-tag">Daily Game</div><h2>Fantasy Slates</h2>
+  <p>Manage daily fantasy eligibility, review automatic multipliers, override a multiplier when needed, and lock or finalize a slate.</p>
+  <div class="admin-card-link">Manage Fantasy →</div>
+ </a>
+
+ <a class="admin-card" href="/admin/rosters/">
+  <div class="admin-card-tag">Player Management</div><h2>Roster Manager</h2>
+  <p>View and edit 2026 team assignments, roles, class years, active players, and newly created players.</p>
+  <div class="admin-card-link">Manage Rosters →</div>
+ </a>
+
+ <a class="admin-card" href="/admin/exports/">
+  <div class="admin-card-tag">Database & Backups</div><h2>Stat & Data Exports</h2>
+  <p>Download batting, pitching, games, series, rosters, cumulative stats, historical season data, or a complete league backup ZIP.</p>
+  <div class="admin-card-link">Export Data →</div>
+ </a>
+
+
+ 
+
+ <a class="admin-card" href="/admin/draft/">
+  <div class="admin-card-tag">2026 Archive</div><h2>Draft Manager</h2>
+  <p>Access the 2026 draft board and commissioner draft controls. The public Draft tab is hidden, but the administrative archive remains available here.</p>
+  <div class="admin-card-link">Open Draft Manager →</div>
+ </a>
+</div>
+
+<div class="admin-note"><strong>Recommended workflow:</strong> start in Series Hub for scheduling, umpire assignment, stat entry, validation, and archive review. Use Roster Manager for player/team corrections and Export Data periodically for an offline D1 backup.</div>
+</div></main>
+
+<footer><div class="container">ND Wiffle · Commissioner administration.</div></footer>
+<script>
+fetch("/api/admin/health",{cache:"no-store"}).then(async r=>({ok:r.ok,j:await r.json()})).then(({ok,j})=>{
+ const dot=document.getElementById("healthDot"),text=document.getElementById("healthText");
+ if(ok&&j.ok){dot.classList.add("ok");text.textContent=`Database online · ${j.database?.series||0} published series`;}
+ else{dot.classList.add("err");text.textContent=j.error||"Database check failed";}
+}).catch(()=>{document.getElementById("healthDot").classList.add("err");document.getElementById("healthText").textContent="Database check unavailable";});
+</script><script src="/assets/hof.js?v=147"></script></body></html>

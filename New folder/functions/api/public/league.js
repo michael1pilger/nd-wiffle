@@ -1,0 +1,253 @@
+
+function json(body,status=200){
+  return new Response(JSON.stringify(body),{
+    status,
+    headers:{
+      "content-type":"application/json; charset=utf-8",
+      "cache-control":"no-store"
+    }
+  });
+}
+const n=v=>Number(v||0);
+function ipDisplay(outs){
+  const whole=Math.floor(n(outs)/3), rem=n(outs)%3;
+  return rem ? `${whole}.${rem}` : String(whole);
+}
+function rate(num,den,digits=3){
+  return den>0 ? (num/den).toFixed(digits) : "0.000";
+}
+
+export async function onRequestGet(context){
+  const DB=context.env.DB;
+  if(!DB)return json({ok:false,error:"D1 binding DB is missing."},500);
+
+  const url=new URL(context.request.url);
+  const season=Number(url.searchParams.get("season")||2026);
+  if(!Number.isInteger(season)||season<2021||season>2100){
+    return json({ok:false,error:"Invalid season."},400);
+  }
+
+  try{
+    const [
+      teamsRes,gamesRes,batRes,pitRes,decisionsRes,participantsRes,seriesCountRes,rosterRes,conditionalRes,mutualRes
+    ]=await DB.batch([
+      DB.prepare(`
+        SELECT team_id, display_name
+        FROM teams
+        WHERE active_2026=1
+        ORDER BY display_name
+      `),
+      DB.prepare(`
+        SELECT
+          s.series_id,s.series_date,
+          s.away_team_id,s.home_team_id,
+          at.display_name AS away_team,
+          ht.display_name AS home_team,
+          g.game_number,g.away_score,g.home_score,g.winning_pitcher_id,
+          (SELECT ps.side FROM pitching_series_stats ps
+             WHERE ps.series_id=g.series_id AND ps.player_id=g.winning_pitcher_id
+             LIMIT 1) AS winning_pitcher_side
+        FROM games g
+        JOIN series s ON s.series_id=g.series_id
+        JOIN teams at ON at.team_id=s.away_team_id
+        JOIN teams ht ON ht.team_id=s.home_team_id
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
+        ORDER BY s.series_date,s.series_id,g.game_number
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          b.player_id,p.name,p.class_year,p.retired,
+          SUM(b.games_played) AS gp,
+          SUM(b.pa) AS pa,SUM(b.ab) AS ab,SUM(b.runs) AS runs,
+          SUM(b.hits) AS hits,SUM(b.singles) AS singles,
+          SUM(b.doubles) AS doubles,SUM(b.triples) AS triples,SUM(b.hr) AS hr,
+          SUM(b.rbi) AS rbi,SUM(b.bb) AS bb,SUM(b.so) AS so
+        FROM batting_series_stats b
+        JOIN series s ON s.series_id=b.series_id
+        JOIN players p ON p.player_id=b.player_id
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
+        GROUP BY b.player_id,p.name,p.class_year,p.retired
+        ORDER BY p.name
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          ps.player_id,p.name,p.class_year,p.retired,
+          SUM(ps.games_played) AS gp,
+          SUM(ps.appearances) AS apps,SUM(ps.starts) AS starts,
+          SUM(ps.outs_recorded) AS outs_recorded,SUM(ps.bf) AS bf,
+          SUM(ps.runs) AS runs,SUM(ps.er) AS er,SUM(ps.strikeouts) AS strikeouts,
+          SUM(ps.hits) AS hits,SUM(ps.bb) AS bb,SUM(ps.hr) AS hr,
+          SUM(ps.wp) AS wp
+        FROM pitching_series_stats ps
+        JOIN series s ON s.series_id=ps.series_id
+        JOIN players p ON p.player_id=ps.player_id
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
+        GROUP BY ps.player_id,p.name,p.class_year,p.retired
+        ORDER BY p.name
+      `).bind(season),
+      DB.prepare(`
+        SELECT player_id,
+          SUM(wins) AS wins,SUM(losses) AS losses,SUM(saves) AS saves
+        FROM (
+          SELECT g.winning_pitcher_id AS player_id, COUNT(*) AS wins,0 AS losses,0 AS saves
+          FROM games g JOIN series s ON s.series_id=g.series_id
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' GROUP BY g.winning_pitcher_id
+          UNION ALL
+          SELECT g.losing_pitcher_id AS player_id,0,COUNT(*),0
+          FROM games g JOIN series s ON s.series_id=g.series_id
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' GROUP BY g.losing_pitcher_id
+          UNION ALL
+          SELECT g.save_pitcher_id AS player_id,0,0,COUNT(*)
+          FROM games g JOIN series s ON s.series_id=g.series_id
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' AND g.save_pitcher_id IS NOT NULL
+          GROUP BY g.save_pitcher_id
+        )
+        GROUP BY player_id
+      `).bind(season,season,season),
+      DB.prepare(`
+        SELECT DISTINCT sp.player_id,p.name,sp.team_id,t.display_name AS team_name
+        FROM series_participants sp
+        JOIN series s ON s.series_id=sp.series_id
+        JOIN players p ON p.player_id=sp.player_id
+        JOIN teams t ON t.team_id=sp.team_id
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
+        ORDER BY p.name,t.display_name
+      `).bind(season),
+      DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=? AND COALESCE(json_extract(payload_json,'$.series_type'),'played')!='playoff'").bind(season),
+      DB.prepare(`
+        SELECT tr.player_id,p.name,p.class_year,p.retired,tr.team_id,t.display_name AS team_name
+        FROM team_rosters tr
+        JOIN players p ON p.player_id=tr.player_id
+        JOIN teams t ON t.team_id=tr.team_id
+        WHERE tr.season=?
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          series_id,away_team_id,home_team_id,
+          json_extract(payload_json,'$.conditional_forfeit.forfeiting_side') AS forfeiting_side,
+          json_extract(payload_json,'$.conditional_forfeit.beneficiary_side') AS beneficiary_side
+        FROM series
+        WHERE season=?
+          AND json_extract(payload_json,'$.series_type')='conditional_forfeit'
+      `).bind(season),
+      DB.prepare(`
+        SELECT
+          series_id,away_team_id,home_team_id,
+          CAST(json_extract(payload_json,'$.mutual_agreement.away_wins') AS INTEGER) AS away_wins,
+          CAST(json_extract(payload_json,'$.mutual_agreement.home_wins') AS INTEGER) AS home_wins
+        FROM series
+        WHERE season=?
+          AND json_extract(payload_json,'$.series_type')='mutual_agreement'
+      `).bind(season)
+    ]);
+
+    const teams=teamsRes.results||[];
+    const games=gamesRes.results||[];
+    // Correct legacy games whose away/home score columns conflict with the winning pitcher's side.
+    for(const g of games){
+      const scoreSide=n(g.away_score)>n(g.home_score)?"away":n(g.home_score)>n(g.away_score)?"home":null;
+      if(g.winning_pitcher_side && scoreSide && g.winning_pitcher_side!==scoreSide){
+        const tmp=g.away_score;g.away_score=g.home_score;g.home_score=tmp;
+        g.score_orientation_corrected=true;
+      }
+    }
+    const standings=new Map(teams.map(t=>[t.team_id,{
+      team_id:t.team_id,team:t.display_name,W:0,L:0,RS:0,RA:0,conditional_wins:0,conditional_losses:0
+    }]));
+    for(const g of games){
+      const away=standings.get(g.away_team_id),home=standings.get(g.home_team_id);
+      if(!away||!home)continue;
+      away.RS+=n(g.away_score);away.RA+=n(g.home_score);
+      home.RS+=n(g.home_score);home.RA+=n(g.away_score);
+      if(n(g.away_score)>n(g.home_score)){away.W++;home.L++;}
+      else{home.W++;away.L++;}
+    }
+    const conditionalForfeits=conditionalRes.results||[];
+    for(const cf of conditionalForfeits){
+      const away=standings.get(cf.away_team_id),home=standings.get(cf.home_team_id);
+      if(!away||!home)continue;
+      const forfeiter=cf.forfeiting_side==="away"?away:home;
+      const beneficiary=cf.forfeiting_side==="away"?home:away;
+      beneficiary.W+=3;
+      beneficiary.conditional_wins+=3;
+      forfeiter.L+=3;
+      forfeiter.conditional_losses+=3;
+    }
+    const mutualAgreements=mutualRes.results||[];
+    for(const ma of mutualAgreements){
+      const away=standings.get(ma.away_team_id),home=standings.get(ma.home_team_id);
+      if(!away||!home)continue;
+      const aw=n(ma.away_wins),hw=n(ma.home_wins);
+      away.W+=aw;away.L+=hw;home.W+=hw;home.L+=aw;
+      away.RS+=aw*6;away.RA+=hw*6;
+      home.RS+=hw*6;home.RA+=aw*6;
+    }
+    let rows=[...standings.values()].map(r=>{
+      const gp=r.W+r.L;
+      return {...r,GP:gp,PCT:gp?r.W/gp:0,DIFF:r.RS-r.RA};
+    }).sort((a,b)=>
+      b.PCT-a.PCT || b.W-a.W || b.DIFF-a.DIFF || b.RS-a.RS || a.team.localeCompare(b.team)
+    );
+    const playoffCutoff=rows[6]||rows[0]||{W:0,L:0};
+    // ND Wiffle GB is measured from 7th place using record differential:
+    // ((team W-L) - (7th-place W-L)) / 2.
+    // Example: 11-4 (+7) vs 3-9 (-6) = 13 / 2 = +6.5.
+    const cutoffRecordDiff=n(playoffCutoff.W)-n(playoffCutoff.L);
+    rows=rows.map((r,i)=>({
+      ...r,
+      rank:i+1,
+      GB:i===6?0:((n(r.W)-n(r.L))-cutoffRecordDiff)/2
+    }));
+
+    const decisions=new Map((decisionsRes.results||[]).map(r=>[r.player_id,r]));
+    const rosterTeams=new Map((rosterRes.results||[]).map(r=>[r.player_id,r]));
+    const batting=(batRes.results||[]).map(r=>{
+      const pa=n(r.pa),ab=n(r.ab),hits=n(r.hits),bb=n(r.bb);
+      const tb=n(r.singles)+2*n(r.doubles)+3*n(r.triples)+4*n(r.hr);
+      const obpDen=pa || (ab+bb);
+      const ba=ab?hits/ab:0,obp=obpDen?(hits+bb)/obpDen:0,slg=ab?tb/ab:0;
+      const babipDen=ab-n(r.so)-n(r.hr);
+      const babip=babipDen>0?(hits-n(r.hr))/babipDen:null;
+      return {
+        Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
+        Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
+        GP:Math.max(0,n(r.gp)-(["gerard_sharkey","teddy_skendzel"].includes(r.player_id)?1:0)),PAs:pa,ABs:ab,Runs:n(r.runs),Hits:hits,
+        Singles:n(r.singles),Doubles:n(r.doubles),Triples:n(r.triples),HRs:n(r.hr),
+        RBI:n(r.rbi),BB:bb,Ks:n(r.so),
+        BA:ba.toFixed(3),OBP:obp.toFixed(3),SLG:slg.toFixed(3),OPS:(obp+slg).toFixed(3),
+        BABIP:babip===null?null:babip.toFixed(3)
+      };
+    });
+    const pitching=(pitRes.results||[]).map(r=>{
+      const outs=n(r.outs_recorded),ip=outs/3,er=n(r.er),walks=n(r.bb),hits=n(r.hits);
+      const d=decisions.get(r.player_id)||{};
+      const fip=outs>0?(13*n(r.hr)+3*walks-2*n(r.strikeouts))/outs:null;
+      return {
+        Player_ID:r.player_id,Name:r.name,Class_Year:r.class_year,Retired:String(r.retired||0),
+        Season:String(season),Team_ID:rosterTeams.get(r.player_id)?.team_id||null,Team:rosterTeams.get(r.player_id)?.team_name||null,
+        GP:Math.max(0,n(r.gp)-(["gerard_sharkey","teddy_skendzel"].includes(r.player_id)?1:0)),Apps:n(r.apps),Starts:n(r.starts),
+        W:n(d.wins),L:n(d.losses),S:n(d.saves),Outs:outs,IP:ipDisplay(outs),
+        BF:n(r.bf),Runs:n(r.runs),ER:er,Walks:walks,Hits:hits,Ks:n(r.strikeouts),
+        HRs:n(r.hr),WP:n(r.wp),
+        ERA:outs>0?((er*3)/ip).toFixed(2):null,
+        WHIP:outs>0?((walks+hits)/ip).toFixed(2):null,
+        FIP:fip===null?null:fip.toFixed(3)
+      };
+    });
+
+    return json({
+      ok:true,build:"v147",season,
+      series_count:n(seriesCountRes.results?.[0]?.count),
+      standings:rows,
+      batting,
+      pitching,
+      participants:participantsRes.results||[],
+      rosters:rosterRes.results||[],
+      conditional_forfeits:conditionalForfeits,
+      mutual_agreements:mutualAgreements,
+      games
+    });
+  }catch(err){
+    return json({ok:false,error:"Public league query failed.",detail:String(err?.message||err)},500);
+  }
+}

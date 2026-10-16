@@ -1,0 +1,309 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Home | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.home-results{margin-top:28px;padding-top:2px}
+.home-results-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:14px}
+.home-results-head h2{margin:3px 0 0;font-size:27px}
+.home-results-link{font-size:13px;font-weight:850;color:var(--gold);text-decoration:none;white-space:nowrap}
+.home-results-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.series-result-card{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:14px;min-width:0}
+.series-result-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.series-result-date{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.series-result-status{font-size:11px;font-weight:900;color:var(--gold);text-transform:uppercase}
+.series-team-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0}
+.series-team{display:flex;gap:9px;align-items:center;min-width:0;font-weight:850}
+.series-team img{width:27px;height:27px;object-fit:contain;flex:0 0 27px}
+.series-team span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.series-wins{font-size:22px;font-weight:950;line-height:1}
+.series-team-row.winner .series-team,.series-team-row.winner .series-wins{color:#fff}
+.series-team-row.loser{color:var(--muted)}
+.series-games{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid rgba(255,255,255,.08);padding-top:11px;margin-top:5px}
+.series-game{border-radius:8px;background:#0b1525;padding:7px 5px;text-align:center}
+.series-game small{display:block;font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;margin-bottom:3px}
+.series-game strong{font-size:13px}
+.series-empty{border:1px solid var(--border);border-radius:16px;padding:26px 22px;color:var(--muted);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:124px}.series-empty strong{display:block;color:#fff;font-size:16px;margin-bottom:6px}.series-empty .series-empty-sub{max-width:620px;line-height:1.45}
+.series-loading{border:1px dashed var(--border);border-radius:16px;padding:20px;color:var(--muted);background:rgba(255,255,255,.015)}
+@media(max-width:900px){.home-results-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.home-results-head{display:block}.home-results-link{display:inline-block;margin-top:8px}.home-results-grid{grid-template-columns:1fr}}
+
+.today-series-banner{align-items:stretch}
+.today-series-head{display:flex;align-items:end;justify-content:space-between;gap:16px}
+.today-series-link{color:var(--gold);text-decoration:none;font-size:11px;font-weight:900;white-space:nowrap}
+.today-series-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.today-series-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));padding:14px 15px;text-decoration:none;color:inherit;transition:transform .16s ease,border-color .16s ease,background .16s ease;display:block}
+.today-series-card:hover{transform:translateY(-1px);border-color:rgba(212,175,55,.45);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.025))}
+.today-series-logos{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.today-series-team{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.today-series-team.away{justify-content:flex-start}
+.today-series-team.home{justify-content:flex-end;text-align:right}
+.today-series-team img{width:30px;height:30px;object-fit:contain;flex:0 0 30px}
+.today-series-team.home img{order:2}
+.today-series-team-name{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-series-vs{flex:0 0 auto;font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;padding:0 4px}
+.today-series-meta{margin-top:9px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:9px}
+.today-series-empty{color:var(--muted);font-size:12px;margin-top:12px;padding:4px 0}
+@media(max-width:700px){.today-series-list{grid-template-columns:1fr}.today-series-head{display:block}.today-series-link{display:inline-block;margin-top:8px}.today-series-logos{gap:8px}.today-series-team-name{font-size:13px}.today-series-team img{width:26px;height:26px;flex-basis:26px}}
+
+.series-result-card{--winner-rgb:90,98,110;background:linear-gradient(135deg,rgba(var(--winner-rgb),.16),var(--panel) 42%);border-color:rgba(var(--winner-rgb),.42)}
+.series-team-row{grid-template-columns:minmax(150px,1fr) repeat(3,34px) 34px;gap:7px}
+.series-game-score{font-size:12px;font-weight:900;text-align:center;padding:5px 2px;border-radius:6px;background:rgba(255,255,255,.035)}
+.series-game-score.win{color:#fff;background:rgba(var(--winner-rgb),.18)}
+.series-score-head{display:grid;grid-template-columns:minmax(150px,1fr) repeat(3,34px) 34px;gap:7px;color:var(--muted);font-size:8px;font-weight:900;text-transform:uppercase;margin-top:5px;padding-bottom:3px}
+.series-score-head span:not(:first-child){text-align:center}.series-wins{font-size:17px}
+@media(max-width:620px){.series-team-row,.series-score-head{grid-template-columns:minmax(115px,1fr) repeat(3,30px) 30px}.series-game-score{font-size:11px}}
+
+.home-results-grid.count-1{grid-template-columns:minmax(0,720px)}
+.home-results-grid.count-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.home-results-grid.count-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.series-team-row{border:1px solid rgba(255,255,255,.055);border-radius:10px;padding:8px 9px;margin-top:7px;background:rgba(255,255,255,.018);transition:border-color .15s ease,background .15s ease}
+.series-team-row.winner{border:2px solid rgba(var(--winner-rgb),.92);background:linear-gradient(90deg,rgba(var(--winner-rgb),.34),rgba(var(--winner-rgb),.16) 68%,rgba(var(--winner-rgb),.08));box-shadow:inset 4px 0 0 rgba(var(--winner-rgb),1)}
+.series-team-row.winner .series-team{font-weight:950;color:#fff}
+.series-team-row.winner .series-team img{filter:saturate(1.22) brightness(1.08);transform:scale(1.06)}
+.series-team-row.winner .series-wins{color:#fff;text-shadow:0 0 14px rgba(var(--winner-rgb),.7)}
+.series-team-row.loser{opacity:.78;background:rgba(0,0,0,.08)}
+.series-team-row.winner .series-game-score.win{background:rgba(var(--winner-rgb),.38);border:1px solid rgba(var(--winner-rgb),.58)}
+@media(max-width:900px){.home-results-grid.count-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.home-results-grid.count-1,.home-results-grid.count-2,.home-results-grid.count-3{grid-template-columns:1fr}.series-team-row{padding:8px 7px}}
+.home-fantasy-card{margin-top:14px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(135deg,rgba(212,175,55,.08),var(--panel) 55%);padding:14px 16px;display:flex;justify-content:space-between;gap:16px;align-items:center}.home-fantasy-title{font-size:17px;font-weight:900;margin:4px 0}.home-fantasy-card .muted{font-size:11px}@media(max-width:620px){.home-fantasy-card{display:block}.home-fantasy-card .home-results-link{display:inline-block;margin-top:9px}}
+</style>
+
+<style>
+.home-hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:34px;align-items:center;margin-bottom:26px}
+.home-hero-copy h1{margin-top:5px}
+.home-hero-photo{position:relative;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--panel);box-shadow:0 16px 38px rgba(0,0,0,.22)}
+.home-hero-photo img{display:block;width:100%;height:440px;object-fit:cover;object-position:center}
+.home-hero-photo:after{content:"South Quad · Notre Dame";position:absolute;left:12px;bottom:12px;background:rgba(5,13,25,.78);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(6px);border-radius:999px;padding:7px 10px;color:#fff;font-size:11px;font-weight:850;letter-spacing:.03em}
+@media(max-width:900px){.home-hero-grid{grid-template-columns:1fr;gap:20px}.home-hero-photo{order:-1}.home-hero-photo img{height:min(68vw,520px)}}
+</style>
+
+<style>
+.series-result-card{display:flex;flex-direction:column}
+.series-performers{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.series-performer{background:#0b1525;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:9px;min-width:0}
+.series-performer small{display:block;color:var(--gold);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.series-performer strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.series-performer span{display:block;color:var(--muted);font-size:10px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.series-card-link{display:inline-flex;margin-top:11px;color:var(--gold);font-size:11px;font-weight:900;text-decoration:none;align-self:flex-start}
+@media(max-width:620px){.series-performers{grid-template-columns:1fr 1fr}}
+</style>
+
+<style>
+.league-format-section{padding:48px 0 52px;border-top:1px solid var(--border);background:rgba(255,255,255,.012)}
+.league-format-intro{max-width:900px;color:#d7deea;line-height:1.72}
+.league-format-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.league-format-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:18px}
+.league-format-card h3{margin:0 0 9px;font-size:17px}.league-format-card p{margin:0;color:var(--muted);line-height:1.65;font-size:13px}
+.rules-card{grid-column:1/-1}.rules-list{display:grid;grid-template-columns:1fr 1fr;gap:9px 24px;margin:12px 0 0;padding:0;list-style:none;counter-reset:rules}
+.rules-list li{counter-increment:rules;position:relative;padding:10px 10px 10px 38px;border-top:1px solid rgba(255,255,255,.07);color:#cfd7e4;line-height:1.55;font-size:13px}
+.rules-list li:before{content:counter(rules);position:absolute;left:5px;top:9px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:rgba(215,173,72,.12);color:var(--gold);font-size:10px;font-weight:950}
+@media(max-width:760px){.league-format-grid,.rules-list{grid-template-columns:1fr}.rules-card{grid-column:auto}}
+</style>
+
+<style>
+.home-results-tabs{display:flex;gap:7px;margin:0 0 16px;flex-wrap:wrap}
+.home-results-tab{border:1px solid var(--border);background:#0b1525;color:var(--muted);border-radius:999px;padding:8px 12px;font-size:10px;font-weight:900;cursor:pointer}
+.home-results-tab.active{background:var(--gold);border-color:var(--gold);color:#111}
+.home-pace{display:none}.home-pace.active{display:block}.home-series-pane.hidden{display:none}
+.pace-card{border:1px solid var(--border);background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border-radius:16px;padding:20px}
+.pace-hero{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(110px,.7fr));gap:14px;align-items:stretch}
+.pace-main,.pace-stat{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:15px}
+.pace-main small,.pace-stat small{display:block;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.pace-main strong{font-size:34px;display:block;margin-top:5px}.pace-stat strong{font-size:22px;display:block;margin-top:6px}
+.pace-progress{height:10px;border-radius:999px;background:#09111e;overflow:hidden;margin-top:15px;border:1px solid rgba(255,255,255,.06)}.pace-progress span{display:block;height:100%;background:var(--gold);border-radius:999px}
+.pace-note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:11px}
+@media(max-width:800px){.pace-hero{grid-template-columns:1fr 1fr}.pace-main{grid-column:1/-1}}@media(max-width:480px){.pace-hero{grid-template-columns:1fr}.pace-main{grid-column:auto}}
+</style></head><body><div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+
+<div class="game-ticker" aria-label="Upcoming events">
+  <div class="game-ticker-inner">
+    <div class="ticker-label">UPCOMING EVENTS</div>
+    <div class="ticker-window">
+      <div class="ticker-track">
+        <span id="tickerMatchup">TWIN TITANS VS STORM</span>
+        <span class="ticker-sep">•</span>
+        <span class="ticker-muted" id="tickerDate">TUE, AUG 25</span>
+        <span class="ticker-sep">•</span>
+        <span id="tickerTime">5:00 PM</span>
+        <span class="ticker-sep">•</span>
+        <span class="ticker-muted" id="tickerLocation">SOUTH QUAD</span>
+      </div>
+    </div>
+  </div>
+</div>
+<main><div class="container league-main"><div class="home-hero-grid">
+<div class="home-hero-copy"><div class="eyebrow">Notre Dame Wiffleball League</div><h1>The Home of ND Wiffleball</h1><p>The Notre Dame Wiffleball League is a league where students of all baseball backgrounds and skill levels can compete and get to know each other on the South Quad of Notre Dame’s campus, right outside Alumni Hall. Founded in 2021 by then-Freshmen Matthew Doty and Michael Pilger, the league has grown to 10 teams and over 100 players annually. Each season begins on the first day of the academic year for Notre Dame, often the 2nd-to-last Monday in August, and typically ends in mid-to-late November.</p><a class="instagram-callout" href="https://www.instagram.com/nd_wiffleball/" target="_blank" rel="noopener noreferrer" aria-label="Follow ND Wiffleball on Instagram">
+  <span class="instagram-mark">◎</span>
+  <span><small>FOLLOW THE LEAGUE</small><strong>@nd_wiffleball</strong></span>
+  <span class="instagram-arrow">↗</span>
+</a></div>
+<div class="home-hero-photo"><img src="/assets/homepage-wiffle-hero.jpg?v=81" alt="ND Wiffleball game on South Quad"></div>
+</div><div class="season-banner today-series-banner">
+  <div style="width:100%">
+    <div class="eyebrow">2026 Schedule</div>
+    <div class="today-series-head"><div><div style="font-size:22px;font-weight:800;margin-top:6px">Series Scheduled Today</div><div class="muted" id="todaySeriesSub" style="margin-top:6px">Loading today’s schedule…</div></div><a href="/schedule/" class="today-series-link">View Schedule →</a></div>
+    <div id="todaySeriesList" class="today-series-list"></div>
+  </div>
+</div>
+
+<div class="home-fantasy-card"><div><div class="eyebrow">Daily Fantasy</div><div class="home-fantasy-title">Draft 3 batters + 2 pitchers</div><div id="homeFantasyMeta" class="muted">Loading today's slate…</div></div><a id="homeFantasyLink" class="home-results-link" href="/fantasy/">Build Your Lineup →</a></div>
+<div class="home-results" aria-live="polite">
+  <div class="home-results-head">
+    <div><div class="eyebrow">2026 Results</div><h2>Recent Series</h2></div>
+    <a class="home-results-link" href="/schedule/?filter=final">View All Results →</a>
+  </div>
+  <div class="home-results-tabs"><button class="home-results-tab active" type="button" data-home-results-tab="recent">Recent Series</button><button class="home-results-tab" type="button" data-home-results-tab="pace">Season Pace</button></div>
+  <div id="homeSeriesResults" class="series-loading home-series-pane">Loading published 2026 results…</div>
+  <div id="homeSeasonPace" class="home-pace"></div>
+</div>
+</div>
+<section class="league-format-section"><div class="container">
+<div class="eyebrow">League Format</div><h2>How ND Wiffle Works</h2>
+<p class="league-format-intro">The Notre Dame Wiffleball season runs from late August to mid-November. The regular season typically ends around the beginning of fall break, in mid-to-late October.</p>
+<div class="league-format-grid">
+<div class="league-format-card"><h3>Regular Season & Playoffs</h3><p>The 2026 schedule lists all 45 possible three-game matchups in a true 10-team round robin. Series are claimed first-come, first-served, and four listed matchups will ultimately go unplayed. Seven teams qualify for the playoffs, with the No. 1 seed earning a bye. All games are played on South Quad.</p></div>
+<div class="league-format-card"><h3>Rosters & Game Times</h3><p>Teams typically roster about 10 players, with the understanding that not every player can attend every series. The average player attends about 5 of the 8 regular-season series, and most games are played 4-on-4. Weekday games are usually played between 3–8 PM, while non-football weekends often feature late-morning or early-afternoon games.</p></div>
+
+<div class="league-format-card"><h3>Series Format</h3><p>When two teams claim a matchup, they play a three-game series, normally completed together as one event.</p></div>
+<div class="league-format-card rules-card"><h3>Notable Rules</h3><p>Most ND Wiffle rules follow standard baseball rules, with several league-specific differences:</p>
+<ol class="rules-list">
+<li>Games are 3 innings long.</li>
+<li>Over a 3-game series, pitchers may record a maximum of 15 outs. Outs recorded in extra innings count as half toward the limit. Pitching limits expand slightly in the playoffs.</li>
+<li>The count starts at 1–1.</li>
+<li>A speed limit is enforced to preserve competitive integrity. Pitchers should throw so that pitch speed itself is not the primary source of difficulty for the hitter. Enforcement is at the umpire’s discretion, with an upper limit of roughly 55 mph.</li>
+<li>A bunt line is used. Any batted ball that lands in fair territory but short of the bunt line is considered foul.</li>
+<li>A throw caught by a fielder standing on the mound functions like a force play at first base: if the ball reaches the mound before the lead forced runner reaches the next base, that runner is out.</li>
+</ol></div>
+</div></div></section>
+<section class="content-section"><div class="container"><div class="eyebrow">League History</div><h2>History</h2><p>During Welcome Weekend 2021, Dillon Hall resident Matthew Doty was throwing a wiffleball around on South Quad when Alumni Hall resident Michael Pilger asked to join him. A few days later, the two of them organized the first pick-up game, joined by other members of Alumni and Dillon. After a week of pickup games, the two agreed to create a 4-team league and drafted 13 total players, marking the beginning of ND Wiffleball.</p><p>The league grew consistently with time, approximately 25-30 people joining per class. In 2025, when the founding class graduated, the league settled at a consistent number of players around 100.</p></div></section><section class="content-section"><div class="container"><div class="eyebrow">2026</div><h2>Current State and League Leadership</h2><p>The league now enters its 6th year. With 10 teams competing for the title in 2026, it will undoubtedly be an intense season.</p><div class="sectionhead" style="margin-top:28px"><h2 style="font-size:23px">Commissioners</h2></div><div class="commissioner-grid"><div class="card commissioner-card"><h3>Michael Pilger (‘25, ‘27)</h3><p>Michael enters his 6th and final year as commissioner as he wraps up his Master’s program. Michael has served as captain of the Storm for all 5 years.</p></div><div class="card commissioner-card"><h3>Joey Thomalla (‘27)</h3><p>Joey enters his 3rd and final year as commissioner. Joey was drafted by the Midnight in 2023, took over as captain in ‘24, but delegated the captain duty for ‘25-’26. He has been the franchise tag for the Midnight the last 2 seasons.</p></div><div class="card commissioner-card"><h3>William Stevens (‘28)</h3><p>Will is the oldest of the new commissioners, stepping up to take over the league in 2027. Will was drafted by the Storm in 2024, acted as captain in 2025 while Michael was on IR, and is now the Storm’s franchise tag.</p></div><div class="card commissioner-card"><h3>Jimmy Szpak (‘29)</h3><p>Jimmy joins tied as the youngest member of the league to take over as commissioner. Jimmy was drafted by the Midnight in 2025, but enters the 2026 draft as a free agent.</p></div><div class="card commissioner-card"><h3>Brendan Mato (‘29)</h3><p>Brendan and Jimmy tie Joey as the only members of the league to take on commissioner roles as sophomores. Brendan was drafted by the Stiffies in 2025 and now takes over as their captain.</p></div></div></div></section></main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
+<script>
+const HOME_TEAM_LOGOS={
+  "storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81",
+  "stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81",
+  "dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81",
+  "goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81",
+  "underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"
+};
+const HOME_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
+const homePairKey=(a,b)=>[a,b].sort().join("__");
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+function fmtDate(value){
+  if(!value)return "";
+  const d=new Date(`${value}T12:00:00`);
+  return Number.isNaN(d.getTime())?value:d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+}
+function topBatter(rows){
+  return [...(rows||[])].sort((a,b)=>{
+    const as=Number(a.H||0)+2*Number(a.HR||0)+Number(a.RBI||0)+Number(a.BB||0);
+    const bs=Number(b.H||0)+2*Number(b.HR||0)+Number(b.RBI||0)+Number(b.BB||0);
+    return bs-as || Number(b.HR||0)-Number(a.HR||0) || Number(b.H||0)-Number(a.H||0);
+  })[0]||null;
+}
+function topPitcher(rows){
+  return [...(rows||[])].sort((a,b)=>{
+    const as=6*Number(a.W||0)+3*Number(a.S||0)+Number(a.K||0)-2*Number(a.ER||0)-0.5*Number(a.BB||0);
+    const bs=6*Number(b.W||0)+3*Number(b.S||0)+Number(b.K||0)-2*Number(b.ER||0)-0.5*Number(b.BB||0);
+    return bs-as || Number(b.K||0)-Number(a.K||0) || Number(a.ER||0)-Number(b.ER||0);
+  })[0]||null;
+}
+function seriesWins(games){
+  let away=0,home=0;
+  for(const g of games||[]){
+    const a=Number(g.away_score||0),h=Number(g.home_score||0);
+    if(a>h)away++;else if(h>a)home++;
+  }
+  return {away,home};
+}
+function teamRow(id,name,wins,isWinner,games,side){
+  const logo=HOME_TEAM_LOGOS[id];
+  const scores=(games||[]).map(g=>{const us=side==="away"?Number(g.away_score):Number(g.home_score),them=side==="away"?Number(g.home_score):Number(g.away_score);return `<div class="series-game-score ${us>them?"win":""}">${us}</div>`}).join("");
+  return `<div class="series-team-row ${isWinner?"winner":"loser"}"><div class="series-team">${logo?`<img src="${logo}" alt="">`:""}<span>${esc(name)}</span></div>${scores}<div class="series-wins">${wins}</div></div>`;
+}
+function renderHomeSeries(series){
+  const target=document.getElementById("homeSeriesResults");
+  if(!series.length){
+    target.className="series-empty";
+    target.innerHTML=`<strong>No recent series yet</strong><div class="series-empty-sub">Published series will appear here automatically after commissioners submit them. Once results are entered, this section will show final scores, game-by-game results, and top performers.</div>`;
+    return;
+  }
+  const visible=series.slice(0,3);
+  target.className=`home-results-grid count-${Math.min(visible.length,3)}`;
+  target.innerHTML=visible.map(s=>{
+    const games=s.games||[],sw=seriesWins(games);
+    const awayWon=sw.away>sw.home,homeWon=sw.home>sw.away;
+    const winner=awayWon?s.away_team:homeWon?s.home_team:"Series tied";
+    const status=awayWon||homeWon?`${winner} wins ${Math.max(sw.away,sw.home)}–${Math.min(sw.away,sw.home)}`:"Series tied";
+    const publicBat=(s.batting||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi"),publicPit=(s.pitching||[]).filter(r=>String(r.name||"").trim().toLowerCase()!=="max partovi");const bat=topBatter(publicBat),pit=topPitcher(publicPit);
+    const winnerId=awayWon?s.away_team_id:homeWon?s.home_team_id:"",rgb=HOME_TEAM_RGB[winnerId]||"90,98,110";
+    return `<article class="series-result-card" style="--winner-rgb:${rgb}">
+      <div class="series-result-top"><div class="series-result-date">${fmtDate(s.series_date)}</div><div class="series-result-status">${esc(status)}</div></div>
+      <div class="series-score-head"><span>Team</span><span>G1</span><span>G2</span><span>G3</span><span>W</span></div>
+      ${teamRow(s.away_team_id,s.away_team,sw.away,awayWon,games,"away")}
+      ${teamRow(s.home_team_id,s.home_team,sw.home,homeWon,games,"home")}
+      <div class="series-performers">
+        <div class="series-performer"><small>Top Batter</small>${bat?`<strong>${esc(bat.name)}</strong><span>${bat.H}/${bat.AB} · ${bat.HR} HR · ${bat["3B"]} 3B · ${bat["2B"]} 2B · ${bat.RBI} RBI</span>`:"<span>—</span>"}</div>
+        <div class="series-performer"><small>Top Pitcher</small>${pit?`<strong>${esc(pit.name)}</strong><span>${pit.W}-${pit.L}${pit.S?` · ${pit.S} SV`:""} · ${pit.IP} IP · ${pit.K} K · ${pit.ER} ER</span>`:"<span>—</span>"}</div>
+      </div>
+      <a class="series-card-link" href="/matchup/?away=${encodeURIComponent(s.away_team_id)}&home=${encodeURIComponent(s.home_team_id)}&series=${encodeURIComponent(s.series_id)}">Matchup Details →</a>
+    </article>`;
+  }).join("");
+}
+function renderSeasonPace(series){
+ const target=document.getElementById("homeSeasonPace"),totalRequired=40;
+ const completed=(series||[]).filter(s=>(s.games||[]).length>=3).length;
+ const remaining=Math.max(0,totalRequired-completed);
+ const now=new Date();now.setHours(0,0,0,0);const deadline=new Date(2026,9,17,23,59,59);
+ const daysLeft=Math.max(0,Math.ceil((deadline-now)/86400000));
+ const weeksLeft=Math.max(daysLeft/7,1/7),exactRate=remaining?remaining/weeksLeft:0,targetRate=remaining?Math.ceil(exactRate):0;
+ const progress=Math.min(100,totalRequired?completed/totalRequired*100:0);
+ const status=remaining===0?"Regular-season series target complete":daysLeft===0?`${remaining} series still needed`:`Target ${targetRate} ${targetRate===1?"series":"series"} per week`;
+ target.innerHTML=`<div class="pace-card"><div class="pace-hero"><div class="pace-main"><small>Required weekly pace</small><strong>${remaining===0?"Done":targetRate+" / week"}</strong><div>${status}</div></div><div class="pace-stat"><small>Completed</small><strong>${completed} / ${totalRequired}</strong></div><div class="pace-stat"><small>Remaining</small><strong>${remaining}</strong></div><div class="pace-stat"><small>Days to Oct 17</small><strong>${daysLeft}</strong></div></div><div class="pace-progress"><span style="width:${progress.toFixed(1)}%"></span></div><div class="pace-note">Exact pace: <strong>${exactRate.toFixed(2)} series/week</strong>. A series counts as completed only when all three games are published. The 2026 regular season needs 40 completed series by October 17.</div></div>`;
+}
+document.querySelectorAll("[data-home-results-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll("[data-home-results-tab]").forEach(x=>x.classList.toggle("active",x===btn));
+ const pace=btn.dataset.homeResultsTab==="pace";document.getElementById("homeSeriesResults").classList.toggle("hidden",pace);document.getElementById("homeSeasonPace").classList.toggle("active",pace);
+}));
+
+fetch("/api/public/results?season=2026",{cache:"no-store"})
+  .then(async r=>({ok:r.ok,body:await r.json()}))
+  .then(({ok,body})=>{
+    if(!ok||!body.ok)throw new Error(body.error||"Unable to load results");
+    renderHomeSeries(body.series||[]);
+    renderSeasonPace(body.series||[]);
+  })
+  .catch(err=>{
+    console.error(err);
+    const target=document.getElementById("homeSeriesResults");
+    target.className="series-empty";
+    target.textContent="Recent results are temporarily unavailable.";
+  });
+</script>
+<script>
+(function(){
+ const fmtDate=v=>{const d=new Date(v+"T12:00:00");return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}).toUpperCase()};
+ const fmtTime=v=>{if(!v)return "TIME TBD";const [h,m]=v.split(":").map(Number),d=new Date(2000,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
+ Promise.all([fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json()),fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json())]).then(([sched,res])=>{
+  if(!sched.ok)return;
+  const completed=new Set((res.series||[]).filter(x=>(x.games||[]).length===3).map(x=>homePairKey(x.away_team_id,x.home_team_id)));
+  const today=new Date();today.setHours(0,0,0,0);
+  const remaining=(sched.scheduled||[]).filter(x=>!completed.has(homePairKey(x.team_a_id,x.team_b_id)));
+  const future=remaining.filter(x=>new Date(x.series_date+"T12:00:00")>=today);
+  const x=[...(future.length?future:remaining)].sort((a,b)=>(a.series_date+(a.series_time||"23:59")).localeCompare(b.series_date+(b.series_time||"23:59")))[0];
+  if(!x){document.querySelector(".ticker-label").textContent="2026 SEASON";tickerMatchup.textContent="NO UPCOMING SERIES SCHEDULED";tickerDate.textContent="";tickerTime.textContent="";tickerLocation.textContent="";return}
+  tickerMatchup.textContent=`${x.team_a.toUpperCase()} VS ${x.team_b.toUpperCase()}`;tickerDate.textContent=fmtDate(x.series_date);tickerTime.textContent=fmtTime(x.series_time);tickerLocation.textContent=(x.location||"SOUTH QUAD").toUpperCase();
+ }).catch(()=>{});
+})();
+</script><script>
+(function(){
+ const fmtTime=v=>{if(!v)return "Time TBD";const [hh,mm]=v.split(":").map(Number),d=new Date(2000,0,1,hh,mm);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
+ const fmtDate=v=>{const d=new Date(v+"T12:00:00");return Number.isNaN(d.getTime())?v:d.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric"})};
+ const localDate=()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`};
+ Promise.all([fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json()),fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json())]).then(([j,res])=>{
+   if(!j.ok)return;const completed=new Set((res.series||[]).filter(x=>(x.games||[]).length===3).map(x=>homePairKey(x.away_team_id,x.home_team_id))),today=localDate();
+   const rows=(j.scheduled||[]).filter(x=>x.series_date===today&&!completed.has(homePairKey(x.team_a_id,x.team_b_id))).sort((a,b)=>(a.series_time||"23:59").localeCompare(b.series_time||"23:59"));
+   const list=todaySeriesList,sub=todaySeriesSub;if(!rows.length){sub.textContent="No remaining series are scheduled today.";list.innerHTML='<div class="today-series-empty">Completed series have moved to Recent Series below.</div>';return}
+   sub.textContent=`${rows.length} ${rows.length===1?"series remains":"series remain"} scheduled for ${fmtDate(today)}.`;const logo=id=>HOME_TEAM_LOGOS[id]||"";
+   list.innerHTML=rows.map(x=>`<a class="today-series-card" href="/matchup/?away=${encodeURIComponent(x.team_a_id)}&home=${encodeURIComponent(x.team_b_id)}&date=${encodeURIComponent(x.series_date)}"><div class="today-series-logos"><div class="today-series-team away">${logo(x.team_a_id)?`<img src="${logo(x.team_a_id)}" alt="">`:""}<span class="today-series-team-name">${x.team_a}</span></div><div class="today-series-vs">vs</div><div class="today-series-team home"><span class="today-series-team-name">${x.team_b}</span>${logo(x.team_b_id)?`<img src="${logo(x.team_b_id)}" alt="">`:""}</div></div><div class="today-series-meta">${fmtTime(x.series_time)}${x.location?` · ${x.location}`:""}</div></a>`).join("");
+ }).catch(()=>{todaySeriesSub.textContent="Today’s schedule is temporarily unavailable."});
+})();
+</script><script>
+fetch("/api/public/fantasy?date="+(()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`})(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(!j.ok)return;const n=(j.scheduled||[]).length,e=(j.leaderboard||[]).length;homeFantasyMeta.textContent=j.locked?`${e} entries · Slate locked`:`${n} ${n===1?"series":"series"} today · ${e} entries · Locks ${j.slate?.lock_time||"TBD"}`;homeFantasyLink.textContent=j.locked?"View Leaderboard →":"Build Your Lineup →"}).catch(()=>{});
+</script><script src="/assets/hof.js?v=147"></script></body></html>

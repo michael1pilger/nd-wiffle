@@ -1,0 +1,3 @@
+-- Superseded before production application by migration 0030.
+-- Jerry Vielhauer's +1 out correction is consolidated into 0030 together
+-- with the Brady Cahill batting correction to avoid applying Jerry twice.

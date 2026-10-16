@@ -51,7 +51,7 @@ export async function onRequestGet(context){
         JOIN series s ON s.series_id=g.series_id
         JOIN teams at ON at.team_id=s.away_team_id
         JOIN teams ht ON ht.team_id=s.home_team_id
-        WHERE s.season=?
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
         ORDER BY s.series_date,s.series_id,g.game_number
       `).bind(season),
       DB.prepare(`
@@ -65,7 +65,7 @@ export async function onRequestGet(context){
         FROM batting_series_stats b
         JOIN series s ON s.series_id=b.series_id
         JOIN players p ON p.player_id=b.player_id
-        WHERE s.season=?
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
         GROUP BY b.player_id,p.name,p.class_year,p.retired
         ORDER BY p.name
       `).bind(season),
@@ -81,7 +81,7 @@ export async function onRequestGet(context){
         FROM pitching_series_stats ps
         JOIN series s ON s.series_id=ps.series_id
         JOIN players p ON p.player_id=ps.player_id
-        WHERE s.season=?
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
         GROUP BY ps.player_id,p.name,p.class_year,p.retired
         ORDER BY p.name
       `).bind(season),
@@ -91,15 +91,15 @@ export async function onRequestGet(context){
         FROM (
           SELECT g.winning_pitcher_id AS player_id, COUNT(*) AS wins,0 AS losses,0 AS saves
           FROM games g JOIN series s ON s.series_id=g.series_id
-          WHERE s.season=? GROUP BY g.winning_pitcher_id
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' GROUP BY g.winning_pitcher_id
           UNION ALL
           SELECT g.losing_pitcher_id AS player_id,0,COUNT(*),0
           FROM games g JOIN series s ON s.series_id=g.series_id
-          WHERE s.season=? GROUP BY g.losing_pitcher_id
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' GROUP BY g.losing_pitcher_id
           UNION ALL
           SELECT g.save_pitcher_id AS player_id,0,0,COUNT(*)
           FROM games g JOIN series s ON s.series_id=g.series_id
-          WHERE s.season=? AND g.save_pitcher_id IS NOT NULL
+          WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff' AND g.save_pitcher_id IS NOT NULL
           GROUP BY g.save_pitcher_id
         )
         GROUP BY player_id
@@ -110,10 +110,10 @@ export async function onRequestGet(context){
         JOIN series s ON s.series_id=sp.series_id
         JOIN players p ON p.player_id=sp.player_id
         JOIN teams t ON t.team_id=sp.team_id
-        WHERE s.season=?
+        WHERE s.season=? AND COALESCE(json_extract(s.payload_json,'$.series_type'),'played')!='playoff'
         ORDER BY p.name,t.display_name
       `).bind(season),
-      DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=?").bind(season),
+      DB.prepare("SELECT COUNT(*) AS count FROM series WHERE season=? AND COALESCE(json_extract(payload_json,'$.series_type'),'played')!='playoff'").bind(season),
       DB.prepare(`
         SELECT tr.player_id,p.name,p.class_year,p.retired,tr.team_id,t.display_name AS team_name
         FROM team_rosters tr
@@ -236,7 +236,7 @@ export async function onRequestGet(context){
     });
 
     return json({
-      ok:true,build:"v141",season,
+      ok:true,build:"v147",season,
       series_count:n(seriesCountRes.results?.[0]?.count),
       standings:rows,
       batting,

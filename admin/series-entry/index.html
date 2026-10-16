@@ -88,6 +88,7 @@
 <h2>2. Series Details</h2>
 <div class="form-grid">
 <div class="field"><label>Entry Type</label><select id="entryType"><option value="played">Played Series</option><option value="conditional_forfeit">Conditional Forfeit</option><option value="mutual_agreement">Mutual Agreement</option></select></div>
+<div class="field"><label>Series Context</label><select id="seriesContext"><option value="regular" selected>Regular Season</option><option value="playoff">Playoffs</option></select></div>
 <div class="field"><label>Season</label><select id="season"><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select></div>
 <div class="field"><label>Series Date</label><input id="seriesDate" type="date"></div>
 <div class="field" id="gamesCompletedField">
@@ -101,6 +102,14 @@
 </div>
 <div class="field"><label>Away Team</label><select id="awayTeam"></select><div class="detected" id="awayDetected"></div></div>
 <div class="field"><label>Home Team</label><select id="homeTeam"></select><div class="detected" id="homeDetected"></div></div>
+</div>
+<div id="playoffSeriesPanel" class="hidden" style="margin-top:16px;border:1px solid rgba(215,173,72,.35);border-radius:12px;padding:14px;background:rgba(215,173,72,.06)">
+  <div class="admin-kicker" style="font-size:10px">Playoff Series</div>
+  <p class="step-note" style="margin:5px 0 12px">Playoff games are stored separately from regular-season standings and feed the live playoff bracket. Upload the full series at once or append later games using the same date and teams.</p>
+  <div class="form-grid">
+    <div class="field"><label>Round</label><select id="playoffRound"><option value="First Round">First Round</option><option value="Semifinal">Semifinal</option><option value="World Series">World Series</option></select></div>
+    <div class="field"><label>Maximum Series Length</label><select id="playoffLength"><option value="3">Best of 3</option><option value="5">Best of 5</option><option value="7">Best of 7</option></select></div>
+  </div>
 </div>
 <div id="conditionalForfeitPanel" class="hidden" style="margin-top:16px;border:1px solid #6b5421;border-radius:12px;padding:14px;background:rgba(215,173,72,.06)">
   <div class="admin-kicker" style="font-size:10px">Conditional Forfeit</div>
@@ -143,7 +152,7 @@
 <div class="game-head"><div>Game</div><div>Away</div><div>Home</div><div>Winning Pitcher</div><div>Losing Pitcher</div><div>Save</div></div>
 <div class="game-row" data-game="1"><div class="game-label">Game 1</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
 <div class="game-row" data-game="2"><div class="game-label">Game 2</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
-<div class="game-row" data-game="3"><div class="game-label">Game 3</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
+<div class="game-row" data-game="3"><div class="game-label">Game 3</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div><div class="game-row hidden" data-game="4"><div class="game-label">Game 4</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div><div class="game-row hidden" data-game="5"><div class="game-label">Game 5</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div><div class="game-row hidden" data-game="6"><div class="game-label">Game 6</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div><div class="game-row hidden" data-game="7"><div class="game-label">Game 7</div><input class="awayScore" type="number" min="0" placeholder="Away"><input class="homeScore" type="number" min="0" placeholder="Home"><select class="wp"></select><select class="lp"></select><select class="sv"></select></div>
 </div>
 </section>
 
@@ -390,7 +399,20 @@ function populatePlayerSelects(){
   });
 }
 
-function gamesInEntry(){return Math.max(1,Math.min(3,Number(document.getElementById("gamesCompleted")?.value||3)))}
+function isPlayoffSeries(){return document.getElementById("entryType")?.value==="played"&&document.getElementById("seriesContext")?.value==="playoff"}
+function playoffSeriesLength(){return Number(document.getElementById("playoffLength")?.value||3)}
+function maxSeriesGames(){return isPlayoffSeries()?playoffSeriesLength():3}
+function gamesInEntry(){const max=maxSeriesGames();return Math.max(1,Math.min(max,Number(document.getElementById("gamesCompleted")?.value||max)))}
+function syncGameCountOptions(preserve=true){
+  const sel=document.getElementById("gamesCompleted"),max=maxSeriesGames(),prior=preserve?Number(sel.value):max;
+  sel.innerHTML=Array.from({length:max},(_,i)=>max-i).map(v=>`<option value="${v}">${v} game${v===1?"":"s"}</option>`).join("");
+  sel.value=String(Math.min(max,Math.max(1,prior||max)));
+}
+function syncPlayoffPanel(){
+  const po=isPlayoffSeries();document.getElementById("playoffSeriesPanel")?.classList.toggle("hidden",!po);
+  if(po){const round=document.getElementById("playoffRound").value,len=document.getElementById("playoffLength");if(round==="First Round")len.value="3";else if(round==="Semifinal")len.value="5";else if(round==="World Series")len.value="7";}
+  syncGameCountOptions(false);syncGamesCompleted();
+}
 function syncGamesCompleted(){
   const count=gamesInEntry();
   document.querySelectorAll(".game-row").forEach(r=>{
@@ -409,6 +431,7 @@ function isMutualAgreement(){return document.getElementById("entryType")?.value=
 function isSpecialEntry(){return isConditionalForfeit()||isMutualAgreement()}
 function syncEntryMode(){
   const cf=isConditionalForfeit(),ma=isMutualAgreement(),special=cf||ma;
+  document.getElementById("seriesContext")?.closest(".field")?.classList.toggle("hidden",special);
   document.getElementById("gamesCompletedField")?.classList.toggle("hidden",special);
   ["statsUploadSection","playerReviewSection","gameResultsSection","gpSection","pitchUsageSection","correctionsSection"].forEach(id=>{
     document.getElementById(id)?.classList.toggle("hidden",special);
@@ -421,9 +444,12 @@ function syncEntryMode(){
   if(cf)status.textContent="Select teams, date, and the canceling team, then validate the conditional forfeit.";
   else if(ma)status.textContent="Select teams, date, and the predetermined 3-game result, then validate the mutual agreement.";
   else if(status && !status.textContent.trim())status.textContent="Database publish is not ready until validation passes.";
-  if(!special)syncGamesCompleted();
+  if(!special){syncPlayoffPanel();syncGamesCompleted()}else document.getElementById("playoffSeriesPanel")?.classList.add("hidden");
 }
 document.getElementById("entryType").addEventListener("change",syncEntryMode);
+document.getElementById("seriesContext")?.addEventListener("change",syncPlayoffPanel);
+document.getElementById("playoffRound")?.addEventListener("change",syncPlayoffPanel);
+document.getElementById("playoffLength")?.addEventListener("change",()=>{syncGameCountOptions(false);syncGamesCompleted()});
 syncEntryMode();
 
 function parseLoaded(){
@@ -769,7 +795,7 @@ function renderReview(checks,payload){
   const runs=payload.series_type==="conditional_forfeit"?{away:0,home:0}:payload.series_type==="mutual_agreement"?maRuns:sumGameScores();
   const displayGames=payload.series_type==="mutual_agreement"?maGames:games;
   const daw=displayGames.filter(g=>g.away_score>g.home_score).length, dhw=displayGames.filter(g=>g.home_score>g.away_score).length;
-  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div>${payload.series_type==="conditional_forfeit"?`<div style="margin-top:8px;color:#d7ad48;font-weight:900">Conditional Forfeit</div><div class="muted">${payload.conditional_forfeit?.beneficiary_side==="away"?away:home} +3 conditional wins · ${payload.conditional_forfeit?.forfeiting_side==="away"?away:home} +3 conditional losses</div>`:payload.series_type==="mutual_agreement"?`<div style="margin-top:8px;color:#7fb2e8;font-weight:900">Mutual Agreement</div><div class="muted">${away} ${daw}-${dhw} ${home} · all three standings games recorded as 6-0 finals · no player stats</div>`:""}<div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}${payload.series_type==="played"?` · ${payload.games?.length||0}/3 games in this entry${payload.series_status==="in_progress"?" · IN PROGRESS":""}`:""}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${payload.series_type==="mutual_agreement"?daw:aw}</td><td>${payload.series_type==="mutual_agreement"?dhw:hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${payload.series_type==="mutual_agreement"?dhw:hw}</td><td>${payload.series_type==="mutual_agreement"?daw:aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
+  document.getElementById("seriesPreview").innerHTML=`<div><b>${away} at ${home}</b></div><div class="muted">${payload.series.season} · ${payload.series.date||"No date"}</div>${payload.series_type==="conditional_forfeit"?`<div style="margin-top:8px;color:#d7ad48;font-weight:900">Conditional Forfeit</div><div class="muted">${payload.conditional_forfeit?.beneficiary_side==="away"?away:home} +3 conditional wins · ${payload.conditional_forfeit?.forfeiting_side==="away"?away:home} +3 conditional losses</div>`:payload.series_type==="mutual_agreement"?`<div style="margin-top:8px;color:#7fb2e8;font-weight:900">Mutual Agreement</div><div class="muted">${away} ${daw}-${dhw} ${home} · all three standings games recorded as 6-0 finals · no player stats</div>`:""}<div class="payload-meta">Series ID: ${payload.series_id||"Unavailable until required fields are complete"}${["played","playoff"].includes(payload.series_type)?` · ${payload.games?.length||0}/${payload.series_type==="playoff"?payload.playoff?.series_length:3} max games${payload.series_type==="playoff"?` · ${payload.playoff?.round}`:""}${payload.series_status==="in_progress"?" · IN PROGRESS":""}`:""}</div><table class="preview-table"><tr><th>Team</th><th>W</th><th>L</th><th>RS</th><th>RA</th></tr><tr><td>${away}</td><td>${payload.series_type==="mutual_agreement"?daw:aw}</td><td>${payload.series_type==="mutual_agreement"?dhw:hw}</td><td>${runs.away}</td><td>${runs.home}</td></tr><tr><td>${home}</td><td>${payload.series_type==="mutual_agreement"?dhw:hw}</td><td>${payload.series_type==="mutual_agreement"?daw:aw}</td><td>${runs.home}</td><td>${runs.away}</td></tr></table>`;
   const reviewParticipants=payload.participants||[];
   const reviewBatting=payload.batting||[];
   const reviewPitching=payload.pitching||[];
@@ -1076,15 +1102,16 @@ document.getElementById("validateBtn").onclick=()=>{
   const pitchingDecisions=summarizePitchingDecisions(games);
   const instagramLeaders=socialLeaders(batting,pitching);
   renderSocialLeaders(instagramLeaders);
-  const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}`:null;
+  const seriesId=(season&&date&&away&&home)?`${season}_${date}_${slug(away)}_at_${slug(home)}${isPlayoffSeries()?`_playoff_${slug(document.getElementById("playoffRound").value)}`:""}`:null;
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v128",
+    source:"ndwiffle_admin_v147",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
-    series_type:"played",
-    series_status:gamesInEntry()<3?"in_progress":"complete",
+    series_type:isPlayoffSeries()?"playoff":"played",
+    series_status:(()=>{const need=Math.floor(maxSeriesGames()/2)+1,aw=games.filter(g=>g.away_score>g.home_score).length,hw=games.length-aw;return Math.max(aw,hw)>=need?"complete":"in_progress"})(),
+    playoff:isPlayoffSeries()?{round:document.getElementById("playoffRound").value,series_length:playoffSeriesLength()}:null,
     games_in_entry:gamesInEntry(),
     games,
     gp_overrides:overrides,
@@ -1254,5 +1281,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=146"></script></body>
+<script src="/assets/hof.js?v=147"></script></body>
 </html>
