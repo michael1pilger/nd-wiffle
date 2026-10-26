@@ -82,7 +82,7 @@ const LOGOS={
 };
 const SCHEDULE_TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"64,80,112","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
 
-let resultsByPair=new Map(),scheduledByPair=new Map(),exhibitionEvents=[],activeFilter=new URLSearchParams(location.search).get("filter")||"all";
+let resultsByPair=new Map(),scheduledByPair=new Map(),playoffSchedules=[],playoffResults=[],exhibitionEvents=[],activeFilter=new URLSearchParams(location.search).get("filter")||"all";
 const pairKey=(a,b)=>[a,b].sort().join("__");
 function sameDaySeriesOrder(a,b){
  const k=pairKey(a,b);
@@ -196,12 +196,17 @@ function specialEventCard(x){
  const logo=n=>n?`<img src="${esc(n)}" alt="" onerror="this.style.display='none'">`:"";
  return `<div class="live-series upcoming special-event"><div class="live-series-head"><div class="live-series-kicker">${kind}</div><div class="live-series-state">Special Event</div></div><div style="font-weight:950;font-size:16px;margin-bottom:12px">${esc(title)}</div><div class="live-matchup"><div class="live-team">${logo(x.team_a_logo)}<span>${esc(x.team_a_name)}</span></div><div class="live-at">vs</div><div class="live-team home"><span>${esc(x.team_b_name)}</span>${logo(x.team_b_logo)}</div></div><div class="live-series-meta"><span><b>Date</b>${fmtDate(x.event_date)}${x.event_time?` · ${fmtTime(x.event_time)}`:""}${x.location?` · ${esc(x.location)}`:""}</span><span>${x.notes?esc(x.notes):"Calendar-only exhibition"}</span></div></div>`
 }
+function playoffScheduleCard(x){
+ const result=(playoffResults||[]).find(r=>r.playoff_round===x.playoff_round&&pairKey(r.away_team_id,r.home_team_id)===pairKey(x.team_a_id,x.team_b_id));
+ const games=result?.games||[],complete=result?.series_status==="complete",aWins=result?(result.away_team_id===x.team_a_id?Number(result.away_wins||0):Number(result.home_wins||0)):0,bWins=result?(result.away_team_id===x.team_b_id?Number(result.away_wins||0):Number(result.home_wins||0)):0;
+ return `<a href="/playoffs/" class="live-series upcoming" style="text-decoration:none;color:inherit"><div class="live-series-head"><div class="live-series-kicker">${esc(x.playoff_round)} · Best of ${Number(x.playoff_series_length||3)}</div><div class="live-series-state">${complete?"Final":games.length?"In Progress":"Scheduled"}</div></div><div class="live-matchup"><div class="live-team">${LOGOS[x.team_a_id]?`<img src="${LOGOS[x.team_a_id]}" alt="">`:""}<span>${esc(x.team_a)}</span></div><div class="live-at">${games.length?`${aWins}-${bWins}`:"vs"}</div><div class="live-team home"><span>${esc(x.team_b)}</span>${LOGOS[x.team_b_id]?`<img src="${LOGOS[x.team_b_id]}" alt="">`:""}</div></div><div class="live-series-meta"><span><b>Date</b>${fmtDate(x.series_date)}${x.series_time?` · ${fmtTime(x.series_time)}`:""}${x.location?` · ${esc(x.location)}`:""}</span><span>${x.notes?esc(x.notes):"View the live playoff bracket"}</span></div></a>`
+}
 function renderCalendar(team=""){
  if(activeFilter==="final"){document.getElementById("calendarPanel").hidden=true;return}
  const rows=scheduledUpcomingRows(team);
- const specials=!team?(exhibitionEvents||[]):[];
+ const specials=!team?(exhibitionEvents||[]):[],po=(playoffSchedules||[]).filter(x=>!team||x.team_a_id===team||x.team_b_id===team);
  const panel=document.getElementById("calendarPanel"),grid=document.getElementById("calendarGrid");
- if(!rows.length&&!specials.length){panel.hidden=true;return}panel.hidden=false;
+ if(!rows.length&&!specials.length&&!po.length){panel.hidden=true;return}panel.hidden=false;
  if(!calendarWeekStart)calendarWeekStart=new Date(DEFAULT_CALENDAR_WEEK);
  const weekEnd=new Date(calendarWeekStart);weekEnd.setDate(weekEnd.getDate()+6);
  const weekdayBar=document.querySelector(".calendar-weekdays");
@@ -214,12 +219,12 @@ function renderCalendar(team=""){
  const titleStart=calendarWeekStart.toLocaleDateString(undefined,{month:"short",day:"numeric"});
  const titleEnd=weekEnd.toLocaleDateString(undefined,{month:calendarWeekStart.getMonth()===weekEnd.getMonth()?undefined:"short",day:"numeric",year:"numeric"});
  document.getElementById("calendarTitle").textContent=`${titleStart} – ${titleEnd}`;
- const byDate=new Map();for(const x of rows){if(!byDate.has(x.item.date))byDate.set(x.item.date,[]);byDate.get(x.item.date).push({kind:"series",data:x})}for(const x of specials){if(!byDate.has(x.event_date))byDate.set(x.event_date,[]);byDate.get(x.event_date).push({kind:"special",data:x})}
+ const byDate=new Map();for(const x of rows){if(!byDate.has(x.item.date))byDate.set(x.item.date,[]);byDate.get(x.item.date).push({kind:"series",data:x})}for(const x of specials){if(!byDate.has(x.event_date))byDate.set(x.event_date,[]);byDate.get(x.event_date).push({kind:"special",data:x})}for(const x of po){if(!byDate.has(x.series_date))byDate.set(x.series_date,[]);byDate.get(x.series_date).push({kind:"playoff",data:x})}
  const today=new Date(),todayKey=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
  let html="";for(let n=0;n<7;n++){
    const d=new Date(calendarWeekStart);d.setDate(d.getDate()+n);
    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`,events=byDate.get(key)||[];
-   html+=`<div class="calendar-day ${key===todayKey?"today":""}"><div class="calendar-date"><span>${d.getDate()}</span></div>${events.map(ev=>{if(ev.kind==="special"){const x=ev.data;return `<div class="calendar-event" title="${esc(x.event_title||eventTypeLabelPublic(x.event_type))}"><div class="calendar-event-top"><span class="calendar-event-logos">${x.team_a_logo?`<img src="${esc(x.team_a_logo)}" alt="" onerror="this.style.display='none'">`:""}${x.team_b_logo?`<img src="${esc(x.team_b_logo)}" alt="" onerror="this.style.display='none'">`:""}</span><span class="calendar-event-name">${esc(x.team_a_name)} vs ${esc(x.team_b_name)}</span></div><div class="calendar-event-time">${eventTypeLabelPublic(x.event_type)} · ${fmtTime(x.event_time)}${x.location?` · ${esc(x.location)}`:""}</div></div>`}const x=ev.data,i=x.item,href=`/matchup/?away=${encodeURIComponent(i.away_id)}&home=${encodeURIComponent(i.home_id)}&date=${encodeURIComponent(i.date)}`;return `<a class="calendar-event" href="${href}" title="${esc(i.away)} at ${esc(i.home)} · ${fmtTime(i.time)}"><div class="calendar-event-top"><span class="calendar-event-logos">${LOGOS[i.away_id]?`<img src="${LOGOS[i.away_id]}" alt="">`:""}${LOGOS[i.home_id]?`<img src="${LOGOS[i.home_id]}" alt="">`:""}</span><span class="calendar-event-name">${esc(i.away)} @ ${esc(i.home)}</span></div><div class="calendar-event-time">${fmtTime(i.time)}${i.location?` · ${esc(i.location)}`:""}</div></a>`}).join("")}</div>`;
+   html+=`<div class="calendar-day ${key===todayKey?"today":""}"><div class="calendar-date"><span>${d.getDate()}</span></div>${events.map(ev=>{if(ev.kind==="special"){const x=ev.data;return `<div class="calendar-event" title="${esc(x.event_title||eventTypeLabelPublic(x.event_type))}"><div class="calendar-event-top"><span class="calendar-event-logos">${x.team_a_logo?`<img src="${esc(x.team_a_logo)}" alt="" onerror="this.style.display='none'">`:""}${x.team_b_logo?`<img src="${esc(x.team_b_logo)}" alt="" onerror="this.style.display='none'">`:""}</span><span class="calendar-event-name">${esc(x.team_a_name)} vs ${esc(x.team_b_name)}</span></div><div class="calendar-event-time">${eventTypeLabelPublic(x.event_type)} · ${fmtTime(x.event_time)}${x.location?` · ${esc(x.location)}`:""}</div></div>`}if(ev.kind==="playoff"){const x=ev.data;return `<a class="calendar-event" href="/playoffs/" title="${esc(x.playoff_round)}"><div class="calendar-event-top"><span class="calendar-event-logos">${LOGOS[x.team_a_id]?`<img src="${LOGOS[x.team_a_id]}" alt="">`:""}${LOGOS[x.team_b_id]?`<img src="${LOGOS[x.team_b_id]}" alt="">`:""}</span><span class="calendar-event-name">${esc(x.team_a)} vs ${esc(x.team_b)}</span></div><div class="calendar-event-time">${esc(x.playoff_round)} · BO${Number(x.playoff_series_length||3)} · ${fmtTime(x.series_time)}${x.location?` · ${esc(x.location)}`:""}</div></a>`}const x=ev.data,i=x.item,href=`/matchup/?away=${encodeURIComponent(i.away_id)}&home=${encodeURIComponent(i.home_id)}&date=${encodeURIComponent(i.date)}`;return `<a class="calendar-event" href="${href}" title="${esc(i.away)} at ${esc(i.home)} · ${fmtTime(i.time)}"><div class="calendar-event-top"><span class="calendar-event-logos">${LOGOS[i.away_id]?`<img src="${LOGOS[i.away_id]}" alt="">`:""}${LOGOS[i.home_id]?`<img src="${LOGOS[i.home_id]}" alt="">`:""}</span><span class="calendar-event-name">${esc(i.away)} @ ${esc(i.home)}</span></div><div class="calendar-event-time">${fmtTime(i.time)}${i.location?` · ${esc(i.location)}`:""}</div></a>`}).join("")}</div>`;
  }
  grid.innerHTML=html;
 }
@@ -265,6 +270,8 @@ function render(){
  renderCalendar(team);
 
  let html="";
+ const filteredPlayoffs=(playoffSchedules||[]).filter(x=>(!team||x.team_a_id===team||x.team_b_id===team));
+ if(filteredPlayoffs.length){html+=`<div class="schedule-section-title">2026 Playoffs</div>${[...filteredPlayoffs].sort((a,b)=>`${a.series_date}T${a.series_time||"23:59"}`.localeCompare(`${b.series_date}T${b.series_time||"23:59"}`)).map(playoffScheduleCard).join("")}`}
  if(activeFilter!=="final"&&!team&&(exhibitionEvents||[]).length){html+=`<div class="schedule-section-title">Special Events</div>${[...exhibitionEvents].sort((a,b)=>`${a.event_date}T${a.event_time||"23:59"}`.localeCompare(`${b.event_date}T${b.event_time||"23:59"}`)).map(specialEventCard).join("")}`}
  if(rows.length){
    let lastSection="";
@@ -281,6 +288,7 @@ function render(){
  }
  document.getElementById("scheduleGrid").innerHTML=html;bindResultCards();
  const parts=[];
+ if(filteredPlayoffs.length)parts.push(`${filteredPlayoffs.length} playoff`);
  if(scheduledCount)parts.push(`${scheduledCount} scheduled`);
  if(!team&&activeFilter!=="final"&&(exhibitionEvents||[]).length)parts.push(`${exhibitionEvents.length} special`);
  if(finalCount)parts.push(`${finalCount} final`);
@@ -308,11 +316,11 @@ Promise.all([
  fetch("/api/public/results?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,body:await r.json()})),
  fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(async r=>({ok:r.ok,body:await r.json()}))
 ]).then(([results,schedule])=>{
- if(results.ok&&results.body.ok)resultsByPair=buildResultMap(results.body.series||[]);
- if(schedule.ok&&schedule.body.ok){scheduledByPair=new Map((schedule.body.scheduled||[]).map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));exhibitionEvents=schedule.body.exhibitions||[];}
+ if(results.ok&&results.body.ok){const all=results.body.series||[];resultsByPair=buildResultMap(all.filter(x=>x.series_type!=="playoff"));playoffResults=all.filter(x=>x.series_type==="playoff")}
+ if(schedule.ok&&schedule.body.ok){scheduledByPair=new Map((schedule.body.scheduled||[]).map(x=>[pairKey(x.team_a_id,x.team_b_id),x]));playoffSchedules=schedule.body.playoffs||[];exhibitionEvents=schedule.body.exhibitions||[];}
  render();
 }).catch(err=>{
  console.error(err);render();
  document.getElementById("scheduleError").innerHTML='<div class="schedule-error">Live schedule data is temporarily unavailable. The 45-matchup pool is still shown below.</div>';
 });
-</script><script src="/assets/hof.js?v=147"></script></body></html>
+</script><script src="/assets/hof.js?v=149"></script></body></html>

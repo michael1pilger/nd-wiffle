@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS scheduled_playoff_series (
+  schedule_id TEXT PRIMARY KEY,
+  season INTEGER NOT NULL,
+  playoff_round TEXT NOT NULL,
+  series_length INTEGER NOT NULL,
+  team_a_id TEXT NOT NULL REFERENCES teams(team_id),
+  team_b_id TEXT NOT NULL REFERENCES teams(team_id),
+  series_date TEXT NOT NULL,
+  series_time TEXT,
+  location TEXT,
+  notes TEXT,
+  umpire_player_id TEXT REFERENCES players(player_id),
+  umpire_name TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_by TEXT NOT NULL,
+  CHECK (team_a_id <> team_b_id),
+  CHECK (playoff_round IN ('First Round','Semifinal','World Series')),
+  CHECK (series_length IN (3,5,7))
+);

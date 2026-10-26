@@ -18,6 +18,24 @@ export async function onRequestGet(context){
    ORDER BY ss.series_date,COALESCE(ss.series_time,'23:59'),ta.display_name,tb.display_name
   `).bind(season).all();
   
+  let playoffs=[];
+  try{
+    const pr=await DB.prepare(`
+      SELECT ps.schedule_id,ps.season,ps.playoff_round,ps.series_length AS playoff_series_length,
+             ps.team_a_id,ta.display_name AS team_a,ps.team_b_id,tb.display_name AS team_b,
+             ps.series_date,ps.series_time,ps.location,ps.notes,ps.umpire_name,ps.updated_at
+      FROM scheduled_playoff_series ps
+      JOIN teams ta ON ta.team_id=ps.team_a_id
+      JOIN teams tb ON tb.team_id=ps.team_b_id
+      WHERE ps.season=?
+      ORDER BY CASE ps.playoff_round WHEN 'First Round' THEN 1 WHEN 'Semifinal' THEN 2 WHEN 'World Series' THEN 3 ELSE 9 END,
+               ps.series_date,COALESCE(ps.series_time,'23:59'),ta.display_name,tb.display_name
+    `).bind(season).all();
+    playoffs=pr.results||[];
+  }catch(err){
+    const msg=String(err?.message||err);
+    if(!msg.includes('no such table'))throw err;
+  }
   let exhibitions=[],exhibition_schema_ready=true;
   try{
     const er=await DB.prepare(`
@@ -28,10 +46,10 @@ export async function onRequestGet(context){
     `).bind(season).all();
     exhibitions=er.results||[];
   }catch{exhibition_schema_ready=false;}
-  return json({ok:true,build:"v124",season,scheduled:rows.results||[],exhibitions,exhibition_schema_ready});
+  return json({ok:true,build:"v149",season,scheduled:rows.results||[],playoffs,exhibitions,exhibition_schema_ready});
  }catch(err){
   const msg=String(err?.message||err);
-  if(msg.includes("no such table"))return json({ok:true,build:"v124",season,scheduled:[],schema_ready:false});
+  if(msg.includes("no such table"))return json({ok:true,build:"v149",season,scheduled:[],playoffs:[],schema_ready:false});
   return json({ok:false,error:"Public schedule query failed.",detail:msg},500);
  }
 }

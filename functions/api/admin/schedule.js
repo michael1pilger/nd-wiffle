@@ -50,6 +50,24 @@ export async function onRequestGet(context){
     END
    `)
   ]);
+  let playoff_scheduled=[];
+  try{
+    const pr=await DB.prepare(`
+      SELECT ps.*,ta.display_name AS team_a,tb.display_name AS team_b
+      FROM scheduled_playoff_series ps
+      JOIN teams ta ON ta.team_id=ps.team_a_id
+      JOIN teams tb ON tb.team_id=ps.team_b_id
+      WHERE ps.season=?
+      ORDER BY CASE ps.playoff_round WHEN 'First Round' THEN 1 WHEN 'Semifinal' THEN 2 WHEN 'World Series' THEN 3 ELSE 9 END,
+               ps.series_date,COALESCE(ps.series_time,'23:59'),ta.display_name,tb.display_name
+    `).bind(season).all();
+    playoff_scheduled=pr.results||[];
+  }catch(err){
+    const msg=String(err?.message||err);
+    if(msg.includes('no such table'))return json({ok:false,code:'PLAYOFF_SCHEDULE_SCHEMA_MISSING',error:'Playoff scheduling is not installed. Run migrations/0033_scheduled_playoff_series.sql.'},503);
+    throw err;
+  }
+
   let captain_availability=[];
   try{
     const ar=await DB.prepare(`
@@ -74,7 +92,7 @@ export async function onRequestGet(context){
     exhibition_schema_ready=false;
   }
   const umpireOptions=[...(umpires.results||[]),{player_id:"__other__",name:"Other"}];
-  return json({ok:true,build:"v132",season,teams:teams.results||[],scheduled:scheduled.results||[],completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
+  return json({ok:true,build:"v149",season,teams:teams.results||[],scheduled:scheduled.results||[],playoffs:playoff_scheduled,completed:completed.results||[],exhibitions,exhibition_schema_ready,umpires:umpireOptions,captain_availability,actor_email:context.data.actorEmail||null});
  }catch(err){return json({ok:false,error:"Schedule query failed.",detail:String(err?.message||err)},500)}
 }
 export async function onRequestPost(context){
@@ -121,6 +139,55 @@ export async function onRequestPost(context){
   catch(err){const msg=String(err?.message||err);if(msg.includes("no such table"))return json({ok:false,code:"EXHIBITION_SCHEMA_MISSING",error:"Special-event scheduling is not installed. Run migrations/0027_exhibition_events.sql."},503);return json({ok:false,error:"Could not remove special event.",detail:msg},500)}
  }
 
+ if(action==="save_playoff"){
+  const a=clean(body.team_a_id),b=clean(body.team_b_id),date=clean(body.series_date),time=clean(body.series_time),
+        location=clean(body.location),notes=clean(body.notes),round=clean(body.playoff_round),seriesLength=Number(body.series_length||0),
+        umpire_player_id=clean(body.umpire_player_id),umpire_name=clean(body.umpire_name);
+  if(!a||!b||a===b)return json({ok:false,error:"Choose two different teams."},422);
+  if(!["First Round","Semifinal","World Series"].includes(round))return json({ok:false,error:"Choose a valid playoff round."},422);
+  const expectedLength={"First Round":3,"Semifinal":5,"World Series":7}[round];
+  if(seriesLength!==expectedLength)return json({ok:false,error:`${round} must be best of ${expectedLength}.`},422);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return json({ok:false,error:"A valid series date is required."},422);
+  if(time&&!/^\d{2}:\d{2}$/.test(time))return json({ok:false,error:"Time must use HH:MM format."},422);
+  const teamRows=await DB.prepare("SELECT team_id FROM teams WHERE team_id IN (?,?) AND active_2026=1").bind(a,b).all();
+  if((teamRows.results||[]).length!==2)return json({ok:false,error:"Unknown or inactive team."},422);
+  let verifiedUmpireName=umpire_name,storedUmpirePlayerId=umpire_player_id;
+  if(umpire_player_id==="__other__"){storedUmpirePlayerId="";verifiedUmpireName=umpire_name||"Other";}
+  else if(umpire_player_id){
+    const allowedNames=["jimmy szpak","joey thomalla","will stevens","michael pilger","brendan mato"];
+    const ur=await DB.prepare("SELECT player_id,name FROM players WHERE player_id=?").bind(umpire_player_id).first();
+    if(!ur||!allowedNames.includes(String(ur.name||"").toLowerCase()))return json({ok:false,error:"That player is not an eligible umpire."},422);
+    verifiedUmpireName=ur.name;
+  }
+  const pair=pairKey(a,b),roundSlug=round.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),scheduleId=`${season}__${roundSlug}__${pair}`;
+  const published=await DB.prepare(`
+    SELECT s.series_id,json_extract(s.payload_json,'$.series_status') AS series_status
+    FROM series s
+    WHERE s.season=? AND json_extract(s.payload_json,'$.series_type')='playoff'
+      AND json_extract(s.payload_json,'$.playoff.round')=?
+      AND ((s.away_team_id=? AND s.home_team_id=?) OR (s.away_team_id=? AND s.home_team_id=?))
+    LIMIT 1
+  `).bind(season,round,a,b,b,a).first();
+  if(published?.series_status==="complete")return json({ok:false,code:"PLAYOFF_SERIES_COMPLETE",error:"This playoff series is already complete and no longer needs to be scheduled."},409);
+  const ids=[a,b].sort();
+  try{
+    await DB.prepare(`
+      INSERT INTO scheduled_playoff_series(schedule_id,season,playoff_round,series_length,team_a_id,team_b_id,series_date,series_time,location,notes,umpire_player_id,umpire_name,updated_by)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ON CONFLICT(schedule_id) DO UPDATE SET
+        playoff_round=excluded.playoff_round,series_length=excluded.series_length,
+        team_a_id=excluded.team_a_id,team_b_id=excluded.team_b_id,
+        series_date=excluded.series_date,series_time=excluded.series_time,location=excluded.location,notes=excluded.notes,
+        umpire_player_id=excluded.umpire_player_id,umpire_name=excluded.umpire_name,updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP
+    `).bind(scheduleId,season,round,seriesLength,ids[0],ids[1],date,time||null,location||null,notes||null,storedUmpirePlayerId||null,verifiedUmpireName||null,actor).run();
+    return json({ok:true,action:"saved_playoff",schedule_id:scheduleId,season,playoff_round:round,series_length:seriesLength});
+  }catch(err){const msg=String(err?.message||err);if(msg.includes("no such table"))return json({ok:false,code:"PLAYOFF_SCHEDULE_SCHEMA_MISSING",error:"Playoff scheduling is not installed. Run migrations/0033_scheduled_playoff_series.sql."},503);return json({ok:false,error:"Could not schedule playoff series.",detail:msg},500)}
+ }
+ if(action==="delete_playoff"){
+  const scheduleId=clean(body.schedule_id);if(!scheduleId)return json({ok:false,error:"schedule_id is required."},422);
+  try{await DB.prepare("DELETE FROM scheduled_playoff_series WHERE season=? AND schedule_id=?").bind(season,scheduleId).run();return json({ok:true,action:"deleted_playoff",schedule_id:scheduleId});}
+  catch(err){const msg=String(err?.message||err);if(msg.includes("no such table"))return json({ok:false,code:"PLAYOFF_SCHEDULE_SCHEMA_MISSING",error:"Playoff scheduling is not installed. Run migrations/0033_scheduled_playoff_series.sql."},503);return json({ok:false,error:"Could not remove playoff series.",detail:msg},500)}
+ }
  if(action==="delete"){
   const key=clean(body.pair_key);
   if(!key)return json({ok:false,error:"pair_key is required."},422);
