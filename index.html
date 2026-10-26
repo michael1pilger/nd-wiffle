@@ -282,13 +282,26 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
  const fmtTime=v=>{if(!v)return "TIME TBD";const [h,m]=v.split(":").map(Number),d=new Date(2000,0,1,h,m);return d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})};
  Promise.all([fetch("/api/public/schedule?season=2026",{cache:"no-store"}).then(r=>r.json()),fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json())]).then(([sched,res])=>{
   if(!sched.ok)return;
-  const completed=new Set((res.series||[]).filter(x=>(x.games||[]).length===3).map(x=>homePairKey(x.away_team_id,x.home_team_id)));
-  const today=new Date();today.setHours(0,0,0,0);
-  const remaining=(sched.scheduled||[]).filter(x=>!completed.has(homePairKey(x.team_a_id,x.team_b_id)));
-  const future=remaining.filter(x=>new Date(x.series_date+"T12:00:00")>=today);
-  const x=[...(future.length?future:remaining)].sort((a,b)=>(a.series_date+(a.series_time||"23:59")).localeCompare(b.series_date+(b.series_time||"23:59")))[0];
-  if(!x){document.querySelector(".ticker-label").textContent="2026 SEASON";tickerMatchup.textContent="NO UPCOMING SERIES SCHEDULED";tickerDate.textContent="";tickerTime.textContent="";tickerLocation.textContent="";return}
-  tickerMatchup.textContent=`${x.team_a.toUpperCase()} VS ${x.team_b.toUpperCase()}`;tickerDate.textContent=fmtDate(x.series_date);tickerTime.textContent=fmtTime(x.series_time);tickerLocation.textContent=(x.location||"SOUTH QUAD").toUpperCase();
+  const seeds={"storm":1,"ball-busters":2,"underdawgs":3,"twin-titans":4,"silverbacks":5,"midnight":6,"goofy-goobers":7};
+  const completedRegular=new Set((res.series||[]).filter(x=>x.series_type!=="playoff"&&(x.games||[]).length===3).map(x=>homePairKey(x.away_team_id,x.home_team_id)));
+  const completedPlayoffs=new Set((res.series||[]).filter(x=>x.series_type==="playoff"&&x.series_status==="complete").map(x=>`${x.playoff_round}|${homePairKey(x.away_team_id,x.home_team_id)}`));
+  const regular=(sched.scheduled||[]).filter(x=>!completedRegular.has(homePairKey(x.team_a_id,x.team_b_id))).map(x=>({...x,kind:"regular"}));
+  const playoffs=(sched.playoffs||[]).filter(x=>!completedPlayoffs.has(`${x.playoff_round}|${homePairKey(x.team_a_id,x.team_b_id)}`)).map(x=>({...x,kind:"playoff"}));
+  const all=[...regular,...playoffs],today=new Date();today.setHours(0,0,0,0);
+  const future=all.filter(x=>new Date(x.series_date+"T12:00:00")>=today);
+  const x=[...(future.length?future:all)].sort((a,b)=>(a.series_date+(a.series_time||"23:59")).localeCompare(b.series_date+(b.series_time||"23:59")))[0];
+  if(!x){document.querySelector(".ticker-label").textContent="2026 PLAYOFFS";tickerMatchup.textContent="NO UPCOMING SERIES SCHEDULED";tickerDate.textContent="";tickerTime.textContent="";tickerLocation.textContent="";return}
+  if(x.kind==="playoff"){
+    document.querySelector(".ticker-label").textContent="2026 PLAYOFFS";
+    const aSeed=seeds[x.team_a_id]?`#${seeds[x.team_a_id]} `:"",bSeed=seeds[x.team_b_id]?`#${seeds[x.team_b_id]} `:"";
+    tickerMatchup.textContent=`${aSeed}${x.team_a.toUpperCase()} VS ${bSeed}${x.team_b.toUpperCase()}`;
+    tickerDate.textContent=`${String(x.playoff_round||"PLAYOFFS").toUpperCase()} · ${fmtDate(x.series_date)}`;
+  }else{
+    document.querySelector(".ticker-label").textContent="UPCOMING EVENTS";
+    tickerMatchup.textContent=`${x.team_a.toUpperCase()} VS ${x.team_b.toUpperCase()}`;
+    tickerDate.textContent=fmtDate(x.series_date);
+  }
+  tickerTime.textContent=fmtTime(x.series_time);tickerLocation.textContent=(x.location||"SOUTH QUAD").toUpperCase();
  }).catch(()=>{});
 })();
 </script><script>
@@ -306,4 +319,4 @@ fetch("/api/public/results?season=2026",{cache:"no-store"})
 })();
 </script><script>
 fetch("/api/public/fantasy?date="+(()=>{const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`})(),{cache:"no-store"}).then(r=>r.json()).then(j=>{if(!j.ok)return;const n=(j.scheduled||[]).length,e=(j.leaderboard||[]).length;homeFantasyMeta.textContent=j.locked?`${e} entries · Slate locked`:`${n} ${n===1?"series":"series"} today · ${e} entries · Locks ${j.slate?.lock_time||"TBD"}`;homeFantasyLink.textContent=j.locked?"View Leaderboard →":"Build Your Lineup →"}).catch(()=>{});
-</script><script src="/assets/hof.js?v=147"></script></body></html>
+</script><script src="/assets/hof.js?v=150"></script></body></html>

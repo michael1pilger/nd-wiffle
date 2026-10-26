@@ -1,0 +1,1 @@
+v150: homepage ticker includes scheduled playoff series with seeds; playoff bracket uses dynamic advancement connectors; semifinals explicitly reseed so #1 plays the lowest remaining seed. No migration required.
