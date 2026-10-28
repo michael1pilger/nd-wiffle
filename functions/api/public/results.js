@@ -19,6 +19,27 @@ function ipDisplay(outs){
   const whole=Math.floor(n(outs)/3),rem=n(outs)%3;
   return rem?`${whole}.${rem}`:String(whole);
 }
+function seriesStatusFor(row,payload,games){
+  if(row.series_type==="playoff"){
+    const maxGames=Number(row.playoff_series_length||payload?.playoff?.series_length||3);
+    const need=Math.floor(maxGames/2)+1;
+    const aw=(games||[]).filter(g=>n(g.away_score)>n(g.home_score)).length;
+    const hw=(games||[]).filter(g=>n(g.home_score)>n(g.away_score)).length;
+    return Math.max(aw,hw)>=need?"complete":"in_progress";
+  }
+  if(row.series_type==="mutual_agreement")return "complete";
+  if(row.series_type==="conditional_forfeit")return "conditional";
+  return (games||[]).length>=3?"complete":"in_progress";
+}
+function safeGameCenter(payload){
+  return (payload?.game_media||[]).map(m=>({
+    game:n(m.game),
+    scorecard_available:!!m.scorecard?.base64,
+    scorecard_filename:m.scorecard?.filename||null,
+    line_score:m.line_score||null,
+    play_by_play:Array.isArray(m.play_by_play)?m.play_by_play:[]
+  })).filter(m=>m.game>0);
+}
 
 export async function onRequestGet(context){
   const DB=context.env.DB;
@@ -174,9 +195,9 @@ export async function onRequestGet(context){
     }
 
     const rawSeries=(seriesRes.results||[]).map(s=>{
+      let payload={};try{payload=JSON.parse(s.payload_json||"{}")}catch{}
       let games=gamesBySeries.get(s.series_id)||[];
       if(s.series_type==="mutual_agreement"){
-        let payload={};try{payload=JSON.parse(s.payload_json||"{}")}catch{}
         games=(payload.mutual_agreement?.virtual_games||[]).map(g=>({
           series_id:s.series_id,series_date:s.series_date,away_team_id:s.away_team_id,home_team_id:s.home_team_id,
           game_number:n(g.game),away_score:n(g.away_score),home_score:n(g.home_score),
@@ -191,8 +212,9 @@ export async function onRequestGet(context){
       return {
         ...safeSeries,away_wins,home_wins,
         game_count:games.length,
-        series_status:games.length>=3?"complete":"in_progress",
+        series_status:seriesStatusFor(s,payload,games),
         games,
+        game_center:safeGameCenter(payload),
         batting:batBySeries.get(s.series_id)||[],
         pitching:pitBySeries.get(s.series_id)||[]
       };
@@ -280,7 +302,7 @@ export async function onRequestGet(context){
     }
     series.sort((a,b)=>String(b.series_date||"").localeCompare(String(a.series_date||"")) || seriesOrderRank(b.away_team_id,b.home_team_id)-seriesOrderRank(a.away_team_id,a.home_team_id) || String(b.series_id).localeCompare(String(a.series_id)));
 
-    return json({ok:true,build:"v147",season,series_count:series.length,series});
+    return json({ok:true,build:"v151",season,series_count:series.length,series});
   }catch(err){
     return json({ok:false,error:"Public results query failed.",detail:String(err?.message||err)},500);
   }

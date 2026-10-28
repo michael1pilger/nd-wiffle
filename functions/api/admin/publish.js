@@ -125,6 +125,21 @@ function serverValidate(payload, teamIds, playerIds){
     if(![3,5,7].includes(maxGames))errors.push("Playoff series length must be 3, 5, or 7 games.");
   }
   if(games.length<1||games.length>maxGames) errors.push(`A ${payload.series_type==="playoff"?"playoff":"played"} series entry must contain 1 to ${maxGames} games.`);
+  for(const media of payload.game_media||[]){
+    const gameNo=Number(media?.game);
+    if(!Number.isInteger(gameNo)||gameNo<1||gameNo>games.length)errors.push("Game Center upload references an invalid game number.");
+    if(media?.scorecard){
+      if(media.scorecard.mime_type!=="application/pdf")errors.push(`Game ${gameNo}: scorecard must be a PDF.`);
+      if(typeof media.scorecard.base64!=="string"||!media.scorecard.base64)errors.push(`Game ${gameNo}: scorecard PDF data is missing.`);
+      if(Number(media.scorecard.size||0)>2000000)errors.push(`Game ${gameNo}: scorecard PDF exceeds the 2 MB storage limit.`);
+    }
+    const ls=media?.line_score;
+    if(ls){
+      for(const key of ["away_runs","home_runs","away_hits","home_hits"]){
+        if(!Array.isArray(ls[key])||ls[key].some(v=>!Number.isInteger(Number(v))||Number(v)<0))errors.push(`Game ${gameNo}: invalid ${key} line-score data.`);
+      }
+    }
+  }
   const participantByName=new Map((payload.participants||[]).map(p=>[norm(p.name),p]));
   const pitcherByName=new Map((payload.pitching||[]).map(p=>[norm(p.player),p]));
   const participantNames=new Set();
@@ -241,7 +256,10 @@ function mergePartialPayload(existingPayload,incomingPayload,playerIds){
     const id=playerIds.get(norm(part.name)),key=`${id||norm(part.name)}|${part.side}`,prior=partMap.get(key);
     if(!prior)partMap.set(key,{...part}); else prior.games_played=Math.min(maxGames,Number(prior.games_played||0)+Number(part.games_played||0));
   }
+  const oldMedia=(existingPayload.game_media||[]).map(m=>({...m}));
+  const newMedia=(incomingPayload.game_media||[]).map(m=>({...m,game:oldGames.length+Number(m.game||0)}));
   const merged={...incomingPayload,series_type:incomingPayload.series_type||existingPayload.series_type||"played",series_status:seriesIsComplete(incomingPayload,games)?"complete":"in_progress",games_in_entry:newGames.length,total_games_published:games.length,games,
+    game_media:[...oldMedia,...newMedia],
     participants:[...partMap.values()],
     batting:mergeRowsByPlayer(existingPayload.batting||[],incomingPayload.batting||[],playerIds,"batting"),
     pitching:mergeRowsByPlayer(existingPayload.pitching||[],incomingPayload.pitching||[],playerIds,"pitching"),
