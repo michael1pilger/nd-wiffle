@@ -83,7 +83,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v153</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v154</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
 <p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
@@ -451,64 +451,56 @@ function populatePlayerSelects(){
 function mediaTeamNorm(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g,"")}
 function fileAsDataUrl(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||""));r.onerror=()=>reject(r.error||new Error("File read failed"));r.readAsDataURL(file)})}
 function splitPdfLineScore(items){
-  const labels=items.filter(x=>x.str==="R"&&x.x>=140&&x.x<=180),choices=[];
-  for(const lab of labels){const nums=items.filter(x=>Math.abs(x.y-lab.y)<1.6&&x.x>180&&/^\d+$/.test(x.str));if(nums.length>=6)choices.push({y:lab.y,nums})}
-  if(!choices.length)return null;
-  const nums=choices.sort((a,b)=>b.nums.length-a.nums.length)[0].nums.sort((a,b)=>a.x-b.x),clusters=[];let cur=[],last=null;
-  for(const item of nums){if(last!==null&&item.x-last>22){clusters.push(cur);cur=[]}cur.push(item);last=item.x}if(cur.length)clusters.push(cur);
-  const runs=[],hits=[],xs=[];for(const cluster of clusters){const c=[...cluster].sort((a,b)=>a.x-b.x);runs.push(Number(c[0].str));hits.push(Number(c[c.length-1].str));xs.push(c.reduce((a,z)=>a+z.x,0)/c.length)}
-  return runs.length?{runs,hits,xs}:null;
-}
-function isScoreEventToken(v){
- const x=String(v||"").trim().toUpperCase();
- return /^(K|BB|HR|1B|2B|3B|FC|E\d*|FO\d*|F|G|L|U)$/.test(x);
-}
-function scoreEventLabel(v){
- const x=String(v||"").trim().toUpperCase();
- if(x==="K")return "struck out"; if(x==="BB")return "walked"; if(x==="HR")return "homered";
- if(x==="1B")return "singled"; if(x==="2B")return "doubled"; if(x==="3B")return "tripled";
- if(x==="FC")return "reached on a fielder's choice"; if(/^E\d*$/.test(x))return "reached on an error";
- if(/^FO\d*$/.test(x)||["F","L","U"].includes(x))return "flied out"; if(x==="G")return "grounded out";
- return x;
-}
-function normalizePerson(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g,"")}
-function pagePlayerAnchors(items,knownNames){
- const lines=new Map();
- for(const it of items){if(it.x<34||it.x>145)continue;const key=Math.round(it.y/2)*2;if(!lines.has(key))lines.set(key,[]);lines.get(key).push(it)}
- const anchors=[];
- for(const [y,row] of lines){const text=row.sort((a,b)=>a.x-b.x).map(x=>x.str).join(" ").replace(/\s+/g," ").trim(),norm=normalizePerson(text);if(!norm)continue;let name=(knownNames||[]).find(n=>norm.includes(normalizePerson(n)));if(name)anchors.push({name,y})}
- return anchors.sort((a,b)=>b.y-a.y);
-}
-function pageInningLabels(items,xs,playerAnchors){
- const maxPlayerY=playerAnchors.length?Math.max(...playerAnchors.map(x=>x.y)):-Infinity;
- return xs.map((x,idx)=>{
-   const candidates=items.filter(it=>Math.abs(it.x-x)<16&&it.y>maxPlayerY+8&&/^\d{1,2}$/.test(it.str)).sort((a,b)=>b.y-a.y);
-   return Number(candidates[0]?.str||idx+1);
- });
-}
-function extractPageEventCandidates(items,line,side,knownNames){
- if(!line?.xs?.length)return [];
- const players=pagePlayerAnchors(items,knownNames);if(!players.length)return [];
- const innings=pageInningLabels(items,line.xs,players),out=[];
- for(let pi=0;pi<players.length;pi++){
-   const p=players[pi],upper=pi===0?Infinity:(players[pi-1].y+p.y)/2,lower=pi===players.length-1?-Infinity:(p.y+players[pi+1].y)/2;
-   const evs=items.filter(it=>it.y<upper&&it.y>lower&&it.x>180&&isScoreEventToken(it.str));
-   const seen=new Set();
-   for(const ev of evs){
-     let ci=0,best=Infinity;line.xs.forEach((x,i)=>{const d=Math.abs(ev.x-x);if(d<best){best=d;ci=i}});
-     if(best>23)continue;
-     const key=`${ci}:${String(ev.str).toUpperCase()}`;if(seen.has(key))continue;seen.add(key);
-     out.push({column:ci,inning:innings[ci]||ci+1,side,player:p.name,event:String(ev.str).toUpperCase(),text:`${side==="away"?"Top":"Bottom"} ${innings[ci]||ci+1} · ${p.name} ${scoreEventLabel(ev.str)}`});
-   }
- }
- return out.sort((a,b)=>a.column-b.column||a.player.localeCompare(b.player));
+  // iScore PDFs are not tokenized consistently by PDF.js. Some exports return
+  // R, /, H and each score digit as separate items; others combine them into
+  // chunks such as "R / H" or "0 /00/ 0". Find the R/H summary row by its
+  // visual position, then cluster everything to the right into inning cells.
+  const norm=v=>String(v||"").replace(/\s+/g," ").trim(),upper=v=>norm(v).toUpperCase();
+  const yCandidates=[];
+  for(const it of items){
+    const txt=upper(it.str).replace(/\s/g,"");
+    if(/R.*\/.*H/.test(txt)){yCandidates.push(Number(it.y));continue}
+    if(txt==="R"){
+      const hasH=items.some(z=>Math.abs(Number(z.y)-Number(it.y))<3.5&&Number(z.x)<205&&upper(z.str)==="H");
+      if(hasH)yCandidates.push(Number(it.y));
+    }
+  }
+  if(!yCandidates.length)return null;
+
+  const attempts=[];
+  for(const y of yCandidates){
+    const row=items.filter(z=>Math.abs(Number(z.y)-y)<3.5&&Number(z.x)>180)
+      .sort((a,b)=>Number(a.x)-Number(b.x));
+    if(!row.length)continue;
+
+    const clusters=[];let cur=[],lastRight=null;
+    for(const z of row){
+      const x=Number(z.x),w=Math.max(0,Number(z.width||0)),right=x+w;
+      if(lastRight!==null&&x-lastRight>14){if(cur.length)clusters.push(cur);cur=[]}
+      cur.push(z);lastRight=Math.max(lastRight===null?-Infinity:lastRight,right);
+    }
+    if(cur.length)clusters.push(cur);
+
+    const cells=[];
+    for(const c of clusters){
+      const text=c.map(z=>norm(z.str)).join(" "),nums=(text.match(/\d+/g)||[]).map(Number);
+      if(!nums.length)continue;
+      const x0=Math.min(...c.map(z=>Number(z.x))),x1=Math.max(...c.map(z=>Number(z.x)+Math.max(0,Number(z.width||0))));
+      cells.push({run:nums[0],hit:nums[nums.length-1],x:(x0+x1)/2,text});
+    }
+    const sane=cells.filter(c=>Number.isInteger(c.run)&&Number.isInteger(c.hit)&&c.run>=0&&c.hit>=0&&c.run<=30&&c.hit<=30);
+    if(sane.length>=3&&sane.length<=30)attempts.push(sane);
+  }
+  if(!attempts.length)return null;
+  const best=attempts.sort((a,b)=>b.length-a.length)[0];
+  return {runs:best.map(c=>c.run),hits:best.map(c=>c.hit),xs:best.map(c=>c.x)};
 }
 async function parseIScorePdf(file,awayOverride=null,homeOverride=null,knownNames=[]){
   if(!window.pdfjsLib)throw new Error("PDF line-score parser could not load. The PDF will still be saved and viewable.");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   const pdf=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,pages=[],candidates=[];
   for(let i=1;i<=Math.min(2,pdf.numPages);i++){
-    const page=await pdf.getPage(i),content=await page.getTextContent(),items=content.items.map(x=>({str:String(x.str||"").trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0)})).filter(x=>x.str),line=splitPdfLineScore(items);if(!line)continue;
+    const page=await pdf.getPage(i),content=await page.getTextContent(),items=content.items.map(x=>({str:String(x.str||"").trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0),width:Number(x.width||0)})).filter(x=>x.str),line=splitPdfLineScore(items);if(!line)continue;
     const names=items.map(x=>x.str),away=awayOverride||document.getElementById("awayTeam").value,home=homeOverride||document.getElementById("homeTeam").value;let side=null;
     if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(away)))side="away";else if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(home)))side="home";else side=i===1?"away":"home";
     pages.push({side,...line});candidates.push(...extractPageEventCandidates(items,line,side,knownNames));
