@@ -68,12 +68,22 @@
 
 .postgame-media-grid{display:grid;grid-template-columns:1fr 160px;gap:10px;margin-top:10px}.postgame-media-grid .wide{grid-column:1/-1}.postgame-existing{font-size:10px;color:var(--muted);line-height:1.5;padding:8px 10px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#09111e}.postgame-existing.ok{color:#9ee6b0;border-color:rgba(76,175,80,.35)}
 @media(max-width:700px){.postgame-media-grid{grid-template-columns:1fr}}
+
+.series-import-card{margin-top:14px;border:1px solid rgba(215,173,72,.28);border-radius:12px;background:#0b1525;padding:14px}
+.series-import-card h3{margin:0 0 5px;font-size:15px;color:var(--gold)}.series-import-card p{margin:0 0 10px;color:var(--muted);font-size:10px;line-height:1.5}
+.series-import-review{display:grid;gap:10px;margin-top:12px}.series-import-game{border:1px solid rgba(255,255,255,.08);border-radius:10px;background:#09111e;padding:11px}
+.series-import-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:7px}.series-import-head strong{color:#fff}.series-import-match{font-size:9px;color:var(--muted)}
+.series-import-ok{color:#74d99a!important}.series-import-warn{color:#e2b34a!important}.series-import-bad{color:#eb7884!important}
+.series-breaks{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.series-breaks label{font-size:9px;color:var(--muted);font-weight:900}.series-breaks select{margin-left:5px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:7px;padding:6px}
+.series-import-score{font-size:10px;line-height:1.55}.series-import-score b{color:var(--gold)}.series-import-pbp{width:100%;min-height:95px;margin-top:8px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px;resize:vertical}
+.import-confidence{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.05);font-size:8px;font-weight:900}
+.fallback-divider{margin:18px 0 12px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px;color:var(--muted);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}
 </style>
 </head>
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v151</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v153</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
 <p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
@@ -233,16 +243,30 @@
 </section>
 
 <section class="admin-panel" id="postgameMediaSection">
-<h2>10. Add / Update Game Center After Publication</h2>
-<p class="step-note">Use this after a series is already published. This updates only the selected game's scorecard, line score, and verified play-by-play. It does <strong>not</strong> republish or change scores, standings, playoff advancement, or player statistics.</p>
+<h2>10. Import / Update Game Center After Publication</h2>
+<p class="step-note">For a completed series, the recommended workflow is to upload the <strong>single combined iScore scorecard PDF once</strong>. The importer reads the cumulative line score, compares it to the already-published game finals, proposes the Game 1 / Game 2 / Game 3 boundaries, and lets you review everything before saving. Scores, player stats, standings, and playoff advancement are never changed here.</p>
 <div class="postgame-media-grid">
-  <div class="field"><label>Published Series</label><select id="postgameSeries"><option value="">Loading published series…</option></select></div>
+  <div class="field wide"><label>Published Series</label><select id="postgameSeries"><option value="">Loading published series…</option></select></div>
+</div>
+
+<div class="series-import-card">
+  <h3>Series Game Center Import</h3>
+  <p>Upload one iScore PDF for the whole series. The site will try to split the cumulative inning columns into the published games automatically. Candidate play-by-play is reconstructed from scorecard event symbols where possible and is always editable before saving.</p>
+  <div class="field"><label>Combined Series iScore PDF</label><input id="seriesImportPdf" type="file" accept="application/pdf,.pdf"><div id="seriesImportStatus" class="postgame-existing">Select a published series, then upload the combined PDF.</div></div>
+  <div id="seriesImportBreaks" class="series-breaks"></div>
+  <div id="seriesImportReview" class="series-import-review"></div>
+  <div class="admin-actions"><button class="admin-btn primary" id="saveSeriesImport" type="button" disabled>Save Series Game Center</button></div>
+</div>
+
+<div class="fallback-divider">Single-game fallback</div>
+<p class="step-note">Use this only if you want to replace or edit one game after the series-level import.</p>
+<div class="postgame-media-grid">
   <div class="field"><label>Game</label><select id="postgameGame" disabled><option value="">Select series first</option></select></div>
   <div class="field wide"><label>Optional iScore Scorecard PDF</label><input id="postgamePdf" type="file" accept="application/pdf,.pdf"><div id="postgamePdfStatus" class="postgame-existing">Choose a published series and game.</div></div>
   <div class="field wide"><label>Verified Play-by-Play</label><textarea id="postgamePbp" rows="8" placeholder="One event per line. Example: Bottom 11 · Jacob Bailey walk-off single"></textarea></div>
 </div>
-<div class="admin-actions"><button class="admin-btn primary" id="savePostgameMedia" type="button" disabled>Save Game Center Update</button></div>
-<div id="postgameMediaStatus" class="file-state publish-status-box" style="margin-top:10px">Select a published series and game to begin.</div>
+<div class="admin-actions"><button class="admin-btn" id="savePostgameMedia" type="button" disabled>Save Single-Game Update</button></div>
+<div id="postgameMediaStatus" class="file-state publish-status-box" style="margin-top:10px">Select a published series to begin.</div>
 </section>
 </div></main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -432,22 +456,66 @@ function splitPdfLineScore(items){
   if(!choices.length)return null;
   const nums=choices.sort((a,b)=>b.nums.length-a.nums.length)[0].nums.sort((a,b)=>a.x-b.x),clusters=[];let cur=[],last=null;
   for(const item of nums){if(last!==null&&item.x-last>22){clusters.push(cur);cur=[]}cur.push(item);last=item.x}if(cur.length)clusters.push(cur);
-  const runs=[],hits=[];for(const cluster of clusters){const c=[...cluster].sort((a,b)=>a.x-b.x);runs.push(Number(c[0].str));hits.push(Number(c[c.length-1].str))}
-  return runs.length?{runs,hits}:null;
+  const runs=[],hits=[],xs=[];for(const cluster of clusters){const c=[...cluster].sort((a,b)=>a.x-b.x);runs.push(Number(c[0].str));hits.push(Number(c[c.length-1].str));xs.push(c.reduce((a,z)=>a+z.x,0)/c.length)}
+  return runs.length?{runs,hits,xs}:null;
 }
-async function parseIScorePdf(file,awayOverride=null,homeOverride=null){
+function isScoreEventToken(v){
+ const x=String(v||"").trim().toUpperCase();
+ return /^(K|BB|HR|1B|2B|3B|FC|E\d*|FO\d*|F|G|L|U)$/.test(x);
+}
+function scoreEventLabel(v){
+ const x=String(v||"").trim().toUpperCase();
+ if(x==="K")return "struck out"; if(x==="BB")return "walked"; if(x==="HR")return "homered";
+ if(x==="1B")return "singled"; if(x==="2B")return "doubled"; if(x==="3B")return "tripled";
+ if(x==="FC")return "reached on a fielder's choice"; if(/^E\d*$/.test(x))return "reached on an error";
+ if(/^FO\d*$/.test(x)||["F","L","U"].includes(x))return "flied out"; if(x==="G")return "grounded out";
+ return x;
+}
+function normalizePerson(v){return String(v||"").toLowerCase().replace(/[^a-z0-9]+/g,"")}
+function pagePlayerAnchors(items,knownNames){
+ const lines=new Map();
+ for(const it of items){if(it.x<34||it.x>145)continue;const key=Math.round(it.y/2)*2;if(!lines.has(key))lines.set(key,[]);lines.get(key).push(it)}
+ const anchors=[];
+ for(const [y,row] of lines){const text=row.sort((a,b)=>a.x-b.x).map(x=>x.str).join(" ").replace(/\s+/g," ").trim(),norm=normalizePerson(text);if(!norm)continue;let name=(knownNames||[]).find(n=>norm.includes(normalizePerson(n)));if(name)anchors.push({name,y})}
+ return anchors.sort((a,b)=>b.y-a.y);
+}
+function pageInningLabels(items,xs,playerAnchors){
+ const maxPlayerY=playerAnchors.length?Math.max(...playerAnchors.map(x=>x.y)):-Infinity;
+ return xs.map((x,idx)=>{
+   const candidates=items.filter(it=>Math.abs(it.x-x)<16&&it.y>maxPlayerY+8&&/^\d{1,2}$/.test(it.str)).sort((a,b)=>b.y-a.y);
+   return Number(candidates[0]?.str||idx+1);
+ });
+}
+function extractPageEventCandidates(items,line,side,knownNames){
+ if(!line?.xs?.length)return [];
+ const players=pagePlayerAnchors(items,knownNames);if(!players.length)return [];
+ const innings=pageInningLabels(items,line.xs,players),out=[];
+ for(let pi=0;pi<players.length;pi++){
+   const p=players[pi],upper=pi===0?Infinity:(players[pi-1].y+p.y)/2,lower=pi===players.length-1?-Infinity:(p.y+players[pi+1].y)/2;
+   const evs=items.filter(it=>it.y<upper&&it.y>lower&&it.x>180&&isScoreEventToken(it.str));
+   const seen=new Set();
+   for(const ev of evs){
+     let ci=0,best=Infinity;line.xs.forEach((x,i)=>{const d=Math.abs(ev.x-x);if(d<best){best=d;ci=i}});
+     if(best>23)continue;
+     const key=`${ci}:${String(ev.str).toUpperCase()}`;if(seen.has(key))continue;seen.add(key);
+     out.push({column:ci,inning:innings[ci]||ci+1,side,player:p.name,event:String(ev.str).toUpperCase(),text:`${side==="away"?"Top":"Bottom"} ${innings[ci]||ci+1} · ${p.name} ${scoreEventLabel(ev.str)}`});
+   }
+ }
+ return out.sort((a,b)=>a.column-b.column||a.player.localeCompare(b.player));
+}
+async function parseIScorePdf(file,awayOverride=null,homeOverride=null,knownNames=[]){
   if(!window.pdfjsLib)throw new Error("PDF line-score parser could not load. The PDF will still be saved and viewable.");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  const pdf=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,pages=[];
+  const pdf=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,pages=[],candidates=[];
   for(let i=1;i<=Math.min(2,pdf.numPages);i++){
     const page=await pdf.getPage(i),content=await page.getTextContent(),items=content.items.map(x=>({str:String(x.str||"").trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0)})).filter(x=>x.str),line=splitPdfLineScore(items);if(!line)continue;
     const names=items.map(x=>x.str),away=awayOverride||document.getElementById("awayTeam").value,home=homeOverride||document.getElementById("homeTeam").value;let side=null;
     if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(away)))side="away";else if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(home)))side="home";else side=i===1?"away":"home";
-    pages.push({side,...line});
+    pages.push({side,...line});candidates.push(...extractPageEventCandidates(items,line,side,knownNames));
   }
   const away=pages.find(x=>x.side==="away"),home=pages.find(x=>x.side==="home");if(!away||!home)throw new Error("The PDF was saved, but the iScore line-score rows could not be identified confidently.");
   const innings=Math.max(away.runs.length,home.runs.length),pad=arr=>Array.from({length:innings},(_,i)=>Number(arr[i]||0));
-  return {source:"iscore_pdf",innings,away_runs:pad(away.runs),home_runs:pad(home.runs),away_hits:pad(away.hits),home_hits:pad(home.hits)};
+  return {source:"iscore_pdf",innings,away_runs:pad(away.runs),home_runs:pad(home.runs),away_hits:pad(away.hits),home_hits:pad(home.hits),event_candidates:candidates};
 }
 function gameMediaSummary(ls){return ls?`${document.getElementById("awayTeam").value}: ${ls.away_runs.join("-")} · ${document.getElementById("homeTeam").value}: ${ls.home_runs.join("-")}`:""}
 function renderGameMediaRows(){
@@ -1254,6 +1322,58 @@ function currentPublishPayload(){
 }
 
 
+
+let SERIES_IMPORT={file:null,scorecard:null,line_score:null,boundaries:[],exact:false,candidates:[]};
+function sumSlice(arr,a,b){let t=0;for(let i=a;i<b;i++)t+=Number(arr?.[i]||0);return t}
+function knownSeriesNames(sr){
+ const names=[];for(const side of ["batting","pitching"]){for(const r of sr?.[side]||[]){const nm=r.name||r.Name||r.player;if(nm)names.push(nm)}}return [...new Set(names)];
+}
+function suggestSeriesBoundaries(ls,games){
+ const n=Number(ls?.innings||0),g=(games||[]).slice().sort((a,b)=>Number(a.game_number||a.game)-Number(b.game_number||b.game));if(!n||!g.length)return {boundaries:[],exact:false};
+ let best=null;
+ function rec(idx,start,bounds,penalty){
+   if(idx===g.length-1){
+     const game=g[idx],ar=sumSlice(ls.away_runs,start,n),hr=sumSlice(ls.home_runs,start,n);
+     if(ar===Number(game.away_score)&&hr===Number(game.home_score)){const p=penalty+Math.abs((n-start)-3);if(!best||p<best.penalty)best={boundaries:[...bounds,n],penalty:p}}return;
+   }
+   const game=g[idx];
+   for(let end=start+1;end<=n-(g.length-idx-1);end++){
+     const ar=sumSlice(ls.away_runs,start,end),hr=sumSlice(ls.home_runs,start,end);
+     if(ar===Number(game.away_score)&&hr===Number(game.home_score))rec(idx+1,end,[...bounds,end],penalty+Math.abs((end-start)-3));
+   }
+ }
+ rec(0,0,[],0);
+ if(best)return {boundaries:best.boundaries,exact:true};
+ const boundaries=[];for(let i=1;i<=g.length;i++)boundaries.push(i===g.length?n:Math.max(i,Math.round(n*i/g.length)));
+ return {boundaries,exact:false};
+}
+function importSegments(){
+ const sr=postgameSelectedSeries(),ls=SERIES_IMPORT.line_score;if(!sr||!ls)return [];
+ const games=(sr.games||[]).slice().sort((a,b)=>Number(a.game_number||a.game)-Number(b.game_number||b.game)),ends=SERIES_IMPORT.boundaries;let start=0;
+ return games.map((g,idx)=>{const end=Number(ends[idx]||ls.innings),seg={source:"iscore_series_pdf",innings:end-start,away_runs:ls.away_runs.slice(start,end),home_runs:ls.home_runs.slice(start,end),away_hits:ls.away_hits.slice(start,end),home_hits:ls.home_hits.slice(start,end)},cands=(SERIES_IMPORT.candidates||[]).filter(x=>x.column>=start&&x.column<end).map(x=>({...x,column:x.column-start}));const out={game:Number(g.game_number||g.game),published:g,line_score:seg,candidates:cands,start,end};start=end;return out});
+}
+function renderSeriesImportReview(){
+ const root=document.getElementById("seriesImportReview"),breaks=document.getElementById("seriesImportBreaks"),save=document.getElementById("saveSeriesImport"),sr=postgameSelectedSeries(),ls=SERIES_IMPORT.line_score;
+ if(!sr||!ls){root.innerHTML="";breaks.innerHTML="";save.disabled=true;return}
+ const games=(sr.games||[]).slice().sort((a,b)=>Number(a.game_number||a.game)-Number(b.game_number||b.game));
+ breaks.innerHTML=games.slice(0,-1).map((g,i)=>{const min=i?Number(SERIES_IMPORT.boundaries[i-1])+1:1,max=ls.innings-(games.length-i-1);return `<label>Game ${i+1} ends after scorecard column <select data-import-break="${i}">${Array.from({length:max-min+1},(_,k)=>min+k).map(v=>`<option value="${v}" ${Number(SERIES_IMPORT.boundaries[i])===v?"selected":""}>${v}</option>`).join("")}</select></label>`}).join("");
+ breaks.querySelectorAll("[data-import-break]").forEach(sel=>sel.onchange=()=>{const i=Number(sel.dataset.importBreak),v=Number(sel.value);SERIES_IMPORT.boundaries[i]=v;for(let j=i+1;j<SERIES_IMPORT.boundaries.length-1;j++)if(SERIES_IMPORT.boundaries[j]<=SERIES_IMPORT.boundaries[j-1])SERIES_IMPORT.boundaries[j]=SERIES_IMPORT.boundaries[j-1]+1;renderSeriesImportReview()});
+ const segs=importSegments();let allMatch=true;
+ root.innerHTML=segs.map((x,i)=>{const ar=sumSlice(x.line_score.away_runs,0,x.line_score.innings),hr=sumSlice(x.line_score.home_runs,0,x.line_score.innings),match=ar===Number(x.published.away_score)&&hr===Number(x.published.home_score);if(!match)allMatch=false;const prior=document.getElementById(`seriesImportPbp_${i}`)?.value;const auto=x.candidates.map(c=>c.text).join("\n");return `<div class="series-import-game"><div class="series-import-head"><strong>Game ${x.game}</strong><span class="import-confidence ${match?"series-import-ok":"series-import-bad"}">${match?"✓ matches published final":"⚠ final does not match"}</span></div><div class="series-import-match">Published: ${escapeHtml(sr.away_team)} ${x.published.away_score}-${x.published.home_score} ${escapeHtml(sr.home_team)} · imported columns ${x.start+1}-${x.end}</div><div class="series-import-score"><b>Detected line score:</b> ${x.line_score.away_runs.join(" ")} / ${x.line_score.home_runs.join(" ")} · totals ${ar}-${hr}</div><textarea class="series-import-pbp" id="seriesImportPbp_${i}" placeholder="Candidate play-by-play from the scorecard will appear here when identifiable. Review/edit before saving.">${escapeHtml(prior!==undefined?prior:auto)}</textarea></div>`}).join("");
+ save.disabled=!allMatch;
+ const status=document.getElementById("seriesImportStatus");status.textContent=allMatch?`${SERIES_IMPORT.exact?"✓ Exact":"✓ Reviewed"} split matches every published game final. Review the candidate play-by-play, then save all games at once.`:"Adjust the game boundaries until every imported segment matches its published final.";status.className=`postgame-existing ${allMatch?"ok":"series-import-warn"}`;
+}
+async function runSeriesImport(file){
+ const sr=postgameSelectedSeries(),status=document.getElementById("seriesImportStatus");if(!sr||!file)return;
+ if(file.size>5000000){status.textContent="Combined series PDF exceeds the 5 MB limit.";status.className="postgame-existing series-import-bad";return}
+ status.textContent="Reading combined series scorecard and finding game boundaries…";status.className="postgame-existing";
+ try{
+   const dataUrl=await fileAsDataUrl(file),ls=await parseIScorePdf(file,sr.away_team,sr.home_team,knownSeriesNames(sr)),suggest=suggestSeriesBoundaries(ls,sr.games);
+   SERIES_IMPORT={file,scorecard:{filename:file.name,mime_type:"application/pdf",size:file.size,base64:dataUrl.split(",")[1]||""},line_score:ls,boundaries:suggest.boundaries,exact:suggest.exact,candidates:ls.event_candidates||[]};
+   renderSeriesImportReview();
+ }catch(e){SERIES_IMPORT={file:null,scorecard:null,line_score:null,boundaries:[],exact:false,candidates:[]};status.textContent=`Could not parse combined PDF: ${e.message||e}`;status.className="postgame-existing series-import-bad";renderSeriesImportReview()}
+}
+
 let POSTGAME_SERIES=[],postgameDraft={};
 function postgameSelectedSeries(){return POSTGAME_SERIES.find(x=>x.series_id===document.getElementById("postgameSeries").value)||null}
 function postgameSelectedGame(){const sr=postgameSelectedSeries(),g=Number(document.getElementById("postgameGame").value);return sr?.games?.find(x=>Number(x.game_number||x.game)===g)||null}
@@ -1279,7 +1399,15 @@ async function loadPostgameSeries(){
  try{const r=await fetch("/api/public/results?season=2026",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Unable to load published series");POSTGAME_SERIES=(j.series||[]).filter(x=>x.games?.length&&!String(x.series_id||"").includes("+")).sort((a,b)=>(b.series_type==="playoff")-(a.series_type==="playoff")||String(b.series_date||"").localeCompare(String(a.series_date||"")));sel.innerHTML='<option value="">Select published series…</option>'+POSTGAME_SERIES.map(sr=>`<option value="${escapeHtml(sr.series_id)}">${escapeHtml(postgameLabel(sr))}</option>`).join("");status.textContent="Select any published series. Playoff series are listed first."}
  catch(e){sel.innerHTML='<option value="">Could not load series</option>';status.textContent=`Could not load published series: ${e.message||e}`;status.className="file-state publish-error publish-status-box"}
 }
-document.getElementById("postgameSeries").addEventListener("change",populatePostgameGames);
+document.getElementById("postgameSeries").addEventListener("change",()=>{SERIES_IMPORT={file:null,scorecard:null,line_score:null,boundaries:[],exact:false,candidates:[]};document.getElementById("seriesImportPdf").value="";document.getElementById("seriesImportStatus").textContent=postgameSelectedSeries()?"Upload the combined iScore PDF for this series.":"Select a published series, then upload the combined PDF.";renderSeriesImportReview();populatePostgameGames()});
+document.getElementById("seriesImportPdf").addEventListener("change",e=>{const f=e.target.files?.[0];if(f)runSeriesImport(f)});
+document.getElementById("saveSeriesImport").addEventListener("click",async()=>{
+ const sr=postgameSelectedSeries(),btn=document.getElementById("saveSeriesImport"),status=document.getElementById("seriesImportStatus");if(!sr||!SERIES_IMPORT.scorecard)return;
+ const segs=importSegments(),games=segs.map((x,i)=>({game:x.game,line_score:x.line_score,play_by_play:(document.getElementById(`seriesImportPbp_${i}`)?.value||"").split(/\r?\n/).map(z=>z.trim()).filter(Boolean).map(text=>({text}))}));
+ btn.disabled=true;status.textContent="Saving the series PDF and all Game Center splits…";status.className="postgame-existing";
+ try{const r=await fetch("/api/admin/series-media",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({series_import:true,series_id:sr.series_id,series_scorecard:SERIES_IMPORT.scorecard,games})}),j=await r.json();if(!r.ok||!j.ok)throw new Error([j.error,j.detail].filter(Boolean).join(" — ")||`HTTP ${r.status}`);status.textContent=`✓ Series Game Center saved for ${j.games_updated} game${j.games_updated===1?"":"s"}. The one combined PDF is now available from every game.`;status.className="postgame-existing ok";await loadPostgameSeries();document.getElementById("postgameSeries").value=sr.series_id;populatePostgameGames();btn.disabled=false}
+ catch(e){status.textContent=`Series Game Center save failed: ${e.message||e}`;status.className="postgame-existing series-import-bad";btn.disabled=false}
+});
 document.getElementById("postgameGame").addEventListener("change",loadPostgameGame);
 document.getElementById("postgamePdf").addEventListener("change",async e=>{
  const file=e.target.files?.[0],sr=postgameSelectedSeries(),game=postgameSelectedGame(),status=document.getElementById("postgamePdfStatus");if(!file||!sr||!game)return;

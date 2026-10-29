@@ -8,8 +8,8 @@ export async function onRequestGet(context){
     const row=await DB.prepare("SELECT payload_json FROM series WHERE series_id=?").bind(seriesId).first();
     if(!row)return json({ok:false,error:"Series not found."},404);
     let payload={};try{payload=JSON.parse(row.payload_json||"{}")}catch{}
-    const media=(payload.game_media||[]).find(x=>Number(x.game)===game),pdf=media?.scorecard;
-    if(!pdf?.base64)return json({ok:false,error:"No scorecard PDF was uploaded for this game."},404);
+    const media=(payload.game_media||[]).find(x=>Number(x.game)===game),pdf=media?.scorecard||payload?.series_scorecard;
+    if(!pdf?.base64)return json({ok:false,error:"No scorecard PDF was uploaded for this game or series."},404);
     const bin=atob(String(pdf.base64)),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
     const filename=String(pdf.filename||`scorecard-game-${game}.pdf`).replace(/[\r\n"]/g,"");
     return new Response(bytes,{status:200,headers:{"content-type":"application/pdf","content-disposition":`inline; filename="${filename}"`,"cache-control":"public, max-age=300"}});

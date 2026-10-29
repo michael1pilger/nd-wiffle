@@ -32,10 +32,12 @@ function seriesStatusFor(row,payload,games){
   return (games||[]).length>=3?"complete":"in_progress";
 }
 function safeGameCenter(payload){
+  const shared=payload?.series_scorecard||null;
   return (payload?.game_media||[]).map(m=>({
     game:n(m.game),
-    scorecard_available:!!m.scorecard?.base64,
-    scorecard_filename:m.scorecard?.filename||null,
+    scorecard_available:!!m.scorecard?.base64||!!shared?.base64,
+    scorecard_filename:m.scorecard?.filename||shared?.filename||null,
+    scorecard_scope:m.scorecard?.base64?"game":shared?.base64?"series":null,
     line_score:m.line_score||null,
     play_by_play:Array.isArray(m.play_by_play)?m.play_by_play:[]
   })).filter(m=>m.game>0);
