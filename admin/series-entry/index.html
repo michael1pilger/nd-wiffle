@@ -65,6 +65,9 @@
 .publish-warn{color:#e2b34a!important}
 
 .game-media-grid{display:grid;gap:10px}.game-media-card{border:1px solid var(--border);border-radius:12px;background:#0c1728;padding:13px}.game-media-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.game-media-head strong{color:var(--gold)}.game-media-card input[type=file]{width:100%;color:var(--muted)}.game-media-status{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45}.game-media-status.ok{color:#6ed49a}.game-media-status.warn{color:#e2b34a}.game-media-pbp{width:100%;min-height:72px;margin-top:9px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:9px;padding:9px;resize:vertical}.game-media-line{margin-top:8px;font-size:10px;color:#cdd7e4}.game-media-line b{color:#fff}
+
+.postgame-media-grid{display:grid;grid-template-columns:1fr 160px;gap:10px;margin-top:10px}.postgame-media-grid .wide{grid-column:1/-1}.postgame-existing{font-size:10px;color:var(--muted);line-height:1.5;padding:8px 10px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#09111e}.postgame-existing.ok{color:#9ee6b0;border-color:rgba(76,175,80,.35)}
+@media(max-width:700px){.postgame-media-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -227,6 +230,19 @@
 <div class="publish-note" style="margin-top:14px">Publish writes to the protected D1 backend once the DB binding and Access verification variables are configured. Duplicate series are blocked unless a commissioner explicitly confirms replacement.</div>
 <div class="admin-actions"><button class="admin-btn primary" id="publishBtn" disabled>Publish Series</button></div><div id="publishStatus" class="file-state publish-status-box" style="margin-top:10px">Database publish is not ready until validation passes.</div>
 </div>
+</section>
+
+<section class="admin-panel" id="postgameMediaSection">
+<h2>10. Add / Update Game Center After Publication</h2>
+<p class="step-note">Use this after a series is already published. This updates only the selected game's scorecard, line score, and verified play-by-play. It does <strong>not</strong> republish or change scores, standings, playoff advancement, or player statistics.</p>
+<div class="postgame-media-grid">
+  <div class="field"><label>Published Series</label><select id="postgameSeries"><option value="">Loading published series…</option></select></div>
+  <div class="field"><label>Game</label><select id="postgameGame" disabled><option value="">Select series first</option></select></div>
+  <div class="field wide"><label>Optional iScore Scorecard PDF</label><input id="postgamePdf" type="file" accept="application/pdf,.pdf"><div id="postgamePdfStatus" class="postgame-existing">Choose a published series and game.</div></div>
+  <div class="field wide"><label>Verified Play-by-Play</label><textarea id="postgamePbp" rows="8" placeholder="One event per line. Example: Bottom 11 · Jacob Bailey walk-off single"></textarea></div>
+</div>
+<div class="admin-actions"><button class="admin-btn primary" id="savePostgameMedia" type="button" disabled>Save Game Center Update</button></div>
+<div id="postgameMediaStatus" class="file-state publish-status-box" style="margin-top:10px">Select a published series and game to begin.</div>
 </section>
 </div></main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -419,13 +435,13 @@ function splitPdfLineScore(items){
   const runs=[],hits=[];for(const cluster of clusters){const c=[...cluster].sort((a,b)=>a.x-b.x);runs.push(Number(c[0].str));hits.push(Number(c[c.length-1].str))}
   return runs.length?{runs,hits}:null;
 }
-async function parseIScorePdf(file){
+async function parseIScorePdf(file,awayOverride=null,homeOverride=null){
   if(!window.pdfjsLib)throw new Error("PDF line-score parser could not load. The PDF will still be saved and viewable.");
   window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   const pdf=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,pages=[];
   for(let i=1;i<=Math.min(2,pdf.numPages);i++){
     const page=await pdf.getPage(i),content=await page.getTextContent(),items=content.items.map(x=>({str:String(x.str||"").trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0)})).filter(x=>x.str),line=splitPdfLineScore(items);if(!line)continue;
-    const names=items.map(x=>x.str),away=document.getElementById("awayTeam").value,home=document.getElementById("homeTeam").value;let side=null;
+    const names=items.map(x=>x.str),away=awayOverride||document.getElementById("awayTeam").value,home=homeOverride||document.getElementById("homeTeam").value;let side=null;
     if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(away)))side="away";else if(names.some(x=>mediaTeamNorm(x)===mediaTeamNorm(home)))side="home";else side=i===1?"away":"home";
     pages.push({side,...line});
   }
@@ -1237,6 +1253,50 @@ function currentPublishPayload(){
   try{return JSON.parse(raw)}catch{return null}
 }
 
+
+let POSTGAME_SERIES=[],postgameDraft={};
+function postgameSelectedSeries(){return POSTGAME_SERIES.find(x=>x.series_id===document.getElementById("postgameSeries").value)||null}
+function postgameSelectedGame(){const sr=postgameSelectedSeries(),g=Number(document.getElementById("postgameGame").value);return sr?.games?.find(x=>Number(x.game_number||x.game)===g)||null}
+function postgameLabel(sr){const po=sr.series_type==="playoff"?`${sr.playoff_round||"Playoffs"} · `:"";return `${po}${sr.away_team} ${sr.away_wins}-${sr.home_wins} ${sr.home_team} · ${sr.series_date||""}`}
+function loadPostgameGame(){
+ const sr=postgameSelectedSeries(),game=Number(document.getElementById("postgameGame").value),save=document.getElementById("savePostgameMedia"),pdfStatus=document.getElementById("postgamePdfStatus"),pbp=document.getElementById("postgamePbp"),status=document.getElementById("postgameMediaStatus");
+ document.getElementById("postgamePdf").value="";
+ if(!sr||!game){save.disabled=true;pbp.value="";return}
+ const existing=(sr.game_center||[]).find(x=>Number(x.game)===game)||null;
+ postgameDraft={series_id:sr.series_id,game,line_score:existing?.line_score||null,new_scorecard:null};
+ pbp.value=(existing?.play_by_play||[]).map(x=>x.text||x).join("\n");
+ pdfStatus.textContent=existing?.scorecard_available?`✓ Existing scorecard: ${existing.scorecard_filename||"PDF attached"}`:existing?.line_score?"✓ Existing extracted line score; no original PDF available.":"No scorecard currently attached.";
+ pdfStatus.className=`postgame-existing ${existing?.scorecard_available||existing?.line_score?"ok":""}`;
+ status.textContent="You can add/replace the PDF and edit play-by-play, then save without republishing the series.";status.className="file-state publish-status-box";save.disabled=false;
+}
+function populatePostgameGames(){
+ const sr=postgameSelectedSeries(),sel=document.getElementById("postgameGame");
+ if(!sr){sel.disabled=true;sel.innerHTML='<option value="">Select series first</option>';loadPostgameGame();return}
+ sel.disabled=false;sel.innerHTML=(sr.games||[]).map(g=>`<option value="${Number(g.game_number||g.game)}">Game ${Number(g.game_number||g.game)} · ${Number(g.away_score)}-${Number(g.home_score)}</option>`).join("");loadPostgameGame();
+}
+async function loadPostgameSeries(){
+ const sel=document.getElementById("postgameSeries"),status=document.getElementById("postgameMediaStatus");
+ try{const r=await fetch("/api/public/results?season=2026",{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Unable to load published series");POSTGAME_SERIES=(j.series||[]).filter(x=>x.games?.length&&!String(x.series_id||"").includes("+")).sort((a,b)=>(b.series_type==="playoff")-(a.series_type==="playoff")||String(b.series_date||"").localeCompare(String(a.series_date||"")));sel.innerHTML='<option value="">Select published series…</option>'+POSTGAME_SERIES.map(sr=>`<option value="${escapeHtml(sr.series_id)}">${escapeHtml(postgameLabel(sr))}</option>`).join("");status.textContent="Select any published series. Playoff series are listed first."}
+ catch(e){sel.innerHTML='<option value="">Could not load series</option>';status.textContent=`Could not load published series: ${e.message||e}`;status.className="file-state publish-error publish-status-box"}
+}
+document.getElementById("postgameSeries").addEventListener("change",populatePostgameGames);
+document.getElementById("postgameGame").addEventListener("change",loadPostgameGame);
+document.getElementById("postgamePdf").addEventListener("change",async e=>{
+ const file=e.target.files?.[0],sr=postgameSelectedSeries(),game=postgameSelectedGame(),status=document.getElementById("postgamePdfStatus");if(!file||!sr||!game)return;
+ if(file.size>2000000){status.textContent="PDF exceeds the 2 MB per-game limit.";status.className="postgame-existing";e.target.value="";return}
+ status.textContent="Reading scorecard…";
+ try{const dataUrl=await fileAsDataUrl(file);postgameDraft.new_scorecard={filename:file.name,mime_type:"application/pdf",size:file.size,base64:dataUrl.split(",")[1]||""};try{const ls=await parseIScorePdf(file,sr.away_team,sr.home_team),awayTotal=ls.away_runs.reduce((a,b)=>a+Number(b||0),0),homeTotal=ls.home_runs.reduce((a,b)=>a+Number(b||0),0);if(awayTotal===Number(game.away_score)&&homeTotal===Number(game.home_score)){postgameDraft.line_score=ls;status.textContent=`✓ PDF ready · ${ls.innings} innings · line score matches final ${game.away_score}-${game.home_score}`;status.className="postgame-existing ok"}else{status.textContent=`PDF ready, but extracted line score totals ${awayTotal}-${homeTotal} do not match published final ${game.away_score}-${game.home_score}. The PDF will save; the existing line score will be preserved.`;status.className="postgame-existing"}}catch(parseErr){status.textContent=`PDF ready. ${parseErr.message||parseErr}`;status.className="postgame-existing"}}
+ catch(err){status.textContent=`Could not read PDF: ${err.message||err}`;status.className="postgame-existing"}
+});
+document.getElementById("savePostgameMedia").addEventListener("click",async()=>{
+ const sr=postgameSelectedSeries(),game=Number(document.getElementById("postgameGame").value),btn=document.getElementById("savePostgameMedia"),status=document.getElementById("postgameMediaStatus");if(!sr||!game)return;
+ const body={series_id:sr.series_id,game,play_by_play:document.getElementById("postgamePbp").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).map(text=>({text}))};if(postgameDraft.new_scorecard)body.scorecard=postgameDraft.new_scorecard;if(postgameDraft.line_score)body.line_score=postgameDraft.line_score;
+ btn.disabled=true;status.textContent="Saving Game Center update…";status.className="file-state publish-status-box";
+ try{const r=await fetch("/api/admin/series-media",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),j=await r.json();if(!r.ok||!j.ok)throw new Error([j.error,j.detail].filter(Boolean).join(" — ")||`HTTP ${r.status}`);status.textContent=`✓ Game ${game} Game Center updated. ${j.play_by_play_events} verified play-by-play event${j.play_by_play_events===1?"":"s"} saved.`;status.className="file-state publish-success publish-status-box";await loadPostgameSeries();document.getElementById("postgameSeries").value=sr.series_id;populatePostgameGames();document.getElementById("postgameGame").value=String(game);loadPostgameGame()}
+ catch(err){status.textContent=`Game Center update failed: ${err.message||err}`;status.className="file-state publish-error publish-status-box";btn.disabled=false}
+});
+loadPostgameSeries();
+
 document.getElementById("publishBtn").addEventListener("click",async()=>{
   const btn=document.getElementById("publishBtn");
   const statusEl=document.getElementById("publishStatus");
@@ -1330,5 +1390,5 @@ document.getElementById("publishBtn").addEventListener("click",async()=>{
 });
 
 </script>
-<script src="/assets/hof.js?v=147"></script></body>
+<script src="/assets/hof.js?v=152"></script></body>
 </html>
