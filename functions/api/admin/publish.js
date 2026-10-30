@@ -1,3 +1,4 @@
+import { settleMarketsForSeries } from "../_predictions.js";
 function json(body, status=200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -446,8 +447,11 @@ export async function onRequestPost(context) {
 
   try{
     await DB.batch(statements);
+    let predictionSettlements=[];
+    try{predictionSettlements=await settleMarketsForSeries(DB,payload.series_id)}catch(predErr){console.warn("Prediction settlement skipped",predErr)}
     return json({
       ok:true,
+      prediction_markets_settled:predictionSettlements.length,
       action:append?"appended":existing?"replaced":"published",
       series_id:payload.series_id,
       series_status:payload.series_status||((payload.games||[]).length===3?"complete":"in_progress"),

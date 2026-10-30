@@ -23,7 +23,7 @@
 @media(max-width:800px){.hof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.feat-leaders{grid-template-columns:1fr}.feat-years{grid-template-columns:repeat(6,150px)}}.feat-grid{grid-template-columns:1fr}}@media(max-width:520px){.hof-grid{grid-template-columns:1fr}}
 </style>
 </head><body>
-<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a class="" href="/schedule/">'26 Schedule</a><a class="" href="/standings/">'26 Standings</a><a class="" href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a href="/predictions/">Predictions</a><a href="/account/">Account</a><a class="" href="/leaders/">Leaders</a><a class="" href="/teams/">Teams</a><a class="" href="/players/">Players</a><a class="active" href="/awards/">Awards</a><a class="" href="/grid/">Grid</a><a class="" href="/fantasy/">Fantasy</a><a class="" href="/stats/">Stats</a></div></div></div>
 <main>
 <div class="container pagehead awards-pagehead">
   <div class="eyebrow">League History</div>
@@ -164,15 +164,22 @@ function postseasonClass(v){
 const TEAM_RGB={
   "Midnight":"90,98,110","Storm":"96,0,160","Stiff Wifflers":"24,49,83",
   "Ball Busters":"144,32,32","Dirty Dawgs":"96,0,24","Twin Titans":"64,80,112",
-  "Drunken Sluggers":"64,80,112","Yard Goats":"64,80,112","Goobers":"208,80,32",
+  "Drunken Sluggers":"64,80,112","Yard Goats":"64,80,112","Goobers":"208,80,32","Goofy Goobers":"208,80,32",
   "Silverbacks":"192,160,80","Underdawgs":"64,48,96","Zyns":"144,224,224"
 };
 const teamRgb=t=>TEAM_RGB[t]||"120,130,145";
 
+let LIVE_2026={loaded:false,standings:[],playoffs:[]};
+function live2026Postseason(team){
+  const row=LIVE_2026.standings.find(x=>x.team_id===team.team_id);if(!row||Number(row.rank)>7)return "No";if(Number(row.rank)===1)return "First-round bye";
+  const completed=(LIVE_2026.playoffs||[]).filter(s=>s.series_status==="complete"&&(s.away_team_id===team.team_id||s.home_team_id===team.team_id));
+  if(!completed.length)return "Playoffs";const latest=completed[0],winner=Number(latest.away_wins)>Number(latest.home_wins)?latest.away_team_id:latest.home_team_id;return winner===team.team_id?"Advanced":`Eliminated · ${latest.playoff_round||"Playoffs"}`;
+}
 function renderStandings(y){
   if(String(y)==="2026"){
-    document.getElementById("historicalStandings").innerHTML='<div class="current-season-note">The 2026 regular season is complete. Final standings are maintained on the <a href="/standings/">2026 Standings</a> page.</div>';
-    return;
+    const el=document.getElementById("historicalStandings");if(!LIVE_2026.loaded){el.innerHTML='<div class="current-season-note">Loading final 2026 regular-season standings…</div>';return}
+    const rows=LIVE_2026.standings||[];if(!rows.length){el.innerHTML='<div class="current-season-note">Final 2026 standings are unavailable.</div>';return}
+    el.innerHTML=`<div class="tablewrap historical-table-wrap"><table class="historical-table"><thead><tr><th>RK</th><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>DIFF</th><th>Postseason</th><th>Final RS</th></tr></thead><tbody>${rows.map(r=>{const post=live2026Postseason(r);return `<tr class="history-team-row" style="--team:${teamRgb(r.team)}"><td>${r.rank}</td><td>${r.team}</td><td>${r.W}</td><td>${r.L}</td><td>${Number(r.PCT||0).toFixed(3)}</td><td>${Number(r.DIFF)>0?"+":""}${Number(r.DIFF||0)}</td><td>${post==="No"?"—":post}</td><td>${r.rank}</td></tr>`}).join("")}</tbody></table></div>`;return;
   }
   const rows=HISTORICAL_STANDINGS[y]||[];
   document.getElementById("historicalStandings").innerHTML=`<div class="tablewrap historical-table-wrap"><table class="historical-table">
@@ -185,8 +192,10 @@ const roundOrder=["Play-in","Quarters","Semis","WS"];
 const roundLabel={"Play-in":"Play-in","Quarters":"Quarterfinals","Semis":"Semifinals","WS":"World Series"};
 function renderBracket(y){
   if(String(y)==="2026"){
-    document.getElementById("playoffBracket").innerHTML='<div class="current-season-note">The 2026 regular season is complete. Live playoff results are maintained on the <a href="/playoffs/">Playoffs</a> page.</div>';
-    return;
+    const el=document.getElementById("playoffBracket");if(!LIVE_2026.loaded){el.innerHTML='<div class="current-season-note">Loading 2026 playoff results…</div>';return}
+    const yr=LIVE_2026.playoffs||[];if(!yr.length){el.innerHTML='<div class="current-season-note">No 2026 playoff series have been published yet.</div>';return}
+    const seed=new Map((LIVE_2026.standings||[]).map(x=>[x.team_id,Number(x.rank)])),order=["First Round","Semifinal","World Series"],rounds=order.filter(r=>yr.some(s=>s.playoff_round===r));
+    el.innerHTML=`<div class="bracket-grid bracket-${Math.max(1,rounds.length)}">${rounds.map(r=>`<div class="bracket-round"><div class="bracket-round-title">${r}</div>${yr.filter(s=>s.playoff_round===r).map(sr=>{const a={id:sr.away_team_id,name:sr.away_team,seed:seed.get(sr.away_team_id)||"—",wins:Number(sr.away_wins||0)},b={id:sr.home_team_id,name:sr.home_team,seed:seed.get(sr.home_team_id)||"—",wins:Number(sr.home_wins||0)},winner=sr.series_status==="complete"?(a.wins>b.wins?a.id:b.id):null,hi=Number(a.seed)<=Number(b.seed)?a:b,lo=hi===a?b:a;return `<div class="bracket-series"><div class="bracket-team ${winner===hi.id?"bracket-winner":""}" style="--team:${teamRgb(hi.name)}"><span><b>#${hi.seed}</b> ${hi.name}</span><strong>${hi.wins}</strong></div><div class="bracket-team ${winner===lo.id?"bracket-winner":""}" style="--team:${teamRgb(lo.name)}"><span><b>#${lo.seed}</b> ${lo.name}</span><strong>${lo.wins}</strong></div></div>`}).join("")}</div>`).join("")}</div>`;return;
   }
   const yr=PLAYOFF_SERIES.filter(s=>String(s.season)===String(y));
   const rounds=roundOrder.filter(r=>yr.some(s=>s.round===r));
@@ -216,5 +225,6 @@ function renderSeason(){
   renderStandings(y); renderBracket(y); renderAwards(y);
 }
 renderSeason();
+Promise.all([fetch("/api/public/league?season=2026",{cache:"no-store"}).then(r=>r.json()),fetch("/api/public/results?season=2026",{cache:"no-store"}).then(r=>r.json())]).then(([league,results])=>{LIVE_2026={loaded:true,standings:league?.standings||[],playoffs:(results?.series||[]).filter(x=>x.series_type==="playoff")};if(document.getElementById("seasonSelect").value==="2026")renderSeason()}).catch(()=>{LIVE_2026.loaded=true;if(document.getElementById("seasonSelect").value==="2026")renderSeason()});
 </script>
 <script src="/assets/table-tools.js?v=81"></script><script src="/assets/hof.js?v=147"></script></body></html>

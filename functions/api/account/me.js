@@ -1,0 +1,2 @@
+import {json,getUser} from "../_account.js";
+export async function onRequestGet(context){try{const user=await getUser(context);return user?json({ok:true,authenticated:true,user}):json({ok:true,authenticated:false,user:null})}catch(err){const m=String(err?.message||err);if(m.includes("no such table"))return json({ok:true,authenticated:false,user:null,schema_ready:false});return json({ok:false,error:"Account lookup failed.",detail:m},500)}}
