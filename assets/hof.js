@@ -44,3 +44,22 @@
   else annotate();
   new MutationObserver(()=>annotate()).observe(document.documentElement,{childList:true,subtree:true});
 })();
+
+/* Daily Grid v163 loader. Kept here so grid/index.html does not need to be replaced. */
+(()=>{
+  if(!/^\/grid\/?$/.test(location.pathname))return;
+  if(!document.querySelector('link[data-nd-grid-daily]')){
+    const css=document.createElement('link');
+    css.rel='stylesheet';
+    css.href='/assets/grid-daily.css?v=163';
+    css.dataset.ndGridDaily='1';
+    document.head.appendChild(css);
+  }
+  if(!document.querySelector('script[data-nd-grid-daily]')){
+    const js=document.createElement('script');
+    js.src='/assets/grid-daily.js?v=163';
+    js.dataset.ndGridDaily='1';
+    js.async=false;
+    document.body.appendChild(js);
+  }
+})();
