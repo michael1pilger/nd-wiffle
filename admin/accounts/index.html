@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts & Wagers Admin | ND Wiffle</title>
+<link rel="stylesheet" href="/assets/styles.css?v=81">
+<style>
+.admin-shell{padding:35px 0 60px}
+.admin-panel{border:1px solid var(--border);border-radius:15px;background:var(--panel);padding:16px;margin-bottom:15px}
+.admin-panel h1,.admin-panel h2{margin:0 0 7px}.admin-panel p{color:var(--muted);font-size:11px;line-height:1.5}
+.summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:14px}
+.summary-card{border:1px solid var(--border);border-radius:11px;background:#0b1525;padding:11px}.summary-card small{display:block;color:var(--muted);font-size:8px;text-transform:uppercase;font-weight:950}.summary-card strong{display:block;margin-top:3px;font-size:23px;color:#fff}
+.schema{border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px;background:#09111e;font-size:10px;line-height:1.55}.schema.ok{border-color:rgba(92,201,133,.35);color:#8be2ad}.schema.bad{border-color:rgba(235,120,132,.4);color:#f29aa3}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.toolbar button{border:1px solid var(--border);background:#0b1525;color:#fff;border-radius:999px;padding:7px 11px;font-weight:900;cursor:pointer}.toolbar button.active{background:var(--gold);color:#111;border-color:var(--gold)}
+.search{margin-left:auto;min-width:220px;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.tablewrap{overflow:auto}.admin-table{width:100%;border-collapse:collapse;min-width:900px;font-size:9px}.admin-table th,.admin-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;vertical-align:middle}.admin-table th{color:var(--muted);font-size:7px;text-transform:uppercase;letter-spacing:.04em}.admin-table td.num,.admin-table th.num{text-align:right}.pill{display:inline-block;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.06);font-size:8px;font-weight:900}.pill.open,.pill.pending{color:#e7c75f}.pill.won,.pill.active{color:#7bdd9f}.pill.lost,.pill.disabled{color:#ed8993}.pill.push,.pill.void{color:#9eb0c9}
+.account-actions{display:flex;gap:5px;flex-wrap:wrap}.account-actions button{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 7px;font-size:7px;font-weight:900;cursor:pointer}.account-actions button:hover{border-color:var(--gold)}
+.status{font-size:10px;color:var(--muted);margin-top:8px}.status.ok{color:#72d397}.status.err{color:#ef7f89}
+.exposure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.exposure-card{border:1px solid var(--border);border-radius:10px;background:#0b1525;padding:10px}.exposure-card strong{display:block;margin-bottom:4px}.exposure-row{display:flex;justify-content:space-between;gap:8px;font-size:9px;padding:3px 0;color:var(--muted)}
+.hidden{display:none!important}
+@media(max-width:900px){.summary-grid{grid-template-columns:repeat(2,1fr)}.exposure-grid{grid-template-columns:1fr}.search{width:100%;margin-left:0}}
+@media(max-width:520px){.summary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links">
+<a href="/admin/">Admin Home</a><a href="/admin/series/">Series Hub</a><a href="/admin/predictions/">Predictions</a><a href="/admin/accounts/" class="active">Accounts & Wagers</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a>
+</div></div></div>
+
+<main class="admin-shell"><div class="container">
+<section class="admin-panel">
+<div class="eyebrow">Commissioner Tools · BUILD v158</div>
+<h1>Accounts & Wagers</h1>
+<p>Monitor player accounts, token balances, wager activity, market exposure, and token-ledger changes. Password hashes and salts are never exposed here.</p>
+<div id="schema" class="schema">Checking prediction/account schema…</div>
+<div id="summary" class="summary-grid"></div>
+<div id="status" class="status"></div>
+</section>
+
+<section class="admin-panel">
+<div class="toolbar">
+<button class="active" data-tab="accounts">Accounts</button>
+<button data-tab="wagers">Wagers</button>
+<button data-tab="ledger">Token Ledger</button>
+<button data-tab="exposure">Open Exposure</button>
+<input id="search" class="search" placeholder="Search player, email, market…">
+</div>
+<div id="accountsPane"></div>
+<div id="wagersPane" class="hidden"></div>
+<div id="ledgerPane" class="hidden"></div>
+<div id="exposurePane" class="hidden"></div>
+</section>
+</div></main>
+
+<script>
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const n=v=>Number(v||0),fmt=v=>n(v).toLocaleString(),date=v=>v?new Date(v).toLocaleString():"—";
+let DATA=null,TAB="accounts";
+async function api(url,opts={}){const r=await fetch(url,{cache:"no-store",...opts}),j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false){throw new Error([j.error,j.detail].filter(Boolean).join(" — ")||`HTTP ${r.status}`)}return j}
+function pill(v){return `<span class="pill ${esc(String(v||"").toLowerCase())}">${esc(v||"—")}</span>`}
+function matches(...vals){const q=search.value.trim().toLowerCase();return !q||vals.some(v=>String(v||"").toLowerCase().includes(q))}
+function renderSchema(){
+ const el=document.getElementById("schema");
+ if(!DATA?.schema_ready){
+   const missing=Object.entries(DATA?.schema?.tables||{}).filter(([,v])=>!v.ready).map(([k,v])=>`${k}${v.missing?.length?` (missing: ${v.missing.join(", ")})`:""}`);
+   el.className="schema bad";el.innerHTML=`<strong>Account/prediction schema is incomplete.</strong>${missing.length?`<br>${esc(missing.join(" · "))}`:""}<br>Verify migration 0034 was run against the same production D1 database bound to this Pages project.`;
+ }else{el.className="schema ok";el.innerHTML="<strong>✓ Account and prediction schema ready.</strong> All required tables/columns are present in production D1."}
+}
+function renderSummary(){
+ const s=DATA?.summary||{};
+ summary.innerHTML=[
+  ["Accounts",s.accounts],["Active",s.active_accounts],["Tokens in wallets",s.total_tokens],["Pending wagers",s.pending_wagers],["Pending stake",s.pending_stake]
+ ].map(([k,v])=>`<div class="summary-card"><small>${esc(k)}</small><strong>${fmt(v)}</strong></div>`).join("");
+}
+function renderAccounts(){
+ const rows=(DATA?.accounts||[]).filter(x=>matches(x.player_name,x.email,x.team_name));
+ accountsPane.innerHTML=rows.length?`<div class="tablewrap"><table class="admin-table"><thead><tr><th>Player</th><th>Email</th><th>Team</th><th class="num">Balance</th><th class="num">Wagers</th><th class="num">Staked</th><th class="num">Payout</th><th>Last login</th><th>Status</th><th>Actions</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.player_name)}</strong><br><small>${esc(x.player_id)}</small></td><td>${esc(x.email)}</td><td>${esc(x.team_name||"—")}</td><td class="num"><strong>${fmt(x.token_balance)}</strong></td><td class="num">${fmt(x.wager_count)}</td><td class="num">${fmt(x.total_staked)}</td><td class="num">${fmt(x.total_payout)}</td><td>${date(x.last_login_at)}<br><small>${n(x.active_sessions)} active session${n(x.active_sessions)===1?"":"s"}</small></td><td>${pill(n(x.active)?"active":"disabled")}</td><td><div class="account-actions"><button data-adjust="${x.user_id}">Adjust tokens</button><button data-sessions="${x.user_id}">Revoke sessions</button><button data-active="${x.user_id}" data-next="${n(x.active)?0:1}">${n(x.active)?"Disable":"Enable"}</button></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="status">No matching accounts.</div>';
+ accountsPane.querySelectorAll("[data-adjust]").forEach(b=>b.onclick=()=>adjustTokens(b.dataset.adjust));
+ accountsPane.querySelectorAll("[data-sessions]").forEach(b=>b.onclick=()=>revokeSessions(b.dataset.sessions));
+ accountsPane.querySelectorAll("[data-active]").forEach(b=>b.onclick=()=>setActive(b.dataset.active,Number(b.dataset.next)));
+}
+function renderWagers(){
+ const rows=(DATA?.wagers||[]).filter(x=>matches(x.player_name,x.email,x.market_title,x.option_label,x.status));
+ wagersPane.innerHTML=rows.length?`<div class="tablewrap"><table class="admin-table"><thead><tr><th>Player</th><th>Market</th><th>Pick</th><th class="num">Stake</th><th class="num">Odds</th><th class="num">Potential</th><th>Status</th><th class="num">Payout</th><th>Placed</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.player_name)}</strong><br><small>${esc(x.email)}</small></td><td>${esc(x.market_title)}<br><small>${esc(x.market_type)}</small></td><td>${esc(x.option_label)}</td><td class="num">${fmt(x.stake)}</td><td class="num">${Number(x.decimal_odds).toFixed(2)}×</td><td class="num">${fmt(x.potential_payout)}</td><td>${pill(x.status)}</td><td class="num">${fmt(x.payout)}</td><td>${date(x.created_at)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="status">No matching wagers.</div>';
+}
+function renderLedger(){
+ const rows=(DATA?.ledger||[]).filter(x=>matches(x.player_name,x.email,x.reason,x.note));
+ ledgerPane.innerHTML=rows.length?`<div class="tablewrap"><table class="admin-table"><thead><tr><th>Player</th><th>Reason</th><th class="num">Change</th><th class="num">Balance after</th><th>Note</th><th>Time</th></tr></thead><tbody>${rows.map(x=>`<tr><td><strong>${esc(x.player_name)}</strong><br><small>${esc(x.email)}</small></td><td>${pill(x.reason)}</td><td class="num" style="color:${n(x.amount)>=0?"#7bdd9f":"#ed8993"}">${n(x.amount)>=0?"+":""}${fmt(x.amount)}</td><td class="num">${fmt(x.balance_after)}</td><td>${esc(x.note||"—")}</td><td>${date(x.created_at)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="status">No matching ledger entries.</div>';
+}
+function renderExposure(){
+ const rows=(DATA?.exposure||[]).filter(x=>matches(x.title,x.option_label,x.status));
+ const groups=new Map();for(const x of rows){if(!groups.has(x.market_id))groups.set(x.market_id,{title:x.title,status:x.status,rows:[]});groups.get(x.market_id).rows.push(x)}
+ exposurePane.innerHTML=groups.size?`<div class="exposure-grid">${[...groups.values()].map(g=>`<div class="exposure-card"><strong>${esc(g.title)}</strong><small>${pill(g.status)}</small>${g.rows.map(x=>`<div class="exposure-row"><span>${esc(x.option_label)} · ${fmt(x.wager_count)} bet${n(x.wager_count)===1?"":"s"}</span><span>${fmt(x.stake)} staked · ${fmt(x.potential_payout)} max payout</span></div>`).join("")}</div>`).join("")}</div>`:'<div class="status">No pending market exposure.</div>';
+}
+function render(){
+ renderSchema();renderSummary();renderAccounts();renderWagers();renderLedger();renderExposure();
+ for(const [id,name] of [["accountsPane","accounts"],["wagersPane","wagers"],["ledgerPane","ledger"],["exposurePane","exposure"]])document.getElementById(id).classList.toggle("hidden",TAB!==name);
+ document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===TAB));
+}
+async function load(){
+ status.textContent="Loading account and wager data…";status.className="status";
+ try{DATA=await api("/api/admin/accounts");status.textContent=DATA.schema_ready?"✓ Commissioner account data loaded.":"Schema problem detected below.";status.className=`status ${DATA.schema_ready?"ok":"err"}`;render()}
+ catch(e){status.textContent=e.message;status.className="status err"}
+}
+async function action(body){await api("/api/admin/accounts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});await load()}
+async function adjustTokens(userId){const amount=Number(prompt("Token adjustment. Use a positive number to add tokens or a negative number to subtract:","100"));if(!Number.isInteger(amount)||amount===0)return;const note=prompt("Commissioner note:","Manual token adjustment")||"Manual token adjustment";try{await action({action:"adjust_tokens",user_id:userId,amount,note})}catch(e){alert(e.message)}}
+async function revokeSessions(userId){if(!confirm("Log this player out on all devices?"))return;try{await action({action:"revoke_sessions",user_id:userId})}catch(e){alert(e.message)}}
+async function setActive(userId,active){if(!confirm(active?"Re-enable this account?":"Disable this account and revoke all active sessions?"))return;try{await action({action:"set_active",user_id:userId,active:!!active})}catch(e){alert(e.message)}}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{TAB=b.dataset.tab;render()});
+search.oninput=render;
+load();
+</script>
+</body></html>
