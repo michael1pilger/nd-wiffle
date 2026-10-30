@@ -1,6 +1,6 @@
 const enc=new TextEncoder();
 const dec=new TextDecoder();
-const ITERATIONS=180000;
+const ITERATIONS=100000;
 const SESSION_DAYS=30;
 
 export function json(body,status=200,extra={}){

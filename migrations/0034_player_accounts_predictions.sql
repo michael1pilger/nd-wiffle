@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS user_accounts (
   email TEXT NOT NULL UNIQUE COLLATE NOCASE,
   password_salt TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  password_iterations INTEGER NOT NULL DEFAULT 180000,
+  password_iterations INTEGER NOT NULL DEFAULT 100000,
   token_balance INTEGER NOT NULL DEFAULT 0 CHECK (token_balance >= 0),
   starter_tokens_granted INTEGER NOT NULL DEFAULT 0 CHECK (starter_tokens_granted IN (0,1)),
   active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
