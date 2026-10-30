@@ -4,7 +4,9 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS user_accounts (
   user_id TEXT PRIMARY KEY,
-  player_id TEXT NOT NULL UNIQUE REFERENCES players(player_id),
+  player_id TEXT UNIQUE REFERENCES players(player_id),
+  display_name TEXT,
+  account_type TEXT NOT NULL DEFAULT 'player' CHECK (account_type IN ('player','guest')),
   email TEXT NOT NULL UNIQUE COLLATE NOCASE,
   password_salt TEXT NOT NULL,
   password_hash TEXT NOT NULL,
@@ -13,7 +15,12 @@ CREATE TABLE IF NOT EXISTS user_accounts (
   starter_tokens_granted INTEGER NOT NULL DEFAULT 0 CHECK (starter_tokens_granted IN (0,1)),
   active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_login_at TEXT
+  last_login_at TEXT,
+  CHECK (
+    (account_type='player' AND player_id IS NOT NULL)
+    OR
+    (account_type='guest' AND player_id IS NULL AND display_name IS NOT NULL AND length(trim(display_name)) BETWEEN 2 AND 40)
+  )
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_accounts_player ON user_accounts(player_id);

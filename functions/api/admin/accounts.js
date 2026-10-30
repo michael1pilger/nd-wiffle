@@ -7,7 +7,7 @@ function json(body,status=200){
 }
 const n=v=>Number(v||0);
 const REQUIRED={
-  user_accounts:["user_id","player_id","email","token_balance","starter_tokens_granted","active","created_at","last_login_at"],
+  user_accounts:["user_id","player_id","display_name","account_type","email","token_balance","starter_tokens_granted","active","created_at","last_login_at"],
   user_sessions:["session_hash","user_id","expires_at"],
   prediction_markets:["market_id","title","status","options_json"],
   prediction_wagers:["wager_id","market_id","user_id","stake","status","payout"],
@@ -51,14 +51,14 @@ export async function onRequestGet(context){
     }
 
     const accountSql=`
-      SELECT ua.user_id,ua.player_id,ua.email,ua.token_balance,ua.starter_tokens_granted,ua.active,
-             ua.created_at,ua.last_login_at,p.name AS player_name,t.display_name AS team_name,
+      SELECT ua.user_id,ua.player_id,ua.display_name,ua.account_type,ua.email,ua.token_balance,ua.starter_tokens_granted,ua.active,
+             ua.created_at,ua.last_login_at,COALESCE(p.name,ua.display_name,ua.email) AS player_name,t.display_name AS team_name,
              (SELECT COUNT(*) FROM prediction_wagers w WHERE w.user_id=ua.user_id) AS wager_count,
              (SELECT COALESCE(SUM(w.stake),0) FROM prediction_wagers w WHERE w.user_id=ua.user_id) AS total_staked,
              (SELECT COALESCE(SUM(w.payout),0) FROM prediction_wagers w WHERE w.user_id=ua.user_id) AS total_payout,
              (SELECT COUNT(*) FROM user_sessions s WHERE s.user_id=ua.user_id AND datetime(s.expires_at)>datetime('now')) AS active_sessions
       FROM user_accounts ua
-      JOIN players p ON p.player_id=ua.player_id
+      LEFT JOIN players p ON p.player_id=ua.player_id
       LEFT JOIN team_rosters tr ON tr.player_id=ua.player_id AND tr.season=2026
       LEFT JOIN teams t ON t.team_id=tr.team_id
       ${userId?"WHERE ua.user_id=?":""}
@@ -68,21 +68,21 @@ export async function onRequestGet(context){
       SELECT w.wager_id,w.market_id,w.user_id,w.option_key,w.option_label,w.stake,w.decimal_odds,
              w.potential_payout,w.status,w.payout,w.created_at,w.settled_at,
              m.title AS market_title,m.market_type,m.status AS market_status,
-             p.name AS player_name,ua.email
+             COALESCE(p.name,ua.display_name,ua.email) AS player_name,ua.account_type,ua.email
       FROM prediction_wagers w
       JOIN prediction_markets m ON m.market_id=w.market_id
       JOIN user_accounts ua ON ua.user_id=w.user_id
-      JOIN players p ON p.player_id=ua.player_id
+      LEFT JOIN players p ON p.player_id=ua.player_id
       ${userId?"WHERE w.user_id=?":""}
       ORDER BY w.created_at DESC
       LIMIT 300`;
 
     const ledgerSql=`
       SELECT l.ledger_id,l.user_id,l.amount,l.reason,l.market_id,l.wager_id,l.balance_after,l.note,l.created_at,
-             p.name AS player_name,ua.email
+             COALESCE(p.name,ua.display_name,ua.email) AS player_name,ua.account_type,ua.email
       FROM token_ledger l
       JOIN user_accounts ua ON ua.user_id=l.user_id
-      JOIN players p ON p.player_id=ua.player_id
+      LEFT JOIN players p ON p.player_id=ua.player_id
       ${userId?"WHERE l.user_id=?":""}
       ORDER BY l.created_at DESC
       LIMIT 300`;

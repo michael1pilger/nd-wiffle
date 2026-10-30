@@ -22,10 +22,12 @@ function cookies(request){const out={};for(const part of String(request.headers.
 export async function getUser(context){
   const DB=context.env.DB;if(!DB)return null;const token=cookies(context.request).ndw_session;if(!token)return null;
   const hash=await sha256Text(token),row=await DB.prepare(`
-    SELECT ua.user_id,ua.player_id,ua.email,ua.token_balance,ua.starter_tokens_granted,ua.active,
-           p.name AS player_name,p.class_year,tr.team_id,t.display_name AS team_name,us.expires_at
+    SELECT ua.user_id,ua.player_id,ua.display_name,ua.account_type,ua.email,ua.token_balance,ua.starter_tokens_granted,ua.active,
+           COALESCE(p.name,ua.display_name,ua.email) AS player_name,
+           COALESCE(p.name,ua.display_name,ua.email) AS account_name,
+           p.class_year,tr.team_id,t.display_name AS team_name,us.expires_at
     FROM user_sessions us JOIN user_accounts ua ON ua.user_id=us.user_id
-    JOIN players p ON p.player_id=ua.player_id
+    LEFT JOIN players p ON p.player_id=ua.player_id
     LEFT JOIN team_rosters tr ON tr.player_id=ua.player_id AND tr.season=2026
     LEFT JOIN teams t ON t.team_id=tr.team_id
     WHERE us.session_hash=? AND datetime(us.expires_at)>datetime('now') AND ua.active=1
