@@ -1,3 +1,4 @@
+import {makePassword} from "../_account.js";
 function json(body,status=200){
   return new Response(JSON.stringify(body),{
     status,
@@ -162,6 +163,17 @@ export async function onRequestPost(context){
     if(action==="revoke_sessions"){
       const r=await DB.prepare("DELETE FROM user_sessions WHERE user_id=?").bind(userId).run();
       return json({ok:true,action,sessions_revoked:n(r.meta?.changes)});
+    }
+
+    if(action==="reset_password"){
+      const password=String(body.password||"");
+      if(password.length<8||password.length>128)return json({ok:false,error:"New password must be 8–128 characters."},422);
+      const pw=await makePassword(password);
+      await DB.batch([
+        DB.prepare("UPDATE user_accounts SET password_salt=?,password_hash=?,password_iterations=? WHERE user_id=?").bind(pw.salt,pw.hash,pw.iterations,userId),
+        DB.prepare("DELETE FROM user_sessions WHERE user_id=?").bind(userId)
+      ]);
+      return json({ok:true,action,password_reset:true,sessions_revoked:true});
     }
 
     return json({ok:false,error:"Unsupported account action."},400);

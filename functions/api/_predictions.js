@@ -1,6 +1,7 @@
 const n=v=>Number(v||0);
 const norm=v=>String(v||"").toLowerCase();
 export function parseOptions(v){try{return Array.isArray(v)?v:JSON.parse(v||"[]")}catch{return []}}
+export function effectiveMarketType(m){if(m?.market_type==="series_winner"&&m?.stat_key==="series_spread")return "series_spread";if(m?.market_type==="series_winner"&&m?.stat_key==="series_total_runs")return "series_total";return m?.market_type||""}
 function pairMatches(m,s){return [m.team_a_id,m.team_b_id].sort().join("|")===[s.away_team_id,s.home_team_id].sort().join("|")}
 function seriesComplete(payload,games){
  const type=payload?.series_type||"played";
@@ -25,7 +26,18 @@ async function resolveMarket(DB,m){
   const g=games.find(x=>n(x.game_number)===n(m.game_number));if(!g)return null;const winner=n(g.away_score)>n(g.home_score)?s.away_team_id:s.home_team_id;return {winning:`team:${winner}`,value:null,note:`Game ${g.game_number}: ${g.away_score}-${g.home_score}`,series_id:s.series_id};
  }
  if(m.market_type==="series_winner"){
-  if(!seriesComplete(s.payload,games))return null;const aw=games.filter(g=>n(g.away_score)>n(g.home_score)).length,hw=games.filter(g=>n(g.home_score)>n(g.away_score)).length,winner=aw>hw?s.away_team_id:s.home_team_id;return {winning:`team:${winner}`,value:null,note:`Series ${aw}-${hw}`,series_id:s.series_id};
+  if(!seriesComplete(s.payload,games))return null;
+  const aw=games.filter(g=>n(g.away_score)>n(g.home_score)).length,hw=games.filter(g=>n(g.home_score)>n(g.away_score)).length;
+  const winsByTeam={[s.away_team_id]:aw,[s.home_team_id]:hw};
+  if(m.stat_key==="series_spread"){
+   const aWins=n(winsByTeam[m.team_a_id]),bWins=n(winsByTeam[m.team_b_id]),adjusted=(aWins-bWins)+Number(m.line||0),winning=adjusted>0?"team_a_cover":adjusted<0?"team_b_cover":"push";
+   return {winning,value:aWins-bWins,note:`Series games ${aWins}-${bWins}; ${m.team_a_id} spread ${Number(m.line||0)>=0?"+":""}${Number(m.line||0)}`,series_id:s.series_id};
+  }
+  if(m.stat_key==="series_total_runs"){
+   const total=games.reduce((sum,g)=>sum+n(g.away_score)+n(g.home_score),0),line=Number(m.line),winning=total>line?"over":total<line?"under":"push";
+   return {winning,value:total,note:`Series total runs: ${total} vs ${line}`,series_id:s.series_id};
+  }
+  const winner=aw>hw?s.away_team_id:s.home_team_id;return {winning:`team:${winner}`,value:null,note:`Series ${aw}-${hw}`,series_id:s.series_id};
  }
  if(m.market_type==="player_over_under"){
   if(!seriesComplete(s.payload,games))return null;const value=await statValue(DB,s.series_id,m.player_id,m.stat_key);if(value===null)return null;const line=Number(m.line),winning=value>line?"over":value<line?"under":"push";return {winning,value,note:`${m.stat_key}: ${value} vs ${line}`,series_id:s.series_id};

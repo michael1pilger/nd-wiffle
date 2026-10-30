@@ -1,2 +1,9 @@
 import {json,requireUser} from "../_account.js";
-export async function onRequestGet(context){const DB=context.env.DB;const a=await requireUser(context);if(a.response)return a.response;try{const wr=await DB.prepare(`SELECT w.*,m.title,m.market_type,m.status AS market_status,m.winning_option_key,m.result_note FROM prediction_wagers w JOIN prediction_markets m ON m.market_id=w.market_id WHERE w.user_id=? ORDER BY w.created_at DESC`).bind(a.user.user_id).all(),lr=await DB.prepare("SELECT amount,reason,balance_after,note,created_at FROM token_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT 30").bind(a.user.user_id).all();return json({ok:true,user:a.user,wagers:wr.results||[],ledger:lr.results||[]})}catch(err){return json({ok:false,error:"Prediction account failed to load.",detail:String(err?.message||err)},500)}}
+import {effectiveMarketType} from "../_predictions.js";
+export async function onRequestGet(context){
+ const DB=context.env.DB;const a=await requireUser(context);if(a.response)return a.response;
+ try{
+  const wr=await DB.prepare(`SELECT w.*,m.title,m.market_type,m.stat_key,m.status AS market_status,m.winning_option_key,m.result_note FROM prediction_wagers w JOIN prediction_markets m ON m.market_id=w.market_id WHERE w.user_id=? ORDER BY w.created_at DESC`).bind(a.user.user_id).all(),lr=await DB.prepare("SELECT amount,reason,balance_after,note,created_at FROM token_ledger WHERE user_id=? ORDER BY created_at DESC LIMIT 30").bind(a.user.user_id).all();
+  return json({ok:true,user:a.user,wagers:(wr.results||[]).map(w=>({...w,effective_type:effectiveMarketType(w)==="series_winner"?"series_moneyline":effectiveMarketType(w)})),ledger:lr.results||[]});
+ }catch(err){return json({ok:false,error:"Prediction account failed to load.",detail:String(err?.message||err)},500)}
+}
