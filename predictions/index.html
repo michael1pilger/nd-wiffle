@@ -1,15 +1,111 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Predictions | ND Wiffle</title><link rel="stylesheet" href="/assets/styles.css?v=81"><style>
 .pred-top{display:flex;justify-content:space-between;align-items:end;gap:15px;margin-bottom:18px}.wallet{border:1px solid rgba(215,173,72,.35);background:rgba(215,173,72,.07);border-radius:12px;padding:10px 13px;text-align:right}.wallet strong{display:block;font-size:28px;color:var(--gold)}.pred-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.pred-tabs button{background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:999px;padding:8px 12px;font-weight:900;cursor:pointer}.pred-tabs button.active{background:var(--gold);color:#111;border-color:var(--gold)}.market-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.market{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:14px}.market.open{border-color:rgba(215,173,72,.25)}.market-head{display:flex;justify-content:space-between;gap:10px}.market-type{font-size:8px;color:var(--gold);font-weight:950;text-transform:uppercase}.market h3{margin:5px 0 4px;font-size:16px}.market-meta{font-size:9px;color:var(--muted);line-height:1.45}.market-options{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}.market-option{border:1px solid var(--border);border-radius:9px;background:#0b1525;color:#fff;padding:9px;cursor:pointer;text-align:left}.market-option.active{border-color:var(--gold);background:rgba(215,173,72,.1)}.market-option strong{display:block}.market-option span{color:var(--gold);font-size:11px}.bet-row{display:flex;gap:7px}.bet-row input{width:100%;background:#0b1525;color:#fff;border:1px solid var(--border);border-radius:8px;padding:9px}.bet-row button{background:var(--gold);color:#111;border:0;border-radius:8px;padding:9px 12px;font-weight:950;cursor:pointer;white-space:nowrap}.bet-row button:disabled{opacity:.45}.bet-status{font-size:9px;color:var(--muted);margin-top:7px}.my-wager{margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px;font-size:10px}.status-pill{font-size:8px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.06)}.leaderboard{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}.leader-row{display:grid;grid-template-columns:35px 1fr 90px;gap:9px;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.06)}.leader-row strong:last-child{text-align:right;color:var(--gold)}.empty{padding:20px;color:var(--muted)}.no-cash{font-size:9px;color:var(--muted);margin:12px 0 40px}@media(max-width:820px){.market-grid{grid-template-columns:1fr}.pred-top{display:block}.wallet{text-align:left;margin-top:12px}}
+
+.market-visual{display:flex;align-items:center;gap:8px;margin-top:7px}.market-visual img{width:38px;height:38px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.04)}.market-visual img.headshot{object-fit:cover;border-radius:50%}
+.market-option{--accent:215,173,72;position:relative;overflow:hidden;border-color:rgba(var(--accent),.62)!important;transition:background .14s ease,box-shadow .14s ease,transform .12s ease,border-color .12s ease}.market-option:not(:disabled):hover{transform:translateY(-1px);border-color:rgba(var(--accent),1)!important;box-shadow:0 0 16px rgba(var(--accent),.18)}
+.market-option.active{background:rgb(var(--accent))!important;border-color:rgb(var(--accent))!important;box-shadow:0 0 0 1px rgba(var(--accent),.9),0 0 22px rgba(var(--accent),.48),0 0 38px rgba(var(--accent),.18);color:#fff!important}.market-option.active span,.market-option.active strong{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.45)}
+.option-id{display:flex;align-items:center;gap:8px;min-width:0}.option-id img{width:30px;height:30px;object-fit:contain;border-radius:7px;background:rgba(255,255,255,.05);flex:none}.option-id img.headshot{object-fit:cover;border-radius:50%}
+.bet-row{align-items:stretch!important}.potential-payout{border:1px solid rgba(215,173,72,.45)!important;background:rgba(215,173,72,.08)!important;color:var(--gold)!important;cursor:default!important;min-width:155px}.potential-payout.ready{background:var(--gold)!important;color:#111!important;border-color:var(--gold)!important}
+@media(max-width:650px){.bet-row{display:grid!important;grid-template-columns:1fr 1fr}.potential-payout{grid-column:1/-1}}
 </style></head><body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/schedule/">'26 Schedule</a><a href="/standings/">'26 Standings</a><a href="/playoffs/">Playoffs</a><a href="/simulation/">Simulation</a><a href="/predictions/" class="active">Predictions</a><a href="/account/">Account</a><a href="/leaders/">Leaders</a><a href="/teams/">Teams</a><a href="/players/">Players</a><a href="/awards/">Awards</a><a href="/grid/">Grid</a><a href="/fantasy/">Fantasy</a><a href="/stats/">Stats</a></div></div></div>
 <main><div class="container pagehead"><div class="eyebrow">Player Predictions</div><h1>Prediction Markets</h1><p class="muted">Use virtual league tokens to predict game outcomes, series winners, and player series performance.</p></div><div class="container"><div class="pred-top"><div><div class="pred-tabs"><button data-tab="open" class="active">Open Markets</button><button data-tab="mine">My Wagers</button><button data-tab="leaders">Token Leaderboard</button></div><div id="loginHint" class="muted" style="font-size:10px"></div></div><div class="wallet"><span class="muted" style="font-size:8px;text-transform:uppercase">Balance</span><strong id="balance">—</strong><span class="muted" style="font-size:9px">tokens</span></div></div><div id="content"></div><div class="no-cash">Prediction tokens are for ND Wiffle league entertainment only. They have no cash value and cannot be purchased, withdrawn, or exchanged for money.</div></div></main><footer><div class="container">ND Wiffle · Predictions.</div></footer>
 <script>
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));let DATA=null,ME=null,LEADERS=null,tab='open',selected={};
-async function get(url){const r=await fetch(url,{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||`HTTP ${r.status}`);return j}
-function fmtTime(v){if(!v)return '';const d=new Date(v);return Number.isNaN(d)?v:d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
-function marketCard(m){const open=m.status==='open',choice=selected[m.market_id],w=m.my_wager;return `<div class="market ${open?'open':''}"><div class="market-head"><div><div class="market-type">${esc((m.effective_type||m.market_type).replace(/_/g,' '))}</div><h3>${esc(m.title)}</h3></div><span class="status-pill">${esc(m.status)}</span></div><div class="market-meta">Closes ${fmtTime(m.close_at)}${m.playoff_round?` · ${esc(m.playoff_round)}`:''} · ${Number(m.wager_count||0)} wagers · ${Number(m.token_volume||0)} tokens</div><div class="market-options">${(m.options||[]).map(o=>`<button class="market-option ${choice===o.key?'active':''}" data-market="${m.market_id}" data-option="${esc(o.key)}" ${!open||w?'disabled':''}><strong>${esc(o.label)}</strong><span>${Number(o.odds).toFixed(2)}×</span></button>`).join('')}</div>${w?`<div class="my-wager"><strong>Your wager:</strong> ${w.stake} on ${esc(w.option_label)} @ ${Number(w.decimal_odds).toFixed(2)}× · <span class="status-pill">${esc(w.status)}</span>${w.payout?` · payout ${w.payout}`:''}</div>`:`<div class="bet-row"><input id="stake_${m.market_id}" type="number" min="1" step="1" placeholder="Token stake" ${!open||!DATA.authenticated?'disabled':''}><button data-bet="${m.market_id}" ${!open||!DATA.authenticated?'disabled':''}>Place Wager</button></div><div class="bet-status" id="status_${m.market_id}">${DATA.authenticated?(open?'Select an outcome and enter a stake.':'Market closed.'):'Log in to place wagers.'}</div>`}</div>`}
-function render(){balance.textContent=DATA?.authenticated?Number(DATA.balance).toLocaleString():'—';loginHint.innerHTML=DATA?.authenticated?`Signed in · <a href="/account/">account</a>`:`<a href="/account/">Log in or create an account</a> to receive your starter tokens and wager.`;if(tab==='open'){const rows=(DATA?.markets||[]).filter(m=>['open','locked'].includes(m.status));content.innerHTML=rows.length?`<div class="market-grid">${rows.map(marketCard).join('')}</div>`:'<div class="empty">No open markets right now.</div>';content.querySelectorAll('[data-market]').forEach(b=>b.onclick=()=>{selected[b.dataset.market]=b.dataset.option;render()});content.querySelectorAll('[data-bet]').forEach(b=>b.onclick=()=>bet(b.dataset.bet));return}if(tab==='mine'){if(!DATA?.authenticated){content.innerHTML='<div class="empty">Log in to see your wagers.</div>';return}const rows=(ME?.wagers||[]);content.innerHTML=rows.length?`<div class="market-grid">${rows.map(w=>`<div class="market"><div class="market-type">${esc((w.effective_type||w.market_type).replace(/_/g,' '))}</div><h3>${esc(w.title)}</h3><div class="my-wager">${w.stake} tokens · ${esc(w.option_label)} @ ${Number(w.decimal_odds).toFixed(2)}×</div><div class="market-meta">Status: ${esc(w.status)}${w.payout?` · payout ${w.payout}`:''}${w.result_note?` · ${esc(w.result_note)}`:''}</div></div>`).join('')}</div>`:'<div class="empty">You have not placed any wagers yet.</div>';return}const rows=LEADERS?.leaders||[];content.innerHTML=`<div class="leaderboard">${rows.length?rows.map((x,i)=>`<div class="leader-row"><strong>${i+1}</strong><span>${esc(x.player_name)}<small style="display:block;color:var(--muted)">${esc(x.team_name||'')}</small></span><strong>${Number(x.token_balance).toLocaleString()}</strong></div>`).join(''):'<div class="empty">No player accounts yet.</div>'}</div>`}
-async function bet(id){const option=selected[id],stake=Number(document.getElementById(`stake_${id}`)?.value),st=document.getElementById(`status_${id}`);if(!option||!Number.isInteger(stake)||stake<1){st.textContent='Choose an outcome and whole-number stake.';return}if(!confirm(`Place ${stake} tokens on this prediction?`))return;st.textContent='Placing wager…';try{const r=await fetch('/api/predictions/wager',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({market_id:id,option_key:option,stake})}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Wager failed');await load()}catch(e){st.textContent=e.message}}
-async function load(){try{DATA=await get('/api/predictions/markets');ME=DATA.authenticated?await get('/api/predictions/me'):null;LEADERS=await get('/api/predictions/leaderboard');render()}catch(e){content.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render()});load();
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const TEAM_LOGOS={"storm":"/assets/logos/storm.png?v=81","midnight":"/assets/logos/midnight.png?v=81","stiff-wifflers":"/assets/logos/stiff-wifflers.png?v=81","ball-busters":"/assets/logos/ball-busters.png?v=81","dirty-dawgs":"/assets/logos/dirty-dawgs.png?v=81","twin-titans":"/assets/logos/twin-titans.png?v=81","goofy-goobers":"/assets/logos/goofy-goobers.png?v=81","silverbacks":"/assets/logos/silverbacks.png?v=81","underdawgs":"/assets/logos/underdawgs.png?v=81","zyns":"/assets/logos/zyns.png?v=81"};
+const TEAM_RGB={"storm":"96,0,160","midnight":"90,98,110","stiff-wifflers":"24,49,83","ball-busters":"144,32,32","dirty-dawgs":"96,0,24","twin-titans":"72,88,120","goofy-goobers":"208,80,32","silverbacks":"192,160,80","underdawgs":"64,48,96","zyns":"144,224,224"};
+let DATA=null,ME=null,LEADERS=null,tab='open',selected={},stakes={};
+
+async function get(url){
+ const r=await fetch(url,{cache:'no-store'}),j=await r.json().catch(()=>({}));
+ if(!r.ok||j.ok===false)throw new Error(j.error||j.detail||`HTTP ${r.status}`);
+ return j;
+}
+function fmtTime(v){if(!v)return '';const d=new Date(v);return Number.isNaN(d.getTime())?v:d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function teamForOption(m,o){
+ if(String(o.key).startsWith('team:'))return String(o.key).slice(5);
+ if(o.key==='team_a_cover')return m.team_a_id;
+ if(o.key==='team_b_cover')return m.team_b_id;
+ if(m.market_type==='player_over_under')return m.player_team_id||null;
+ return null;
+}
+function optionVisual(m,o){
+ const team=teamForOption(m,o),rgb=TEAM_RGB[team]||"215,173,72";
+ let img='';
+ if(m.market_type==='player_over_under'&&m.player_id){
+   img=`<img class="headshot" src="/assets/headshots/${esc(m.player_id)}.png?v=81" alt="" onerror="this.style.display='none'">`;
+ }else if(team&&TEAM_LOGOS[team]){
+   img=`<img src="${TEAM_LOGOS[team]}" alt="">`;
+ }else if(m.effective_type==='series_total'){
+   img=`<span style="display:flex;gap:4px">${TEAM_LOGOS[m.team_a_id]?`<img src="${TEAM_LOGOS[m.team_a_id]}" alt="">`:''}${TEAM_LOGOS[m.team_b_id]?`<img src="${TEAM_LOGOS[m.team_b_id]}" alt="">`:''}</span>`;
+ }
+ return {rgb,img};
+}
+function marketVisual(m){
+ if(m.player_id){
+   return `<div class="market-visual"><img class="headshot" src="/assets/headshots/${esc(m.player_id)}.png?v=81" alt="" onerror="this.style.display='none'"><div><strong>${esc(m.player_name||'Player prop')}</strong><small style="display:block;color:var(--muted)">Series player market</small></div></div>`;
+ }
+ return `<div class="market-visual">${TEAM_LOGOS[m.team_a_id]?`<img src="${TEAM_LOGOS[m.team_a_id]}" alt="">`:''}${TEAM_LOGOS[m.team_b_id]?`<img src="${TEAM_LOGOS[m.team_b_id]}" alt="">`:''}</div>`;
+}
+function payoutFor(m){
+ const choice=selected[m.market_id],stake=Number(stakes[m.market_id]||0),opt=(m.options||[]).find(x=>x.key===choice);
+ return choice&&Number.isInteger(stake)&&stake>0&&opt?Math.floor(stake*Number(opt.odds)):null;
+}
+function marketCard(m){
+ const open=m.status==='open',choice=selected[m.market_id],w=m.my_wager,payout=payoutFor(m);
+ return `<div class="market ${open?'open':''}">
+   <div class="market-head"><div><div class="market-type">${esc((m.effective_type||m.market_type).replace(/_/g,' '))}</div><h3>${esc(m.title)}</h3>${marketVisual(m)}</div><span class="status-pill">${esc(m.status)}</span></div>
+   <div class="market-meta">Closes ${fmtTime(m.close_at)}${m.playoff_round?` · ${esc(m.playoff_round)}`:''} · ${Number(m.wager_count||0)} wagers · ${Number(m.token_volume||0)} tokens</div>
+   <div class="market-options">${(m.options||[]).map(o=>{const v=optionVisual(m,o);return `<button class="market-option ${choice===o.key?'active':''}" style="--accent:${v.rgb}" data-market="${m.market_id}" data-option="${esc(o.key)}" ${!open||w?'disabled':''}><span class="option-id">${v.img}<strong>${esc(o.label)}</strong></span><span>${Number(o.odds).toFixed(2)}×</span></button>`}).join('')}</div>
+   ${w?`<div class="my-wager"><strong>Your wager:</strong> ${w.stake} on ${esc(w.option_label)} @ ${Number(w.decimal_odds).toFixed(2)}× · potential ${Number(w.potential_payout||0).toLocaleString()} · <span class="status-pill">${esc(w.status)}</span>${w.payout?` · payout ${w.payout}`:''}</div>`:
+   `<div class="bet-row"><input id="stake_${m.market_id}" data-stake="${m.market_id}" type="number" min="1" step="1" placeholder="Token stake" value="${esc(stakes[m.market_id]||'')}" ${!open||!DATA.authenticated?'disabled':''}><button data-bet="${m.market_id}" ${!open||!DATA.authenticated?'disabled':''}>Place Wager</button><button class="potential-payout ${payout!==null?'ready':''}" id="payout_${m.market_id}" type="button" disabled>${payout!==null?`Potential payout: ${payout.toLocaleString()} tokens`:'Potential payout: —'}</button></div><div class="bet-status" id="status_${m.market_id}">${DATA.authenticated?(open?'Select an outcome and enter a stake.':'Market closed.'):'Log in to place wagers.'}</div>`}
+ </div>`;
+}
+function wireOpen(){
+ content.querySelectorAll('[data-market]').forEach(b=>b.onclick=()=>{selected[b.dataset.market]=b.dataset.option;render()});
+ content.querySelectorAll('[data-stake]').forEach(inp=>inp.oninput=()=>{stakes[inp.dataset.stake]=inp.value;updatePayout(inp.dataset.stake)});
+ content.querySelectorAll('[data-bet]').forEach(b=>b.onclick=()=>bet(b.dataset.bet));
+}
+function updatePayout(id){
+ const m=(DATA?.markets||[]).find(x=>x.market_id===id),btn=document.getElementById(`payout_${id}`);
+ if(!m||!btn)return;
+ const val=payoutFor(m);
+ btn.textContent=val!==null?`Potential payout: ${val.toLocaleString()} tokens`:'Potential payout: —';
+ btn.classList.toggle('ready',val!==null);
+}
+function render(){
+ balance.textContent=DATA?.authenticated?Number(DATA.balance).toLocaleString():'—';
+ loginHint.innerHTML=DATA?.authenticated?`Signed in · <a href="/account/">account</a>`:`<a href="/account/">Log in or create an account</a> to receive your starter tokens and wager.`;
+ if(tab==='open'){
+   const rows=(DATA?.markets||[]).filter(m=>['open','locked'].includes(m.status));
+   content.innerHTML=rows.length?`<div class="market-grid">${rows.map(marketCard).join('')}</div>`:'<div class="empty">No open markets right now.</div>';
+   wireOpen();return;
+ }
+ if(tab==='mine'){
+   if(!DATA?.authenticated){content.innerHTML='<div class="empty">Log in to see your wagers.</div>';return}
+   const rows=(ME?.wagers||[]);
+   content.innerHTML=rows.length?`<div class="market-grid">${rows.map(w=>`<div class="market"><div class="market-type">${esc((w.effective_type||w.market_type).replace(/_/g,' '))}</div><h3>${esc(w.title)}</h3><div class="my-wager">${w.stake} tokens · ${esc(w.option_label)} @ ${Number(w.decimal_odds).toFixed(2)}× · potential ${Number(w.potential_payout||0).toLocaleString()}</div><div class="market-meta">Status: ${esc(w.status)}${w.payout?` · payout ${w.payout}`:''}${w.result_note?` · ${esc(w.result_note)}`:''}</div></div>`).join('')}</div>`:'<div class="empty">You have not placed any wagers yet.</div>';
+   return;
+ }
+ const rows=LEADERS?.leaders||[];
+ content.innerHTML=`<div class="leaderboard">${rows.length?rows.map((x,i)=>`<div class="leader-row"><strong>${i+1}</strong><span>${esc(x.player_name)}<small style="display:block;color:var(--muted)">${esc(x.team_name||'')}</small></span><strong>${Number(x.token_balance).toLocaleString()}</strong></div>`).join(''):'<div class="empty">No player accounts yet.</div>'}</div>`;
+}
+async function bet(id){
+ const option=selected[id],stake=Number(stakes[id]||document.getElementById(`stake_${id}`)?.value),st=document.getElementById(`status_${id}`),m=(DATA?.markets||[]).find(x=>x.market_id===id),potential=m?payoutFor(m):null;
+ if(!option||!Number.isInteger(stake)||stake<1){st.textContent='Choose an outcome and whole-number stake.';return}
+ if(stake>Number(DATA.balance||0)){st.textContent='Your stake exceeds your current token balance.';return}
+ if(!confirm(`Place ${stake} tokens on this prediction?${potential!==null?`\nPotential payout: ${potential} tokens`:''}`))return;
+ st.textContent='Placing wager…';
+ try{
+   const r=await fetch('/api/predictions/wager',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({market_id:id,option_key:option,stake})}),j=await r.json();
+   if(!r.ok||!j.ok)throw new Error(j.error||j.detail||'Wager failed');
+   delete stakes[id];await load();
+ }catch(e){st.textContent=e.message}
+}
+async function load(){
+ try{DATA=await get('/api/predictions/markets');ME=DATA.authenticated?await get('/api/predictions/me'):null;LEADERS=await get('/api/predictions/leaderboard');render()}
+ catch(e){content.innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));render()});
+load();
 </script></body></html>

@@ -49,7 +49,7 @@ async function normalizeMarket(DB,body){
 export async function onRequestGet(context){
  const DB=context.env.DB;if(!DB)return json({ok:false,error:"D1 binding DB is missing."},500);
  try{
-  const r=await DB.prepare(`SELECT pm.*,p.name AS player_name,ta.display_name AS team_a,tb.display_name AS team_b,(SELECT COUNT(*) FROM prediction_wagers w WHERE w.market_id=pm.market_id) AS wager_count,(SELECT COALESCE(SUM(stake),0) FROM prediction_wagers w WHERE w.market_id=pm.market_id) AS token_volume FROM prediction_markets pm LEFT JOIN players p ON p.player_id=pm.player_id LEFT JOIN teams ta ON ta.team_id=pm.team_a_id LEFT JOIN teams tb ON tb.team_id=pm.team_b_id ORDER BY pm.created_at DESC`).all();
+  const r=await DB.prepare(`SELECT pm.*,p.name AS player_name,ptr.team_id AS player_team_id,ta.display_name AS team_a,tb.display_name AS team_b,(SELECT COUNT(*) FROM prediction_wagers w WHERE w.market_id=pm.market_id) AS wager_count,(SELECT COALESCE(SUM(stake),0) FROM prediction_wagers w WHERE w.market_id=pm.market_id) AS token_volume FROM prediction_markets pm LEFT JOIN players p ON p.player_id=pm.player_id LEFT JOIN team_rosters ptr ON ptr.player_id=pm.player_id AND ptr.season=pm.season LEFT JOIN teams ta ON ta.team_id=pm.team_a_id LEFT JOIN teams tb ON tb.team_id=pm.team_b_id ORDER BY pm.created_at DESC`).all();
   return json({ok:true,markets:(r.results||[]).map(m=>({...m,effective_type:effectiveMarketType(m)==="series_winner"?"series_moneyline":effectiveMarketType(m),options:parseOptions(m.options_json),options_json:undefined}))});
  }catch(err){const m=String(err?.message||err);if(m.includes("no such table"))return json({ok:true,markets:[],schema_ready:false});return json({ok:false,error:"Admin prediction query failed.",detail:m},500)}
 }
@@ -60,6 +60,14 @@ export async function onRequestPost(context){
  try{
   if(action==="settle_all"){const settled=await settleAllMarkets(DB);return json({ok:true,settled_count:settled.length,settled})}
   if(action==="void"){const r=await voidMarket(DB,clean(body.market_id),clean(body.note)||"Market voided by commissioner");return r.ok?json({ok:true,...r}):json({ok:false,error:"Market could not be voided."},409)}
+  if(action==="delete"){
+   const marketId=clean(body.market_id);if(!marketId)return json({ok:false,error:"market_id is required."},422);
+   const current=await DB.prepare(`SELECT pm.market_id,pm.title,(SELECT COUNT(*) FROM prediction_wagers w WHERE w.market_id=pm.market_id) AS wager_count FROM prediction_markets pm WHERE pm.market_id=?`).bind(marketId).first();
+   if(!current)return json({ok:false,error:"Market not found."},404);
+   if(Number(current.wager_count||0)>0)return json({ok:false,error:"This market already has wagers. Void + Refund it instead so wager and token history remain auditable."},409);
+   await DB.prepare("DELETE FROM prediction_markets WHERE market_id=?").bind(marketId).run();
+   return json({ok:true,deleted:true,market_id:marketId,title:current.title});
+  }
   if(action==="create"){
    const parsed=await normalizeMarket(DB,body);if(parsed.error)return json({ok:false,error:parsed.error},422);const v=parsed.value;
    if(Date.parse(v.close_at)<=Date.now())return json({ok:false,error:"Close time must be in the future."},422);
