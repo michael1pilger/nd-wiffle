@@ -50,6 +50,8 @@
   <div id="teamStatPitching" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>Apps</th><th>Starts</th><th>W</th><th>L</th><th>S</th><th>IP</th><th>BF</th><th>H</th><th>BB</th><th>K</th><th>ER</th><th>ERA</th><th>WHIP</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamPitchingBody"></tbody></table></div></div>
   <p class="muted team-stat-note">Historical W-L reflects the reconstructed series ledger, including recorded forfeits and agreement decisions; historical player batting/pitching totals remain sourced from the preserved player-season data. 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
 </div></section>
+
+<section class="team-detail-section" id="macguffinHost"><div class="container"><div class="sectionhead"><div><div class="eyebrow">Lineal League History</div><h2>ND Wiffle MacGuffin</h2><p class="muted">Beat the holder, take the trophy. Game and series lineages tracked independently.</p></div></div><div id="macguffinRoot"></div></div></section>
 <section class="team-detail-section" id="historicalH2HHost" data-h2h-context="all"><div class="container"><div class="sectionhead"><div><div class="eyebrow">2021–2026</div><h2>Historical Head-to-Head</h2><p class="muted">Regular season, postseason, rivalries, and all-time records · 2026 updates from D1</p></div></div><div id="historicalH2HRoot"></div></div></section>
 </main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script src="/assets/data.js?v=87"></script>
@@ -121,4 +123,4 @@ fetch('/api/public/league?season=2026',{cache:'no-store'}).then(r=>r.json()).the
 document.querySelectorAll('.team-stat-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.team-stat-tab').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.team-stat-panel').forEach(p=>p.classList.remove('active'));document.getElementById('teamStat'+btn.dataset.teamStat[0].toUpperCase()+btn.dataset.teamStat.slice(1)).classList.add('active')}));
 })();
 </script>
-<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=147"></script><script src="/assets/historical-h2h.js?v=2" defer></script></body></html>
+<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=147"></script><script src="/assets/macguffin.js?v=1" defer></script><script src="/assets/historical-h2h.js?v=2" defer></script></body></html>
