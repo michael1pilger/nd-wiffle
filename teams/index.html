@@ -48,25 +48,26 @@
   <div id="teamStatOverall" class="team-stat-panel active"><div class="tablewrap"><table><thead><tr><th>Team</th><th>W</th><th>L</th><th>Win%</th><th>PA</th><th>H</th><th>HR</th><th>BA</th><th>OPS</th><th>IP</th><th>Pitch K</th><th>ERA</th><th>WHIP</th></tr></thead><tbody id="teamOverallBody"></tbody></table></div></div>
   <div id="teamStatBatting" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>PA</th><th>AB</th><th>H</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th><th>BB</th><th>K</th><th>BA</th><th>OBP</th><th>SLG</th><th>OPS</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamBattingBody"></tbody></table></div></div>
   <div id="teamStatPitching" class="team-stat-panel"><div class="tablewrap"><table><thead><tr><th>Team</th><th>Apps</th><th>Starts</th><th>W</th><th>L</th><th>S</th><th>IP</th><th>BF</th><th>H</th><th>BB</th><th>K</th><th>ER</th><th>ERA</th><th>WHIP</th><th>K%</th><th>BB%</th></tr></thead><tbody id="teamPitchingBody"></tbody></table></div></div>
-  <p class="muted team-stat-note">Season views aggregate only years with recorded player-season data. Historical W-L uses commissioner-verified season records; historical player batting/pitching totals remain sourced from the preserved player-season data. 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
+  <p class="muted team-stat-note">Historical W-L reflects the reconstructed series ledger, including recorded forfeits and agreement decisions; historical player batting/pitching totals remain sourced from the preserved player-season data. 2026 W-L uses the live standings. Career W-L uses the franchise history totals plus live 2026 results. Batting and pitching rates are calculated from aggregate team totals.</p>
 </div></section>
+<section class="team-detail-section" id="historicalH2HHost" data-h2h-context="all"><div class="container"><div class="sectionhead"><div><div class="eyebrow">2021–2026</div><h2>Historical Head-to-Head</h2><p class="muted">Regular season, postseason, rivalries, and all-time records · 2026 updates from D1</p></div></div><div id="historicalH2HRoot"></div></div></section>
 </main><footer><div class="container">ND Wiffle · The home of Notre Dame Wiffleball.</div></footer>
 <script src="/assets/data.js?v=87"></script>
 <script>
 (()=>{
 const TEAM_INFO={
- 'ball-busters':{name:'Ball Busters',logo:'/assets/logos/ball-busters.png',baseW:53,baseL:41},
- 'dirty-dawgs':{name:'Dirty Dawgs',logo:'/assets/logos/dirty-dawgs.png',baseW:27,baseL:30},
- 'goofy-goobers':{name:'Goofy Goobers',logo:'/assets/logos/goofy-goobers.png',baseW:35,baseL:45},
- 'midnight':{name:'Midnight',logo:'/assets/logos/midnight.png',baseW:46,baseL:95},
- 'silverbacks':{name:'Silverbacks',logo:'/assets/logos/silverbacks.png',baseW:115,baseL:62},
- 'stiff-wifflers':{name:'Stiff Wifflers',logo:'/assets/logos/stiff-wifflers.png',baseW:42,baseL:62},
- 'storm':{name:'Storm',logo:'/assets/logos/storm.png',baseW:87,baseL:69},
- 'twin-titans':{name:'Twin Titans',logo:'/assets/logos/twin-titans.png',baseW:28,baseL:73},
- 'underdawgs':{name:'Underdawgs',logo:'/assets/logos/underdawgs.png',baseW:66,baseL:55},
- 'zyns':{name:'Zyns',logo:'/assets/logos/zyns.png',baseW:93,baseL:58}
+ 'ball-busters':{name:'Ball Busters',logo:'/assets/logos/ball-busters.png',baseW:42,baseL:30},
+ 'dirty-dawgs':{name:'Dirty Dawgs',logo:'/assets/logos/dirty-dawgs.png',baseW:22,baseL:26},
+ 'goofy-goobers':{name:'Goofy Goobers',logo:'/assets/logos/goofy-goobers.png',baseW:33,baseL:39},
+ 'midnight':{name:'Midnight',logo:'/assets/logos/midnight.png',baseW:39,baseL:84},
+ 'silverbacks':{name:'Silverbacks',logo:'/assets/logos/silverbacks.png',baseW:86,baseL:37},
+ 'stiff-wifflers':{name:'Stiff Wifflers',logo:'/assets/logos/stiff-wifflers.png',baseW:41,baseL:55},
+ 'storm':{name:'Storm',logo:'/assets/logos/storm.png',baseW:70,baseL:53},
+ 'twin-titans':{name:'Twin Titans',logo:'/assets/logos/twin-titans.png',baseW:26,baseL:70},
+ 'underdawgs':{name:'Underdawgs',logo:'/assets/logos/underdawgs.png',baseW:51,baseL:45},
+ 'zyns':{name:'Zyns',logo:'/assets/logos/zyns.png',baseW:76,baseL:47}
 };
-const HISTORICAL_RECORDS={"2021":{"midnight":[7,23],"silverbacks":[19,11],"storm":[14,16],"zyns":[22,8]},"2022":{"midnight":[6,15],"silverbacks":[15,6],"storm":[14,7],"stiff-wifflers":[7,14],"underdawgs":[11,10],"twin-titans":[6,18],"zyns":[12,9]},"2023":{"midnight":[6,18],"silverbacks":[19,5],"storm":[14,10],"zyns":[20,4],"stiff-wifflers":[10,14],"underdawgs":[12,12],"twin-titans":[1,2],"ball-busters":[7,17],"goofy-goobers":[7,17]},"2024":{"ball-busters":[15,9],"dirty-dawgs":[9,15],"goofy-goobers":[13,11],"midnight":[9,15],"silverbacks":[20,4],"stiff-wifflers":[10,14],"storm":[18,6],"twin-titans":[3,21],"underdawgs":[11,13],"zyns":[11,13]},"2025":{"ball-busters":[15,9],"dirty-dawgs":[15,9],"goofy-goobers":[8,16],"midnight":[6,18],"silverbacks":[14,10],"stiff-wifflers":[8,16],"storm":[6,18],"twin-titans":[19,5],"underdawgs":[13,11],"zyns":[10,14]}};
+const HISTORICAL_RECORDS={"2021":{"zyns":[20,7],"silverbacks":[16,11],"storm":[14,13],"midnight":[4,23]},"2022":{"zyns":[16,8],"silverbacks":[18,6],"storm":[16,8],"underdawgs":[13,11],"stiff-wifflers":[8,16],"midnight":[10,14],"twin-titans":[3,21]},"2023":{"zyns":[20,4],"silverbacks":[18,6],"storm":[15,9],"underdawgs":[14,10],"stiff-wifflers":[13,11],"goofy-goobers":[9,15],"midnight":[9,15],"ball-busters":[9,15],"twin-titans":[1,23]},"2024":{"zyns":[11,13],"silverbacks":[20,4],"storm":[18,6],"underdawgs":[12,12],"stiff-wifflers":[9,15],"goofy-goobers":[13,11],"midnight":[9,15],"ball-busters":[15,9],"twin-titans":[3,21],"dirty-dawgs":[10,14]},"2025":{"zyns":[9,15],"silverbacks":[14,10],"storm":[7,17],"underdawgs":[12,12],"stiff-wifflers":[11,13],"goofy-goobers":[11,13],"midnight":[7,17],"ball-busters":[18,6],"twin-titans":[19,5],"dirty-dawgs":[12,12]}};
 const alias=n=>{n=String(n||'').trim().toLowerCase();if(['goobers'].includes(n))return'goofy-goobers';if(['stiffies'].includes(n))return'stiff-wifflers';if(['saudi arabian yard goats','drunken sluggers','dr'].includes(n))return'twin-titans';if(['south bend wifflers','seven deadly zyns','zyns'].includes(n))return'zyns';for(const [id,x] of Object.entries(TEAM_INFO))if(n===x.name.toLowerCase())return id;return null};
 const n=v=>Number(String(v??'').replace(/[% ,]/g,''))||0;
 const ipOuts=v=>{const x=Number(v)||0,w=Math.floor(x),f=Math.round((x-w)*100);return w*3+(f>=60?2:f>=30?1:0)};
@@ -120,4 +121,4 @@ fetch('/api/public/league?season=2026',{cache:'no-store'}).then(r=>r.json()).the
 document.querySelectorAll('.team-stat-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.team-stat-tab').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.team-stat-panel').forEach(p=>p.classList.remove('active'));document.getElementById('teamStat'+btn.dataset.teamStat[0].toUpperCase()+btn.dataset.teamStat.slice(1)).classList.add('active')}));
 })();
 </script>
-<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=147"></script></body></html>
+<script src="/assets/table-tools.js?v=87"></script><script src="/assets/hof.js?v=147"></script><script src="/assets/historical-h2h.js?v=1" defer></script></body></html>
