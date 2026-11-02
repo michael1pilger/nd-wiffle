@@ -1,6 +1,6 @@
-// Public historical series and live 2026 head-to-head records.
-// All historical records are in historical_h2h_series; 2026 remains in native D1 series/games.
-// Forfeits/agreements count as games won/lost but never fabricate scores, runs, or pitcher decisions.
+// Public historical series, live 2026 head-to-head records, and 2026 player-vs-opponent participation.
+// Historical team records are complete to the extent of historical_h2h_series; participant-level matchup
+// coverage is intentionally limited to recorded 2026 series_participants rows.
 function respond(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -8,7 +8,6 @@ function respond(body, status = 200) {
   });
 }
 const num = v => Number(v) || 0;
-const isValidId = s => typeof s === 'string' && /^[a-z0-9-]+$/.test(s);
 const pair = (a,b) => [a,b].sort().join('::');
 function readPayload(v) { try { return v && JSON.parse(v) || {}; } catch { return {}; } }
 
@@ -87,7 +86,6 @@ function liveSeries(rows, allGames) {
     const blank=group.filter(s=>s._type==='played' && s._games.length===0);
     for(const s of blank)pending.push({series_id:s.series_id,reason:'no played game result / disposition not recorded'});
     const gameCount=played.reduce((n,s)=>n+s._games.length,0);
-    // Merge only real game fragments, never a forfeit/agreement with a separate played series.
     if(played.length>1 && gameCount<=3)normalize(played,'regular');
     else for(const s of played) normalize([s],'regular');
     for(const s of group.filter(s=>s._type==='conditional_forfeit' || s._type==='mutual_agreement'))normalize([s],'regular');
@@ -100,7 +98,7 @@ export async function onRequestGet(context) {
   const DB=context.env.DB;
   if(!DB) return respond({ok:false,error:'D1 binding DB is unavailable.'},503);
   try {
-    const [history,source,game] = await DB.batch([
+    const [history,source,game,participants] = await DB.batch([
       DB.prepare(`SELECT historical_id AS series_id,season,phase,round_name,team_a_id,team_b_id,
         team_a_game_wins,team_b_game_wins,result_type,evidence_level,source,quality_flags,notes
         FROM historical_h2h_series ORDER BY season,phase,series_id`),
@@ -110,19 +108,53 @@ export async function onRequestGet(context) {
         (SELECT ps.side FROM pitching_series_stats ps
           WHERE ps.series_id=g.series_id AND ps.player_id=g.winning_pitcher_id LIMIT 1) AS winning_pitcher_side
         FROM games g JOIN series s ON s.series_id=g.series_id
-        WHERE s.season=2026 ORDER BY g.series_id,g.game_number`)
+        WHERE s.season=2026 ORDER BY g.series_id,g.game_number`),
+      DB.prepare(`SELECT DISTINCT sp.series_id,sp.player_id,sp.team_id,p.name,p.class_year,
+          s.away_team_id,s.home_team_id,
+          COALESCE(json_extract(s.payload_json,'$.series_type'),'played') AS series_type
+        FROM series_participants sp
+        JOIN series s ON s.series_id=sp.series_id
+        JOIN players p ON p.player_id=sp.player_id
+        WHERE s.season=2026
+        ORDER BY p.name,sp.series_id`)
     ]);
     const old=(history.results||[]).map(r=>({...r,team_a_game_wins:num(r.team_a_game_wins),team_b_game_wins:num(r.team_b_game_wins)}));
     const live=liveSeries(source.results||[],game.results||[]);
     const entries=old.concat(live.out);
+    const acceptedSourceIds=new Set(live.out.flatMap(r=>String(r.series_id||'').split('+').filter(Boolean)));
+    const playerMatchups=(participants.results||[]).filter(r=>{
+      if(!acceptedSourceIds.has(String(r.series_id)))return false;
+      return r.team_id===r.away_team_id || r.team_id===r.home_team_id;
+    }).map(r=>({
+      season:2026,
+      phase:r.series_type==='playoff'?'playoff':'regular',
+      series_id:r.series_id,
+      player_id:r.player_id,
+      player_name:r.name,
+      class_year:r.class_year,
+      team_id:r.team_id,
+      opponent_team_id:r.team_id===r.away_team_id?r.home_team_id:r.away_team_id
+    }));
     const warnings=[];
     if(old.length!==189) warnings.push('Expected 189 historical series (162 regular, 27 playoff), found '+old.length+'.');
     if(live.pending.length)warnings.push(live.pending.length+' live 2026 entries are incomplete/unclassified and excluded from final records.');
-    // Never expose raw payload_json or commissioner details to the public endpoint.
-    return respond({ok:true,version:'2026-history-v1',historical_count:old.length,
-      live_2026_count:live.out.length,rows:entries,unresolved_2026_count:live.pending.length,warnings});
+    return respond({
+      ok:true,
+      version:'2026-history-v2',
+      historical_count:old.length,
+      live_2026_count:live.out.length,
+      rows:entries,
+      unresolved_2026_count:live.pending.length,
+      warnings,
+      player_coverage:{
+        season:2026,
+        grain:'series_participation',
+        complete_historical:false,
+        note:'Player-vs-opponent participation is available from recorded 2026 series_participants data only; 2021-2025 historical series do not have equivalent participant-level coverage.',
+        rows:playerMatchups
+      }
+    });
   } catch(err) {
-    // Missing table before migration: respond with actionable error; do not expose SQL internals.
     return respond({ok:false,error:'Historical head-to-head data are not initialized. Apply migrations 0036 and 0037, then retry.'},503);
   }
 }
