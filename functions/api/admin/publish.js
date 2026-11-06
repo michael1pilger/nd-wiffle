@@ -83,7 +83,21 @@ function resolvePlayerIds(payload,reg,names){
 }
 function seriesMaxGames(payload){return payload?.series_type==="playoff"?Number(payload.playoff?.series_length||3):3;}
 function seriesWinsNeeded(payload){return Math.floor(seriesMaxGames(payload)/2)+1;}
-function seriesIsComplete(payload,games=payload?.games||[]){const need=seriesWinsNeeded(payload),aw=games.filter(g=>Number(g.away_score)>Number(g.home_score)).length,hw=games.length-aw;return Math.max(aw,hw)>=need;}
+function playoffClinchInfo(payload,games=payload?.games||[]){
+  const need=seriesWinsNeeded(payload);let aw=0,hw=0,clinchedAt=null;
+  for(let i=0;i<games.length;i++){
+    const a=Number(games[i]?.away_score),h=Number(games[i]?.home_score);
+    if(a>h)aw++;else if(h>a)hw++;
+    if(clinchedAt===null&&Math.max(aw,hw)>=need)clinchedAt=i+1;
+  }
+  return {need,away_wins:aw,home_wins:hw,clinched_at:clinchedAt,complete:clinchedAt!==null};
+}
+function seriesIsComplete(payload,games=payload?.games||[]){
+  if(payload?.series_type==="playoff")return playoffClinchInfo(payload,games).complete;
+  // Regular-season series always consist of three played games. A 2-0 partial
+  // upload is not complete merely because one team has already won the matchup.
+  return games.length>=3;
+}
 function serverValidate(payload, teamIds, playerIds){
   const errors=[], warnings=[];
   if(payload.schema_version!==3) errors.push("Unsupported schema_version; expected 3.");
@@ -126,6 +140,16 @@ function serverValidate(payload, teamIds, playerIds){
     if(![3,5,7].includes(maxGames))errors.push("Playoff series length must be 3, 5, or 7 games.");
   }
   if(games.length<1||games.length>maxGames) errors.push(`A ${payload.series_type==="playoff"?"playoff":"played"} series entry must contain 1 to ${maxGames} games.`);
+  if(payload.series_type==="playoff"&&games.length){
+    const clinch=playoffClinchInfo(payload,games);
+    if(clinch.clinched_at!==null&&clinch.clinched_at<games.length){
+      errors.push(`Playoff series was clinched after Game ${clinch.clinched_at}; ${games.length-clinch.clinched_at} later game(s) must be removed.`);
+    }
+    const expectedStatus=clinch.complete?"complete":"in_progress";
+    if(payload.series_status&&payload.series_status!==expectedStatus){
+      errors.push(`Playoff series_status must be ${expectedStatus}; this best-of-${maxGames} series requires ${clinch.need} wins to clinch.`);
+    }
+  }
   for(const media of payload.game_media||[]){
     const gameNo=Number(media?.game);
     if(!Number.isInteger(gameNo)||gameNo<1||gameNo>games.length)errors.push("Game Center upload references an invalid game number.");
@@ -454,7 +478,7 @@ export async function onRequestPost(context) {
       prediction_markets_settled:predictionSettlements.length,
       action:append?"appended":existing?"replaced":"published",
       series_id:payload.series_id,
-      series_status:payload.series_status||((payload.games||[]).length===3?"complete":"in_progress"),
+      series_status:payload.series_status||(seriesIsComplete(payload,payload.games||[])?"complete":"in_progress"),
       total_games:(payload.games||[]).length,
       actor_email:actor,
       server_warnings:validation.warnings,

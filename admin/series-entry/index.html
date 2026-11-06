@@ -83,7 +83,7 @@
 <body>
 <div class="sitebar"><div class="container nav"><a class="logo" href="/">ND WIFFLE</a><div class="links"><a href="/admin/">Admin Home</a><a class="active" href="/admin/series/">Series Hub</a><a href="/admin/predictions/">Predictions</a><a href="/admin/accounts/">Accounts & Wagers</a><a href="/admin/fantasy/">Fantasy Slates</a><a href="/admin/rosters/">Rosters</a><a href="/admin/draft/">Draft</a><a href="/admin/exports/">Export Data</a></div></div></div>
 <main class="admin-shell"><div class="container">
-<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v155</div>
+<div class="admin-kicker">Commissioner Tools · Import Prototype · BUILD v156</div>
 <h1>Series Upload & Review</h1><p><a class="admin-btn" href="/admin/rosters/" style="display:inline-block;text-decoration:none">Manage 2026 Rosters →</a> <a class="admin-btn" href="/admin/draft/" style="display:inline-block;text-decoration:none">Manage 2026 Draft →</a></p>
 <p class="admin-intro">Enter a played series normally, or choose Conditional Forfeit when a team cancels less than 3 hours in advance. Conditional forfeits bypass all stat entry and add three conditional wins/losses to the standings until the series is replaced by a makeup. Publishing writes the validated series directly to the protected D1 league database.</p>
 
@@ -113,14 +113,14 @@
     <option value="2">2 games</option>
     <option value="1">1 game</option>
   </select>
-  <div class="detected">Defaults to a full 3-game series. For a delayed series, choose only the games completed in this upload. When play resumes, use the same original series date and teams and upload only the newly played game(s).</div>
+  <div class="detected">For regular season, enter the games completed in this upload. In playoffs, enter the games actually played — the form automatically stops at the clinching game (2 wins in BO3, 3 in BO5, 4 in BO7), so an unused Game 5/6/7 is never required.</div>
 </div>
 <div class="field"><label>Away Team</label><select id="awayTeam"></select><div class="detected" id="awayDetected"></div></div>
 <div class="field"><label>Home Team</label><select id="homeTeam"></select><div class="detected" id="homeDetected"></div></div>
 </div>
 <div id="playoffSeriesPanel" class="hidden" style="margin-top:16px;border:1px solid rgba(215,173,72,.35);border-radius:12px;padding:14px;background:rgba(215,173,72,.06)">
   <div class="admin-kicker" style="font-size:10px">Playoff Series</div>
-  <p class="step-note" style="margin:5px 0 12px">Playoff games are stored separately from regular-season standings and feed the live playoff bracket. Upload the full series at once or append later games using the same date and teams.</p>
+  <p class="step-note" style="margin:5px 0 12px">Playoff games are stored separately from regular-season standings and feed the live playoff bracket. “Best of” is a maximum, not a required game count: BO3 ends at 2 wins, BO5 at 3 wins, and BO7 at 4 wins. Upload the games actually played; unused games after the clinch are not required.</p>
   <div class="form-grid">
     <div class="field"><label>Round</label><select id="playoffRound"><option value="First Round">First Round</option><option value="Semifinal">Semifinal</option><option value="World Series">World Series</option></select></div>
     <div class="field"><label>Maximum Series Length</label><select id="playoffLength"><option value="3">Best of 3</option><option value="5">Best of 5</option><option value="7">Best of 7</option></select></div>
@@ -590,7 +590,27 @@ function readGameMedia(){const out=[],count=gamesInEntry();for(let g=1;g<=count;
 function isPlayoffSeries(){return document.getElementById("entryType")?.value==="played"&&document.getElementById("seriesContext")?.value==="playoff"}
 function playoffSeriesLength(){return Number(document.getElementById("playoffLength")?.value||3)}
 function maxSeriesGames(){return isPlayoffSeries()?playoffSeriesLength():3}
+function playoffWinsNeeded(){return Math.floor(playoffSeriesLength()/2)+1}
 function gamesInEntry(){const max=maxSeriesGames();return Math.max(1,Math.min(max,Number(document.getElementById("gamesCompleted")?.value||max)))}
+function playoffClinchFromInputs(){
+  if(!isPlayoffSeries())return null;
+  const need=playoffWinsNeeded();let awayWins=0,homeWins=0;
+  const rows=[...document.querySelectorAll(".game-row")].sort((a,b)=>Number(a.dataset.game)-Number(b.dataset.game));
+  for(const r of rows){
+    const game=Number(r.dataset.game);if(game>playoffSeriesLength())break;
+    const av=r.querySelector(".awayScore")?.value?.trim()??"",hv=r.querySelector(".homeScore")?.value?.trim()??"";
+    if(av===""||hv==="")break;
+    const a=Number(av),h=Number(hv);if(!Number.isFinite(a)||!Number.isFinite(h)||a===h)break;
+    if(a>h)awayWins++;else homeWins++;
+    if(Math.max(awayWins,homeWins)>=need)return {game,awayWins,homeWins,need};
+  }
+  return null;
+}
+function autoTrimPlayoffToClinch(){
+  const clinch=playoffClinchFromInputs();if(!clinch)return;
+  const sel=document.getElementById("gamesCompleted");
+  if(sel&&Number(sel.value)!==clinch.game){sel.value=String(clinch.game);syncGamesCompleted();}
+}
 function syncGameCountOptions(preserve=true){
   const sel=document.getElementById("gamesCompleted"),max=maxSeriesGames(),prior=preserve?Number(sel.value):max;
   sel.innerHTML=Array.from({length:max},(_,i)=>max-i).map(v=>`<option value="${v}">${v} game${v===1?"":"s"}</option>`).join("");
@@ -615,6 +635,7 @@ function syncGamesCompleted(){
   renderGameMediaRows();
 }
 document.getElementById("gamesCompleted")?.addEventListener("change",syncGamesCompleted);
+document.addEventListener("input",e=>{if(e.target?.matches?.(".awayScore,.homeScore"))autoTrimPlayoffToClinch()});
 function isConditionalForfeit(){return document.getElementById("entryType")?.value==="conditional_forfeit"}
 function isMutualAgreement(){return document.getElementById("entryType")?.value==="mutual_agreement"}
 function isSpecialEntry(){return isConditionalForfeit()||isMutualAgreement()}
@@ -1033,6 +1054,9 @@ document.getElementById("validateBtn").onclick=()=>{
   const originalText=validateBtn.textContent;
   validateBtn.textContent="Validating…";
   setTimeout(()=>{ if(validateBtn.textContent==="Validating…") validateBtn.textContent=originalText; },1200);
+  // If a playoff team has already reached the clinching win total, ignore the
+  // unused tail of the best-of series before validation/stat normalization.
+  autoTrimPlayoffToClinch();
   if(isConditionalForfeit()){
     const checks=[];
     const away=document.getElementById("awayTeam").value;
@@ -1253,6 +1277,13 @@ document.getElementById("validateBtn").onclick=()=>{
     if(g.save_pitcher && teamForPlayer(g.save_pitcher)!==winnerTeam)check(checks,"warn",`Game ${g.game}: save pitcher appears to be on the losing team`,`${g.save_pitcher} is associated with ${teamForPlayer(g.save_pitcher)||"unknown team"}.`);
   });
   if(!gameError)check(checks,"pass",`All ${games.length} entered ${games.length===1?"game has":"games have"} valid non-tied scores and pitcher decisions`);
+  if(isPlayoffSeries()&&!gameError){
+    const need=playoffWinsNeeded();let aw=0,hw=0,clinchAt=null;
+    for(const g of games){if(g.away_score>g.home_score)aw++;else if(g.home_score>g.away_score)hw++;if(clinchAt===null&&Math.max(aw,hw)>=need)clinchAt=g.game;}
+    if(clinchAt!==null&&clinchAt<games.length)check(checks,"error",`Playoff series was clinched in Game ${clinchAt}`,`Games after the clinch are not part of the series. Set Games Completed to ${clinchAt}.`);
+    else if(clinchAt!==null)check(checks,"pass",`Playoff series complete after ${games.length} game${games.length===1?"":"s"}`,`${aw}–${hw}; ${need} wins were required in this best-of-${playoffSeriesLength()} series.`);
+    else check(checks,"info",`Playoff series is still in progress`,`${aw}–${hw}; first team to ${need} wins advances.`);
+  }
   for(const media of gameMedia){if(!media.line_score)continue;const g=games[Number(media.game)-1];if(!g)continue;const ar=media.line_score.away_runs.reduce((a,v)=>a+Number(v||0),0),hr=media.line_score.home_runs.reduce((a,v)=>a+Number(v||0),0);if(ar===Number(g.away_score)&&hr===Number(g.home_score))check(checks,"pass",`Game ${media.game} iScore line score matches entered final`,`${ar}-${hr}`);else check(checks,"warn",`Game ${media.game} iScore line score differs from entered final`,`PDF line score totals ${ar}-${hr}; entered score ${g.away_score}-${g.home_score}. The original PDF will still be preserved.`)}
 
   const basePitching=basePitchingRows(overrideMap);
@@ -1297,7 +1328,7 @@ document.getElementById("validateBtn").onclick=()=>{
 
   const payload={
     schema_version:3,
-    source:"ndwiffle_admin_v151",
+    source:"ndwiffle_admin_v156",
     series_id:seriesId,
     series:{season,date,away_team:away,home_team:home},
     series_type:isPlayoffSeries()?"playoff":"played",
