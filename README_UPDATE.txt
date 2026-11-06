@@ -1,36 +1,30 @@
-ND WIFFLE — PLAYOFF SERIES CLINCH FIX (v156)
+ND WIFFLE PLAYOFF DATABASE FIX v157
+==================================
 
-WHAT THIS FIXES
-- Best-of playoff series no longer require every possible game to be played.
-- Best of 3 ends when a team reaches 2 wins: valid finals 2-0 or 2-1.
-- Best of 5 ends when a team reaches 3 wins: valid finals 3-0, 3-1, or 3-2.
-- Best of 7 ends when a team reaches 4 wins: valid finals 4-0, 4-1, 4-2, or 4-3.
-- On the Series Upload page, entering the clinching game's score automatically changes "Games Completed" to the actual number of games played and hides unused games.
-- Validation rejects games entered after a playoff series was already clinched.
-- Server-side validation uses the same clinching rules.
-- Related regular-season fix: a normal regular-season series is complete only after all 3 games. A partial 2-0 upload remains in progress and can be appended later.
+WHY THIS IS NEEDED
+------------------
+The original D1 schema was designed around 3-game regular-season series and contains CHECK constraints capped at 3. The playoff admin now correctly supports best-of-3, best-of-5, and best-of-7 series, but D1 will reject Game 4+ until this migration is applied.
 
-FILES IN THIS PATCH
-admin/series-entry/index.html
-functions/api/admin/publish.js
+THIS MIGRATION EXPANDS:
+- games.game_number: 1-3 -> 1-7
+- series_participants.games_played: 1-3 -> 1-7
+- batting_series_stats.games_played: 1-3 -> 1-7
+- pitching_series_stats.games_played: 1-3 -> 1-7
+- pitching_series_stats.appearances: 1-3 -> 1-7
+- pitching_series_stats.starts: 0-3 -> 0-7
+
+Existing data is copied into replacement tables and retained.
 
 INSTALL
-1. Extract this zip.
-2. Copy the admin and functions folders into the root of your existing nd-wiffle project.
-3. In Windows, choose to merge folders / replace files in the destination.
-4. No D1 migration is required.
-5. From Command Prompt in the nd-wiffle project:
+-------
+1. Paste/merge the migrations folder into the root of your nd-wiffle repo.
+2. In Cloudflare D1 -> your production database -> Console, open and run:
+   migrations/0038_expand_playoff_series_game_limits.sql
+3. PRAGMA foreign_key_check should return no rows.
+4. Re-try publishing the semifinal series.
 
-   git status --short
-   git add admin functions
-   git commit -m "Fix playoff series clinch validation"
-   git push origin main
+IMPORTANT
+---------
+This is a DATABASE migration. Merely git-pushing the SQL file does not change the production D1 schema unless your deployment process automatically executes migrations. If you normally run migrations manually in the D1 Console, run 0038 there before publishing.
 
-TEST
-For your semifinal:
-- Series Context: Playoffs
-- Round: Semifinal
-- Maximum Series Length: Best of 5
-- Enter the four actual games.
-- Once Game 4 produces a 3-1 series result, the form should set Games Completed to 4 and hide Game 5.
-- Validation should show the playoff series as complete after 4 games.
+No existing series, games, batting stats, pitching stats, or participants should be deleted by this migration.
