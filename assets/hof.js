@@ -1,4 +1,3 @@
-
 (()=>{
   const HOF=[
     {id:"michael_pilger",name:"Michael Pilger"},
@@ -62,4 +61,16 @@
     js.async=false;
     document.body.appendChild(js);
   }
+})();
+
+/* Season closeout / commissioner handoff v164 loader. */
+(()=>{
+  const supported=/^\/(?:stats|leaders|playoffs|awards|admin)(?:\/|$)/.test(location.pathname);
+  if(!supported)return;
+  if(document.querySelector('script[data-nd-season-closeout]'))return;
+  const js=document.createElement('script');
+  js.src='/assets/season-closeout.js?v=164';
+  js.dataset.ndSeasonCloseout='1';
+  js.async=false;
+  document.body.appendChild(js);
 })();

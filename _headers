@@ -2,3 +2,8 @@
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=86400
 
+/assets/hof.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
+
+/assets/season-closeout.js
+  Cache-Control: no-cache, max-age=0, must-revalidate
