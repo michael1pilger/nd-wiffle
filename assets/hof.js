@@ -44,7 +44,7 @@
   new MutationObserver(()=>annotate()).observe(document.documentElement,{childList:true,subtree:true});
 })();
 
-/* Daily Grid v163 loader. Kept here so grid/index.html does not need to be replaced. */
+/* Daily Grid v163 loader. */
 (()=>{
   if(!/^\/grid\/?$/.test(location.pathname))return;
   if(!document.querySelector('link[data-nd-grid-daily]')){
@@ -63,7 +63,7 @@
   }
 })();
 
-/* Season closeout / commissioner handoff v164 loader. */
+/* Season closeout / commissioner handoff. */
 (()=>{
   const supported=/^\/(?:stats|leaders|playoffs|awards|admin)(?:\/|$)/.test(location.pathname);
   if(!supported)return;
@@ -71,6 +71,19 @@
   const js=document.createElement('script');
   js.src='/assets/season-closeout.js?v=164';
   js.dataset.ndSeasonCloseout='1';
+  js.async=false;
+  document.body.appendChild(js);
+})();
+
+/* Modern career aggregation v167.
+   Loaded after the season-closeout layer so career totals are the final override. */
+(()=>{
+  const supported=/^\/(?:stats|players)(?:\/|$)/.test(location.pathname);
+  if(!supported)return;
+  if(document.querySelector('script[data-nd-career-modern]'))return;
+  const js=document.createElement('script');
+  js.src='/assets/career-modern.js?v=167';
+  js.dataset.ndCareerModern='1';
   js.async=false;
   document.body.appendChild(js);
 })();
