@@ -1,13 +1,23 @@
-ND Wiffle v170 — Final 2026 postseason pitching feats
+ND Wiffle v171 — Full Pitching Stats rate columns
 
-Adds:
-- Michael Pilger vs Silverbacks — Perfect Game — Semifinals
-- Jerry Vielhauer vs Storm — No-Hitter — World Series
-- Jerry Vielhauer vs Storm — No-Hitter — World Series
+On /stats/ -> Pitching -> Full Stats:
 
-Expected career leaders after the migration:
-- Michael Pilger: 3 Perfect Games (most)
-- Jerry Vielhauer: 5 No-Hitters (most)
+REMOVED
+- HR
+- WP
 
-Run migrations/0043_add_2026_postseason_pitching_feats.sql in the production D1 database.
-Then deploy the included public pitching-feats endpoint/version bump.
+ADDED
+- BAA  = Batting Average Against
+- OBPA = On-Base Percentage Against
+
+Formulas:
+- BAA  = Hits / (BF - BB)
+- OBPA = (Hits + BB) / BF
+
+Stored historical BAA/OOBP values are preserved where available.
+Modern rows derive the rates from BF, BB and Hits.
+
+Applies to historical seasons, 2026+ regular season, playoffs, career, and cumulative playoffs.
+Standard Pitching Stats are unchanged.
+
+No D1 migration is required.

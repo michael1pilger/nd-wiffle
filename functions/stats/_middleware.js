@@ -1,7 +1,9 @@
-function rewriteHofToV167(response){
+function transformStats(response){
   const transformed=new HTMLRewriter()
-    .on('script[src^="/assets/hof.js"]',{
-      element(el){el.setAttribute('src','/assets/hof.js?v=167')}
+    .on('body',{
+      element(el){
+        el.append('<script src="/assets/stats-pitching-rates.js?v=171"></script>',{html:true});
+      }
     })
     .transform(response);
 
@@ -18,5 +20,5 @@ export async function onRequest(context){
   const response=await context.next();
   const type=response.headers.get('content-type')||'';
   if(!type.includes('text/html'))return response;
-  return rewriteHofToV167(response);
+  return transformStats(response);
 }
