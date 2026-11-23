@@ -1,8 +1,11 @@
 function transformStats(response){
   const transformed=new HTMLRewriter()
+    .on('script[src^="/assets/hof.js"]',{
+      element(el){el.setAttribute('src','/assets/hof.js?v=169')}
+    })
     .on('body',{
       element(el){
-        el.append('<script src="/assets/stats-pitching-rates.js?v=171"></script>',{html:true});
+        el.append('<script src="/assets/stats-pitching-rates.js?v=172"></script>',{html:true});
       }
     })
     .transform(response);
